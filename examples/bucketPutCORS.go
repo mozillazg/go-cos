@@ -27,8 +27,9 @@ func main() {
 			},
 		},
 	}
-	_, err := c.Bucket.PutCORS(context.Background(), startTime, endTime,
-		startTime, endTime, cors)
+	_, err := c.Bucket.PutCORS(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), cors)
 	if err != nil {
 		fmt.Println(err)
 	}

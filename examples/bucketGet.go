@@ -13,8 +13,9 @@ func main() {
 	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	lb, _, err := c.Bucket.Get(context.Background(), startTime, endTime,
-		startTime, endTime, nil)
+	lb, _, err := c.Bucket.Get(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -23,8 +24,9 @@ func main() {
 	opt := &cos.BucketGetOptions{
 		MaxKeys: 1,
 	}
-	lb, _, err = c.Bucket.Get(context.Background(), startTime, endTime,
-		startTime, endTime, opt)
+	lb, _, err = c.Bucket.Get(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), opt)
 	if err != nil {
 		fmt.Println(err)
 	}

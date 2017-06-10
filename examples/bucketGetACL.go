@@ -13,8 +13,9 @@ func main() {
 	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	acl, _, err := c.Bucket.GetACL(context.Background(), startTime, endTime,
-		startTime, endTime)
+	acl, _, err := c.Bucket.GetACL(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime))
 	if err != nil {
 		fmt.Println(err)
 	}

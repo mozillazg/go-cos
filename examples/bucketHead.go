@@ -14,8 +14,9 @@ func main() {
 	c.Secure = false
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	resp, err := c.Bucket.Head(context.Background(), startTime, endTime,
-		startTime, endTime)
+	resp, err := c.Bucket.Head(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime))
 	if err != nil {
 		fmt.Println(err)
 	}

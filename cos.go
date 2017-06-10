@@ -45,6 +45,10 @@ type service struct {
 	bucket *Bucket
 }
 
+func (s *service) SetBucket(b *Bucket) {
+	s.bucket = b
+}
+
 // NewClient returns a new COS API client.
 func NewClient(secretID, secretKey string, b *Bucket, httpClient *http.Client) *Client {
 	if httpClient == nil {
@@ -72,13 +76,14 @@ func (c *Client) SetTimeout(t time.Duration) {
 }
 
 func (c Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
-	signStartTime, signEndTime, keyStartTime, keyEndTime time.Time,
+	authTime AuthTime,
 ) (resp *http.Response, err error) {
 	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", c.UserAgent)
 	req.Header.Set("Content-Type", c.ContentType)
 	AddAuthorization(c.secretID, c.secretKey, req,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
+		authTime.signStartTime, authTime.signEndTime,
+		authTime.keyStartTime, authTime.keyEndTime,
 	)
 
 	a, _ := httputil.DumpRequest(req, true)
@@ -107,8 +112,7 @@ func (c Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 }
 
 func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, rs interface{},
+	authTime AuthTime, rs interface{},
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
@@ -140,9 +144,7 @@ func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, ret,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
-	)
+	resp, err = c.doAPI(ctx, req, ret, authTime)
 	if err != nil {
 		return
 	}
@@ -150,8 +152,7 @@ func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
 }
 
 func (c *Client) sendNoBody(ctx context.Context, uri, method, baseURL string,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time,
+	authTime AuthTime,
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
@@ -168,9 +169,7 @@ func (c *Client) sendNoBody(ctx context.Context, uri, method, baseURL string,
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, ret,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
-	)
+	resp, err = c.doAPI(ctx, req, ret, authTime)
 	if err != nil {
 		return
 	}
@@ -246,11 +245,19 @@ type Opt struct {
 	header interface{} // request header 参数
 }
 
-// SignTime 用于生成签名所需的 q-sign-time 相关参数
-type SignTime struct {
-	StartTime time.Time
-	EndTime time.Time
+// AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
+type AuthTime struct {
+	signStartTime time.Time
+	signEndTime   time.Time
+	keyStartTime  time.Time
+	keyEndTime    time.Time
 }
 
-// KeyTime 用于生成签名所需的 q-key-time 相关参数
-type KeyTime SignTime
+// NewAuthTime ...
+func NewAuthTime(signStartTime, signEndTime,
+	keyStartTime, keyEndTime time.Time) AuthTime {
+	return AuthTime{
+		signStartTime, signEndTime,
+		keyStartTime, keyEndTime,
+	}
+}

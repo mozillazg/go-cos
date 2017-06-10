@@ -16,8 +16,9 @@ func main() {
 	//opt := &cos.BucketPutOptions{
 	//	XCosAcl: "public-read",
 	//}
-	_, err := c.Bucket.Put(context.Background(), startTime, endTime,
-		startTime, endTime, nil)
+	_, err := c.Bucket.Put(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), nil)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -25,8 +26,9 @@ func main() {
 	opt := &cos.BucketGetOptions{
 		MaxKeys: 1,
 	}
-	v, _, err := c.Bucket.Get(context.Background(), startTime, endTime,
-		startTime, endTime, opt)
+	v, _, err := c.Bucket.Get(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), opt)
 	if err != nil {
 		fmt.Println(err)
 	}

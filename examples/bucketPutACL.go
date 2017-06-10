@@ -16,8 +16,9 @@ func main() {
 	opt := &cos.BucketPutACLOptions{
 		XCosACL: "private",
 	}
-	_, err := c.Bucket.PutACL(context.Background(), startTime, endTime,
-		startTime, endTime, opt, nil)
+	_, err := c.Bucket.PutACL(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), opt, nil)
 	if err != nil {
 		fmt.Println(err)
 	}

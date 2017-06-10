@@ -14,8 +14,9 @@ func main() {
 	c.Secure = false
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	_, err := c.Bucket.DeleteLifecycle(context.Background(), startTime, endTime,
-		startTime, endTime)
+	_, err := c.Bucket.DeleteLifecycle(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime))
 	if err != nil {
 		fmt.Println(err)
 	}

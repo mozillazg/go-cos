@@ -27,8 +27,9 @@ func main() {
 			},
 		},
 	}
-	_, err := c.Bucket.PutLifecycle(context.Background(), startTime, endTime,
-		startTime, endTime, lc)
+	_, err := c.Bucket.PutLifecycle(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), lc)
 	if err != nil {
 		fmt.Println(err)
 	}

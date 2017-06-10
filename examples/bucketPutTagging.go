@@ -26,8 +26,9 @@ func main() {
 			},
 		},
 	}
-	_, err := c.Bucket.PutTagging(context.Background(), startTime, endTime,
-		startTime, endTime, tg)
+	_, err := c.Bucket.PutTagging(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), tg)
 	if err != nil {
 		fmt.Println(err)
 	}
