@@ -9,11 +9,11 @@ import (
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil)
+	b, _ := cos.ParseBucketFromDomain("testhuanan-1253846586.cn-south.myqcloud.com")
+	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	b, _ := cos.ParseBucketFromDomain("testhuanan-1253846586.cn-south.myqcloud.com")
-	v, _, err := c.Bucket.GetLifecycle(context.Background(), b, startTime, endTime,
+	v, _, err := c.Bucket.GetLifecycle(context.Background(), startTime, endTime,
 		startTime, endTime)
 	if err != nil {
 		fmt.Println(err)

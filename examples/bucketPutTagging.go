@@ -9,11 +9,11 @@ import (
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil)
+	b, _ := cos.ParseBucketFromDomain("test-1253846586.cn-north.myqcloud.com")
+	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	c.Secure = false
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	b, _ := cos.ParseBucketFromDomain("test-1253846586.cn-north.myqcloud.com")
 	tg := &cos.BucketTaggingResult{
 		TagSet: []cos.BucketTaggingTag{
 			{
@@ -26,7 +26,7 @@ func main() {
 			},
 		},
 	}
-	_, err := c.Bucket.PutTagging(context.Background(), b, startTime, endTime,
+	_, err := c.Bucket.PutTagging(context.Background(), startTime, endTime,
 		startTime, endTime, tg)
 	if err != nil {
 		fmt.Println(err)

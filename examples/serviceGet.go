@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil)
+	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil, nil)
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
 	s, _, err := c.Service.Get(context.Background(), startTime, endTime,

@@ -42,10 +42,11 @@ type Client struct {
 
 type service struct {
 	client *Client
+	bucket *Bucket
 }
 
 // NewClient returns a new COS API client.
-func NewClient(secretID, secretKey string, httpClient *http.Client) *Client {
+func NewClient(secretID, secretKey string, b *Bucket, httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
@@ -59,6 +60,7 @@ func NewClient(secretID, secretKey string, httpClient *http.Client) *Client {
 		Secure:      true,
 	}
 	c.common.client = c
+	c.common.bucket = b
 	c.Service = (*ServiceService)(&c.common)
 	c.Bucket = (*BucketService)(&c.common)
 	return c
@@ -196,10 +198,13 @@ func addURLOptions(s string, opt interface{}) (string, error) {
 	// 保留原有的参数，并且放在前面。因为 cos 的 url 路由是以第一个参数作为路由的
 	// e.g. /?uploads
 	q := u.RawQuery
+	rq := qs.Encode()
 	if q != "" {
-		u.RawQuery = fmt.Sprintf("%s&%s", q, qs.Encode())
+		if rq != "" {
+			u.RawQuery = fmt.Sprintf("%s&%s", q, qs.Encode())
+		}
 	} else {
-		u.RawQuery = qs.Encode()
+		u.RawQuery = rq
 	}
 	return u.String(), nil
 }
@@ -240,3 +245,12 @@ type Opt struct {
 	query  interface{} // url 参数
 	header interface{} // request header 参数
 }
+
+// SignTime 用于生成签名所需的 q-sign-time 相关参数
+type SignTime struct {
+	StartTime time.Time
+	EndTime time.Time
+}
+
+// KeyTime 用于生成签名所需的 q-key-time 相关参数
+type KeyTime SignTime
