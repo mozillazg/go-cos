@@ -9,11 +9,11 @@ import (
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil)
+	b, _ := cos.ParseBucketFromDomain("huanan-1253846586.cn-south.myqcloud.com")
+	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	c.Secure = false
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	b, _ := cos.ParseBucketFromDomain("huanan-1253846586.cn-south.myqcloud.com")
 	lc := &cos.BucketLifecycleResult{
 		Rules: []cos.BucketLifecycleRule{
 			{
@@ -27,8 +27,9 @@ func main() {
 			},
 		},
 	}
-	_, err := c.Bucket.PutLifecycle(context.Background(), b, startTime, endTime,
-		startTime, endTime, lc)
+	_, err := c.Bucket.PutLifecycle(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), lc)
 	if err != nil {
 		fmt.Println(err)
 	}

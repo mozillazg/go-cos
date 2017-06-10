@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"time"
 )
 
 // HostBucket 指定默认的域名结构
@@ -18,6 +17,49 @@ var ReBucketDomain = regexp.MustCompile("^(.+)-(\\d+)\\.([\\w-]+)\\.myqcloud\\.c
 
 // BucketService ...
 type BucketService service
+
+// Bucket ...
+type Bucket struct {
+	domain string
+	Name   string
+	AppID  string
+	Region string
+}
+
+// NewBucket ...
+func NewBucket(name, appID, region string) *Bucket {
+	return &Bucket{
+		domain: fmt.Sprintf(HostBucket, name, appID, region),
+		Name:   name,
+		AppID:  appID,
+		Region: region,
+	}
+}
+
+// ParseBucketFromDomain 从域名中解析信息然后生成一个 Bucket
+func ParseBucketFromDomain(domain string) (b *Bucket, err error) {
+	matched := ReBucketDomain.FindStringSubmatch(domain)
+	if len(matched) != 4 {
+		err = errors.New("invalid bucket domain")
+		return
+	}
+	b = &Bucket{
+		domain: domain,
+		Name:   matched[1],
+		AppID:  matched[2],
+		Region: matched[3],
+	}
+	return
+}
+
+// GetBaseURL 获取 Bucket 的基础请求 URL
+func (b *Bucket) GetBaseURL(secure bool) string {
+	scheme := "http"
+	if secure {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://%s", scheme, b.domain)
+}
 
 // BucketOwner ...
 type BucketOwner struct {
@@ -54,49 +96,6 @@ type ListBucketResult struct {
 	ListBucket
 }
 
-// Bucket ...
-type Bucket struct {
-	domain string
-	Name   string
-	AppID  string
-	Region string
-}
-
-// NewBucket ...
-func NewBucket(name, appID, region string) Bucket {
-	return Bucket{
-		domain: fmt.Sprintf(HostBucket, name, appID, region),
-		Name:   name,
-		AppID:  appID,
-		Region: region,
-	}
-}
-
-// ParseBucketFromDomain 从域名中解析信息然后生成一个 Bucket
-func ParseBucketFromDomain(domain string) (b Bucket, err error) {
-	matched := ReBucketDomain.FindStringSubmatch(domain)
-	if len(matched) != 4 {
-		err = errors.New("invalid bucket domain")
-		return
-	}
-	b = Bucket{
-		domain: domain,
-		Name:   matched[1],
-		AppID:  matched[2],
-		Region: matched[3],
-	}
-	return
-}
-
-// GetBaseURL 获取 Bucket 的基础请求 URL
-func (b *Bucket) GetBaseURL(secure bool) string {
-	scheme := "http"
-	if secure {
-		scheme = "https"
-	}
-	return fmt.Sprintf("%s://%s", scheme, b.domain)
-}
-
 // BucketGetOptions ...
 type BucketGetOptions struct {
 	Prefix       string `url:"prefix,omitempty"`
@@ -107,16 +106,15 @@ type BucketGetOptions struct {
 }
 
 // Get Bucket请求等同于 List Object请求，可以列出该Bucket下部分或者所有Object，发起该请求需要拥有Read权限。
+//
 // https://www.qcloud.com/document/product/436/7734
-func (s *BucketService) Get(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, opt *BucketGetOptions) (listBucket *ListBucket,
+func (s *BucketService) Get(ctx context.Context,
+	authTime AuthTime, opt *BucketGetOptions) (listBucket *ListBucket,
 	resp *http.Response, err error) {
 	u := "/"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res ListBucketResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, opt, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, opt, nil, &res)
 	if err != nil {
 		return
 	}
@@ -150,15 +148,14 @@ type BucketACLResult struct {
 }
 
 // GetACL 使用API读取Bucket的ACL表，只有所有者有权操作。
+//
 // https://www.qcloud.com/document/product/436/7733
-func (s *BucketService) GetACL(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (acl *BucketACL, resp *http.Response, err error) {
+func (s *BucketService) GetACL(ctx context.Context,
+	authTime AuthTime) (acl *BucketACL, resp *http.Response, err error) {
 	u := "/?acl"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketACLResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -183,15 +180,14 @@ type BucketCORSResult struct {
 }
 
 // GetCORS Get Bucket CORS实现跨域访问配置读取。
+//
 // https://www.qcloud.com/document/product/436/8274
-func (s *BucketService) GetCORS(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (cors *[]BucketCORSRule, resp *http.Response, err error) {
+func (s *BucketService) GetCORS(ctx context.Context,
+	authTime AuthTime) (cors *[]BucketCORSRule, resp *http.Response, err error) {
 	u := "/?cors"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketCORSResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -201,24 +197,24 @@ func (s *BucketService) GetCORS(ctx context.Context, bucket Bucket,
 
 // BucketLocation ...
 type BucketLocation struct {
-	Location string `xml:"LocationConstraint"`
+	Location string `xml:",chardata"`
 }
 
 // BucketLocationResult ...
 type BucketLocationResult struct {
+	XMLName xml.Name `xml:"LocationConstraint"`
 	BucketLocation
 }
 
 // GetLocation Get Bucket Location接口获取Bucket所在地域信息，只有Bucket所有者有权限读取信息。
+//
 // https://www.qcloud.com/document/product/436/8275
-func (s *BucketService) GetLocation(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (location *BucketLocation, resp *http.Response, err error) {
+func (s *BucketService) GetLocation(ctx context.Context,
+	authTime AuthTime) (location *BucketLocation, resp *http.Response, err error) {
 	u := "/?location"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketLocationResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -261,16 +257,16 @@ type BucketLifecycleResult struct {
 }
 
 // GetLifecycle Get Bucket Lifecycle请求实现读取生命周期管理的配置。当配置不存在时，返回404 Not Found。
+//
 // （目前只支持华南园区）
+//
 // https://www.qcloud.com/document/product/436/8278
-func (s *BucketService) GetLifecycle(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (lc *[]BucketLifecycleRule, resp *http.Response, err error) {
+func (s *BucketService) GetLifecycle(ctx context.Context,
+	authTime AuthTime) (lc *[]BucketLifecycleRule, resp *http.Response, err error) {
 	u := "/?lifecycle"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketLifecycleResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -291,15 +287,14 @@ type BucketTaggingResult struct {
 }
 
 // GetTagging Get Bucket Tagging接口实现获取指定Bucket的标签。
+//
 // https://www.qcloud.com/document/product/436/8277
-func (s *BucketService) GetTagging(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (tgs *[]BucketTaggingTag, resp *http.Response, err error) {
+func (s *BucketService) GetTagging(ctx context.Context,
+	authTime AuthTime) (tgs *[]BucketTaggingTag, resp *http.Response, err error) {
 	u := "/?tagging"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketTaggingResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -317,13 +312,11 @@ type BucketPutOptions struct {
 
 // Put Bucket请求可以在指定账号下创建一个Bucket。
 // https://www.qcloud.com/document/product/436/7738
-func (s *BucketService) Put(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, opt *BucketPutOptions) (resp *http.Response, err error) {
+func (s *BucketService) Put(ctx context.Context,
+	authTime AuthTime, opt *BucketPutOptions) (resp *http.Response, err error) {
 	u := "/"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, opt, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, nil, opt, nil, nil)
 	return
 }
 
@@ -333,124 +326,123 @@ type BucketPutACLOptions BucketPutOptions
 // PutACL 使用API写入Bucket的ACL表，您可以通过Header："x-cos-acl","x-cos-grant-read",
 // "x-cos-grant-write","x-cos-grant-full-control"传入ACL信息，也可以通过body以XML格式传入ACL信息，
 // 但是只能选择Header和Body其中一种，否则返回冲突。
+//
 // Put Bucket ACL是一个覆盖操作，传入新的ACL将覆盖原有ACL。只有所有者有权操作。
-// "x-cos-acl"：枚举值为public-read，private；public-read意味这个Bucket有公有读私有写的权限，
-//  private意味这个Bucket有私有读写的权限。
-// "x-cos-grant-read"：意味被赋予权限的用户拥有该Bucket的读权限
-// "x-cos-grant-write"：意味被赋予权限的用户拥有该Bucket的写权限
-// "x-cos-grant-full-control"：意味被赋予权限的用户拥有该Bucket的读写权限
+//
+//   "x-cos-acl"：枚举值为public-read，private；public-read意味这个Bucket有公有读私有写的权限，
+//   private意味这个Bucket有私有读写的权限。
+//
+//   "x-cos-grant-read"：意味被赋予权限的用户拥有该Bucket的读权限
+//   "x-cos-grant-write"：意味被赋予权限的用户拥有该Bucket的写权限
+//   "x-cos-grant-full-control"：意味被赋予权限的用户拥有该Bucket的读写权限
+//
 // https://www.qcloud.com/document/product/436/7737
-func (s *BucketService) PutACL(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time,
+func (s *BucketService) PutACL(ctx context.Context,
+	authTime AuthTime,
 	opt *BucketPutACLOptions, acl *BucketACLResult) (resp *http.Response, err error) {
 	u := "/?acl"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, acl, nil, opt, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, acl, nil, opt, nil)
 	return
 }
 
 // PutCORS Put Bucket CORS实现跨域访问设置，您可以通过传入XML格式的配置文件实现配置，文件大小限制为64 KB。
 // https://www.qcloud.com/document/product/436/8279
-func (s *BucketService) PutCORS(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, cos *BucketCORSResult) (resp *http.Response, err error) {
+func (s *BucketService) PutCORS(ctx context.Context,
+	authTime AuthTime, cos *BucketCORSResult) (resp *http.Response, err error) {
 	u := "/?cors"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, cos, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, cos, nil, nil, nil)
 	return
 }
 
 // PutLifecycle Put Bucket Lifecycle请求实现设置生命周期管理的功能。您可以通过该请求实现数据的生命周期管理配置和定期删除。
+//
 // 此请求为覆盖操作，上传新的配置文件将覆盖之前的配置文件。生命周期管理对文件和文件夹同时生效。
+//
 // （目前只支持华南园区）
+//
 // https://www.qcloud.com/document/product/436/8280
 // TODO: fix doesn't work
-func (s *BucketService) PutLifecycle(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, lc *BucketLifecycleResult) (resp *http.Response, err error) {
+func (s *BucketService) PutLifecycle(ctx context.Context,
+	authTime AuthTime, lc *BucketLifecycleResult) (resp *http.Response, err error) {
 	u := "/?lifecycle"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, lc, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, lc, nil, nil, nil)
 	return
 }
 
 // PutTagging Put Bucket Tagging接口实现给用指定Bucket打标签。用来组织和管理相关Bucket。
+//
 // 当该请求设置相同Key名称，不同Value时，会返回400。请求成功，则返回204。
+//
 // https://www.qcloud.com/document/product/436/8281
-func (s *BucketService) PutTagging(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, tg *BucketTaggingResult) (resp *http.Response, err error) {
+func (s *BucketService) PutTagging(ctx context.Context,
+	authTime AuthTime, tg *BucketTaggingResult) (resp *http.Response, err error) {
 	u := "/?tagging"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, tg, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, tg, nil, nil, nil)
 	return
 }
 
 // Delete Bucket请求可以在指定账号下删除Bucket，删除之前要求Bucket为空。
+//
 // https://www.qcloud.com/document/product/436/7732
-func (s *BucketService) Delete(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (resp *http.Response, err error) {
+func (s *BucketService) Delete(ctx context.Context,
+	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
 	return
 }
 
 // DeleteCORS Delete Bucket CORS实现跨域访问配置删除。
+//
 // https://www.qcloud.com/document/product/436/8283
-func (s *BucketService) DeleteCORS(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (resp *http.Response, err error) {
+func (s *BucketService) DeleteCORS(ctx context.Context,
+	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/?cors"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
 	return
 }
 
 // DeleteLifecycle Delete Bucket Lifecycle请求实现删除生命周期管理。
+//
 // （目前只支持华南园区）
+//
 // https://www.qcloud.com/document/product/436/8284
-func (s *BucketService) DeleteLifecycle(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (resp *http.Response, err error) {
+func (s *BucketService) DeleteLifecycle(ctx context.Context,
+	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/?lifecycle"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
 	return
 }
 
 // DeleteTagging Delete Bucket Tagging接口实现删除指定Bucket的标签。
+//
 // https://www.qcloud.com/document/product/436/8286
-func (s *BucketService) DeleteTagging(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (resp *http.Response, err error) {
+func (s *BucketService) DeleteTagging(ctx context.Context,
+	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/?tagging"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
 	return
 }
 
 // Head Bucket请求可以确认是否存在该Bucket，是否有权限访问，Head的权限与Read一致。
-// 当其存在时，返回 HTTP 状态码200；当无权限时，返回 HTTP 状态码403；
-// 当不存在时，返回 HTTP 状态码404。
+//
+//   当其存在时，返回 HTTP 状态码200；
+//   当无权限时，返回 HTTP 状态码403；
+//   当不存在时，返回 HTTP 状态码404。
+//
 // https://www.qcloud.com/document/product/436/7735
-func (s *BucketService) Head(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (resp *http.Response, err error) {
+func (s *BucketService) Head(ctx context.Context,
+	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodHead, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, nil)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodHead, baseURL, authTime, nil, nil, nil)
 	return
 }
 
@@ -497,16 +489,15 @@ type ListMultipartUploadsOptions struct {
 }
 
 // ListMultipartUploads List Multipart Uploads用来查询正在进行中的分块上传。单次最多列出1000个正在进行中的分块上传。
+//
 // https://www.qcloud.com/document/product/436/7736
-func (s *BucketService) ListMultipartUploads(ctx context.Context, bucket Bucket,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time,
+func (s *BucketService) ListMultipartUploads(ctx context.Context,
+	authTime AuthTime,
 	opt *ListMultipartUploadsOptions) (uploads *MultipartUploads, resp *http.Response, err error) {
 	u := "/?uploads"
-	baseURL := bucket.GetBaseURL(s.client.Secure)
+	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res ListMultipartUploadsResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, opt, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, opt, nil, &res)
 	if err != nil {
 		return
 	}

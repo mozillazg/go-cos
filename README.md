@@ -1,6 +1,6 @@
 # go-cos
 
-腾讯云对象存储服务（Cloud Object Storage）的非官方 Go SDK（API 版本：4.0 版本的 XML API）。
+腾讯云对象存储服务（Cloud Object Storage）非官方 Go SDK（API 版本：4.0 版本的 XML API）。
 
 [![Build Status](https://circleci.com/bb/mozillazg/go-cos.svg?style=svg)](https://circleci.com/bb/mozillazg/go-cos)
 [![Go Report Card](https://goreportcard.com/badge/bitbucket.org/mozillazg/go-cos)](https://goreportcard.com/report/bitbucket.org/mozillazg/go-cos)

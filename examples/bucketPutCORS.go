@@ -10,11 +10,11 @@ import (
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil)
+	b, _ := cos.ParseBucketFromDomain("test-1253846586.cn-north.myqcloud.com")
+	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	c.Secure = false
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	b, _ := cos.ParseBucketFromDomain("test-1253846586.cn-north.myqcloud.com")
 	cors := &cos.BucketCORSResult{
 		Rules: []cos.BucketCORSRule{
 			{
@@ -27,8 +27,9 @@ func main() {
 			},
 		},
 	}
-	_, err := c.Bucket.PutCORS(context.Background(), b, startTime, endTime,
-		startTime, endTime, cors)
+	_, err := c.Bucket.PutCORS(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime), cors)
 	if err != nil {
 		fmt.Println(err)
 	}

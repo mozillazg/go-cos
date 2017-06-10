@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
-	"time"
 )
 
 // HostService 指定获取 Service 信息的域名
@@ -33,16 +32,17 @@ type ServiceResult struct {
 	Service
 }
 
-// Get Service 接口实现获取该用户下所有Bucket列表。该API接口需要使用Authorization签名认证，
+// Get Service 接口实现获取该用户下所有Bucket列表。
+//
+// 该API接口需要使用Authorization签名认证，
 // 且只能获取签名中AccessID所属账户的Bucket列表。
+//
 // https://www.qcloud.com/document/product/436/8291
-func (s *ServiceService) Get(ctx context.Context, signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) (service *Service, resp *http.Response, err error) {
+func (s *ServiceService) Get(ctx context.Context, authTime AuthTime) (service *Service, resp *http.Response, err error) {
 	var res ServiceResult
 	u := "/"
 	baseURL := getServiceBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, signStartTime, signEndTime,
-		keyStartTime, keyEndTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}

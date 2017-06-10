@@ -9,13 +9,14 @@ import (
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), nil)
+	b, _ := cos.ParseBucketFromDomain("testdelete-1253846586.cn-north.myqcloud.com")
+	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	c.Secure = false
 	startTime := time.Now()
 	endTime := startTime.Add(time.Hour)
-	b, _ := cos.ParseBucketFromDomain("testdelete-1253846586.cn-north.myqcloud.com")
-	_, err := c.Bucket.Delete(context.Background(), b, startTime, endTime,
-		startTime, endTime)
+	_, err := c.Bucket.Delete(context.Background(), cos.NewAuthTime(
+		startTime, endTime,
+		startTime, endTime))
 	if err != nil {
 		fmt.Println(err)
 	}

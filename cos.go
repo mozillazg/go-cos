@@ -1,24 +1,25 @@
 package cos
 
 import (
-	"bitbucket.org/mozillazg/go-httpheader"
 	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
+
+	"bitbucket.org/mozillazg/go-httpheader"
+	"github.com/google/go-querystring/query"
 )
 
 const (
 	// Version ...
-	Version        = "0.1.0"
+	Version        = "0.2.0"
 	userAgent      = "go-cos/" + Version
 	contentTypeXML = "application/xml"
 )
@@ -41,10 +42,15 @@ type Client struct {
 
 type service struct {
 	client *Client
+	bucket *Bucket
+}
+
+func (s *service) SetBucket(b *Bucket) {
+	s.bucket = b
 }
 
 // NewClient returns a new COS API client.
-func NewClient(secretID, secretKey string, httpClient *http.Client) *Client {
+func NewClient(secretID, secretKey string, b *Bucket, httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
@@ -58,6 +64,7 @@ func NewClient(secretID, secretKey string, httpClient *http.Client) *Client {
 		Secure:      true,
 	}
 	c.common.client = c
+	c.common.bucket = b
 	c.Service = (*ServiceService)(&c.common)
 	c.Bucket = (*BucketService)(&c.common)
 	return c
@@ -69,13 +76,14 @@ func (c *Client) SetTimeout(t time.Duration) {
 }
 
 func (c Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
-	signStartTime, signEndTime, keyStartTime, keyEndTime time.Time,
+	authTime AuthTime,
 ) (resp *http.Response, err error) {
 	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", c.UserAgent)
 	req.Header.Set("Content-Type", c.ContentType)
 	AddAuthorization(c.secretID, c.secretKey, req,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
+		authTime.signStartTime, authTime.signEndTime,
+		authTime.keyStartTime, authTime.keyEndTime,
 	)
 
 	a, _ := httputil.DumpRequest(req, true)
@@ -104,8 +112,7 @@ func (c Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 }
 
 func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time, rs interface{},
+	authTime AuthTime, rs interface{},
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
@@ -137,9 +144,7 @@ func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, ret,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
-	)
+	resp, err = c.doAPI(ctx, req, ret, authTime)
 	if err != nil {
 		return
 	}
@@ -147,8 +152,7 @@ func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
 }
 
 func (c *Client) sendNoBody(ctx context.Context, uri, method, baseURL string,
-	signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time,
+	authTime AuthTime,
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
@@ -165,9 +169,7 @@ func (c *Client) sendNoBody(ctx context.Context, uri, method, baseURL string,
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, ret,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
-	)
+	resp, err = c.doAPI(ctx, req, ret, authTime)
 	if err != nil {
 		return
 	}
@@ -195,10 +197,13 @@ func addURLOptions(s string, opt interface{}) (string, error) {
 	// 保留原有的参数，并且放在前面。因为 cos 的 url 路由是以第一个参数作为路由的
 	// e.g. /?uploads
 	q := u.RawQuery
+	rq := qs.Encode()
 	if q != "" {
-		u.RawQuery = fmt.Sprintf("%s&%s", q, qs.Encode())
+		if rq != "" {
+			u.RawQuery = fmt.Sprintf("%s&%s", q, qs.Encode())
+		}
 	} else {
-		u.RawQuery = qs.Encode()
+		u.RawQuery = rq
 	}
 	return u.String(), nil
 }
@@ -235,7 +240,29 @@ type Initiator struct {
 }
 
 // Opt 定义请求参数
-type Opt struct {
-	query  interface{} // url 参数
-	header interface{} // request header 参数
+//type Opt struct {
+//	query  interface{} // url 参数
+//	header interface{} // request header 参数
+//}
+
+//// NewOpt ...
+//func NewOpt(query, header interface{}) {
+//
+//}
+
+// AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
+type AuthTime struct {
+	signStartTime time.Time
+	signEndTime   time.Time
+	keyStartTime  time.Time
+	keyEndTime    time.Time
+}
+
+// NewAuthTime ...
+func NewAuthTime(signStartTime, signEndTime,
+	keyStartTime, keyEndTime time.Time) AuthTime {
+	return AuthTime{
+		signStartTime, signEndTime,
+		keyStartTime, keyEndTime,
+	}
 }
