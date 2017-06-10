@@ -1,19 +1,20 @@
 package cos
 
 import (
-	"bitbucket.org/mozillazg/go-httpheader"
 	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"github.com/google/go-querystring/query"
 	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
+
+	"bitbucket.org/mozillazg/go-httpheader"
+	"github.com/google/go-querystring/query"
 )
 
 const (
