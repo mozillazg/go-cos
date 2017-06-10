@@ -240,10 +240,15 @@ type Initiator struct {
 }
 
 // Opt 定义请求参数
-type Opt struct {
-	query  interface{} // url 参数
-	header interface{} // request header 参数
-}
+//type Opt struct {
+//	query  interface{} // url 参数
+//	header interface{} // request header 参数
+//}
+
+//// NewOpt ...
+//func NewOpt(query, header interface{}) {
+//
+//}
 
 // AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
 type AuthTime struct {
