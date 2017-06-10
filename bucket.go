@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"time"
 )
 
 // HostBucket 指定默认的域名结构

@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
-	"time"
 )
 
 // HostService 指定获取 Service 信息的域名
