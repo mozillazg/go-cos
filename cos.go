@@ -14,6 +14,7 @@ import (
 
 	"bitbucket.org/mozillazg/go-httpheader"
 	"github.com/google/go-querystring/query"
+	"io"
 )
 
 const (
@@ -74,23 +75,64 @@ func (c *Client) SetTimeout(t time.Duration) {
 	c.Client.Timeout = t
 }
 
-func (c Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
-	authTime AuthTime,
-) (resp *http.Response, err error) {
+func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method string,
+	body interface{}, optQuery interface{}, optHeader interface{}) (req *http.Request, err error) {
+	uri, err = addURLOptions(uri, optQuery)
+	if err != nil {
+		return
+	}
+	u, _ := url.Parse(uri)
+	urlStr := baseURL.ResolveReference(u).String()
+
+	var reader io.Reader
+	var bXML []byte
+	if body != nil {
+		bXML, err = xml.Marshal(body)
+		if err != nil {
+			return
+		}
+		reader = bytes.NewReader(bXML)
+	}
+
+	req, err = http.NewRequest(method, urlStr, reader)
+	if err != nil {
+		return
+	}
+
+	req.Header, err = addHeaderOptions(req, optHeader)
+	if err != nil {
+		return
+	}
+	if body != nil {
+		req.Header.Set("Content-Length", len(bXML))
+		req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(calMD5Digest(bXML)))
+	}
+	if c.UserAgent != "" {
+		req.Header.Set("User-Agent", c.UserAgent)
+	}
+	return
+}
+
+func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
+	authTime AuthTime) (resp *http.Response, err error) {
 	req = req.WithContext(ctx)
-	req.Header.Set("User-Agent", c.UserAgent)
-	req.Header.Set("Content-Type", c.ContentType)
-	AddAuthorization(c.secretID, c.secretKey, req,
-		authTime.signStartTime, authTime.signEndTime,
-		authTime.keyStartTime, authTime.keyEndTime,
-	)
+
+	if authTime != nil {
+		AddAuthorization(
+			c.secretID, c.secretKey, req,
+			authTime.signStartTime, authTime.signEndTime,
+			authTime.keyStartTime, authTime.keyEndTime,
+		)
+	}
 
 	a, _ := httputil.DumpRequest(req, true)
 	fmt.Println(string(a))
+
 	resp, err = c.Client.Do(req)
 	if err != nil {
 		return
 	}
+
 	b, _ := httputil.DumpResponse(resp, true)
 	fmt.Println(string(b))
 
@@ -110,33 +152,13 @@ func (c Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 	return
 }
 
-func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
-	authTime AuthTime, rs interface{},
+func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method string,
+	authTime AuthTime, body interface{},
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
-	uri, err = addURLOptions(uri, optQuery)
+	req, err := c.newRequest(ctx, baseURL, uri, method, body, optQuery, optHeader)
 	if err != nil {
 		return
 	}
-	urlStr := baseURL + uri
-
-	b, err := xml.Marshal(rs)
-	if err != nil {
-		return
-	}
-	body := bytes.NewReader(b)
-
-	req, err := http.NewRequest(method, urlStr, body)
-	if err != nil {
-		return
-	}
-
-	err = addHeaderOptions(req, optHeader)
-	if err != nil {
-		return
-	}
-
-	req.Header.Set("Content-Length", len(b))
-	req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(calMD5Digest(b)))
 
 	resp, err = c.doAPI(ctx, req, ret, authTime)
 	if err != nil {
@@ -145,29 +167,10 @@ func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
 	return
 }
 
-func (c *Client) sendNoBody(ctx context.Context, uri, method, baseURL string,
+func (c *Client) sendNoBody(ctx context.Context, baseURL *url.URL, uri, method string,
 	authTime AuthTime,
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
-	uri, err = addURLOptions(uri, optQuery)
-	if err != nil {
-		return
-	}
-
-	urlStr := baseURL + uri
-	req, err := http.NewRequest(method, urlStr, nil)
-	if err != nil {
-		return
-	}
-	err = addHeaderOptions(req, optHeader)
-	if err != nil {
-		return
-	}
-
-	resp, err = c.doAPI(ctx, req, ret, authTime)
-	if err != nil {
-		return
-	}
-	return
+	return c.sendWithBody(ctx, baseURL, uri, method, authTime, nil, optQuery, optHeader, ret)
 }
 
 // addURLOptions adds the parameters in opt as URL query parameters to s. opt
@@ -204,15 +207,15 @@ func addURLOptions(s string, opt interface{}) (string, error) {
 
 // addHeaderOptions adds the parameters in opt as Header fields to req. opt
 // must be a struct whose fields may contain "header" tags.
-func addHeaderOptions(req *http.Request, opt interface{}) (err error) {
+func addHeaderOptions(req http.Request, opt interface{}) (http.Request, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {
-		return
+		return req, nil
 	}
 
 	h, err := httpheader.Header(opt)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	for key, values := range h {
@@ -220,7 +223,7 @@ func addHeaderOptions(req *http.Request, opt interface{}) (err error) {
 			req.Header.Add(key, value)
 		}
 	}
-	return
+	return req, nil
 }
 
 // Owner ...

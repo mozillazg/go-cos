@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"net/url"
 )
 
 // HostBucket 指定默认的域名结构
@@ -53,12 +54,13 @@ func ParseBucketFromDomain(domain string) (b *Bucket, err error) {
 }
 
 // GetBaseURL 获取 Bucket 的基础请求 URL
-func (b *Bucket) GetBaseURL(secure bool) string {
+func (b *Bucket) GetBaseURL(secure bool) *url.URL {
 	scheme := "http"
 	if secure {
 		scheme = "https"
 	}
-	return fmt.Sprintf("%s://%s", scheme, b.domain)
+	u, _ := url.Parse(fmt.Sprintf("%s://%s", scheme, b.domain))
+	return u
 }
 
 // BucketOwner ...
@@ -114,7 +116,7 @@ func (s *BucketService) Get(ctx context.Context,
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res ListBucketResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, opt, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, opt, nil, &res)
 	if err != nil {
 		return
 	}
@@ -155,7 +157,7 @@ func (s *BucketService) GetACL(ctx context.Context,
 	u := "/?acl"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketACLResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -187,7 +189,7 @@ func (s *BucketService) GetCORS(ctx context.Context,
 	u := "/?cors"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketCORSResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -214,7 +216,7 @@ func (s *BucketService) GetLocation(ctx context.Context,
 	u := "/?location"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketLocationResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -266,7 +268,7 @@ func (s *BucketService) GetLifecycle(ctx context.Context,
 	u := "/?lifecycle"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketLifecycleResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -294,7 +296,7 @@ func (s *BucketService) GetTagging(ctx context.Context,
 	u := "/?tagging"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketTaggingResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -316,7 +318,7 @@ func (s *BucketService) Put(ctx context.Context,
 	authTime AuthTime, opt *BucketPutOptions) (resp *http.Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, nil, opt, nil, nil)
+	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, nil, opt, nil, nil)
 	return
 }
 
@@ -342,7 +344,7 @@ func (s *BucketService) PutACL(ctx context.Context,
 	opt *BucketPutACLOptions, acl *BucketACLResult) (resp *http.Response, err error) {
 	u := "/?acl"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, acl, nil, opt, nil)
+	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, acl, nil, opt, nil)
 	return
 }
 
@@ -352,7 +354,7 @@ func (s *BucketService) PutCORS(ctx context.Context,
 	authTime AuthTime, cos *BucketCORSResult) (resp *http.Response, err error) {
 	u := "/?cors"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, cos, nil, nil, nil)
+	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, cos, nil, nil, nil)
 	return
 }
 
@@ -368,7 +370,7 @@ func (s *BucketService) PutLifecycle(ctx context.Context,
 	authTime AuthTime, lc *BucketLifecycleResult) (resp *http.Response, err error) {
 	u := "/?lifecycle"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, lc, nil, nil, nil)
+	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, lc, nil, nil, nil)
 	return
 }
 
@@ -381,7 +383,7 @@ func (s *BucketService) PutTagging(ctx context.Context,
 	authTime AuthTime, tg *BucketTaggingResult) (resp *http.Response, err error) {
 	u := "/?tagging"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendWithBody(ctx, u, http.MethodPut, baseURL, authTime, tg, nil, nil, nil)
+	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, tg, nil, nil, nil)
 	return
 }
 
@@ -392,7 +394,7 @@ func (s *BucketService) Delete(ctx context.Context,
 	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
 	return
 }
 
@@ -403,7 +405,7 @@ func (s *BucketService) DeleteCORS(ctx context.Context,
 	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/?cors"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
 	return
 }
 
@@ -416,7 +418,7 @@ func (s *BucketService) DeleteLifecycle(ctx context.Context,
 	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/?lifecycle"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
 	return
 }
 
@@ -427,7 +429,7 @@ func (s *BucketService) DeleteTagging(ctx context.Context,
 	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/?tagging"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodDelete, baseURL, authTime, nil, nil, nil)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
 	return
 }
 
@@ -442,7 +444,7 @@ func (s *BucketService) Head(ctx context.Context,
 	authTime AuthTime) (resp *http.Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodHead, baseURL, authTime, nil, nil, nil)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodHead, authTime, nil, nil, nil)
 	return
 }
 
@@ -497,7 +499,7 @@ func (s *BucketService) ListMultipartUploads(ctx context.Context,
 	u := "/?uploads"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res ListMultipartUploadsResult
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, opt, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, opt, nil, &res)
 	if err != nil {
 		return
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // HostService 指定获取 Service 信息的域名
@@ -42,7 +43,7 @@ func (s *ServiceService) Get(ctx context.Context, authTime AuthTime) (service *S
 	var res ServiceResult
 	u := "/"
 	baseURL := getServiceBaseURL(s.client.Secure)
-	resp, err = s.client.sendNoBody(ctx, u, http.MethodGet, baseURL, authTime, nil, nil, &res)
+	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
 	if err != nil {
 		return
 	}
@@ -50,10 +51,11 @@ func (s *ServiceService) Get(ctx context.Context, authTime AuthTime) (service *S
 	return
 }
 
-func getServiceBaseURL(secure bool) string {
+func getServiceBaseURL(secure bool) *url.URL {
 	scheme := "http"
 	if secure {
 		scheme = "https"
 	}
-	return fmt.Sprintf("%s://%s", scheme, HostService)
+	u, _ := url.Parse(fmt.Sprintf("%s://%s", scheme, HostService))
+	return u
 }
