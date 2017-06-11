@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -118,31 +117,26 @@ func (c *Client) sendWithBody(ctx context.Context, uri, method, baseURL string,
 	if err != nil {
 		return
 	}
-
 	urlStr := baseURL + uri
-	var body io.Reader
-	var b []byte
-	if optHeader == nil {
-		b, err = xml.Marshal(rs)
-		if err != nil {
-			return
-		}
-		fmt.Println(string(b))
-		body = bytes.NewReader(b)
+
+	b, err := xml.Marshal(rs)
+	if err != nil {
+		return
 	}
+	body := bytes.NewReader(b)
 
 	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
 		return
 	}
 
-	if len(b) > 0 {
-		req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(calMD5Digest(b)))
-	}
 	err = addHeaderOptions(req, optHeader)
 	if err != nil {
 		return
 	}
+
+	req.Header.Set("Content-Length", len(b))
+	req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(calMD5Digest(b)))
 
 	resp, err = c.doAPI(ctx, req, ret, authTime)
 	if err != nil {
