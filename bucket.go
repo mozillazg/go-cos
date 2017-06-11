@@ -112,7 +112,7 @@ type BucketGetOptions struct {
 // https://www.qcloud.com/document/product/436/7734
 func (s *BucketService) Get(ctx context.Context,
 	authTime AuthTime, opt *BucketGetOptions) (listBucket *ListBucket,
-	resp *http.Response, err error) {
+	resp *Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res ListBucketResult
@@ -153,7 +153,7 @@ type BucketACLResult struct {
 //
 // https://www.qcloud.com/document/product/436/7733
 func (s *BucketService) GetACL(ctx context.Context,
-	authTime AuthTime) (acl *BucketACL, resp *http.Response, err error) {
+	authTime AuthTime) (acl *BucketACL, resp *Response, err error) {
 	u := "/?acl"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketACLResult
@@ -185,7 +185,7 @@ type BucketCORSResult struct {
 //
 // https://www.qcloud.com/document/product/436/8274
 func (s *BucketService) GetCORS(ctx context.Context,
-	authTime AuthTime) (cors *[]BucketCORSRule, resp *http.Response, err error) {
+	authTime AuthTime) (cors *[]BucketCORSRule, resp *Response, err error) {
 	u := "/?cors"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketCORSResult
@@ -212,7 +212,7 @@ type BucketLocationResult struct {
 //
 // https://www.qcloud.com/document/product/436/8275
 func (s *BucketService) GetLocation(ctx context.Context,
-	authTime AuthTime) (location *BucketLocation, resp *http.Response, err error) {
+	authTime AuthTime) (location *BucketLocation, resp *Response, err error) {
 	u := "/?location"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketLocationResult
@@ -264,7 +264,7 @@ type BucketLifecycleResult struct {
 //
 // https://www.qcloud.com/document/product/436/8278
 func (s *BucketService) GetLifecycle(ctx context.Context,
-	authTime AuthTime) (lc *[]BucketLifecycleRule, resp *http.Response, err error) {
+	authTime AuthTime) (lc *[]BucketLifecycleRule, resp *Response, err error) {
 	u := "/?lifecycle"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketLifecycleResult
@@ -292,7 +292,7 @@ type BucketTaggingResult struct {
 //
 // https://www.qcloud.com/document/product/436/8277
 func (s *BucketService) GetTagging(ctx context.Context,
-	authTime AuthTime) (tgs *[]BucketTaggingTag, resp *http.Response, err error) {
+	authTime AuthTime) (tgs *[]BucketTaggingTag, resp *Response, err error) {
 	u := "/?tagging"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res BucketTaggingResult
@@ -315,7 +315,7 @@ type BucketPutOptions struct {
 // Put Bucket请求可以在指定账号下创建一个Bucket。
 // https://www.qcloud.com/document/product/436/7738
 func (s *BucketService) Put(ctx context.Context,
-	authTime AuthTime, opt *BucketPutOptions) (resp *http.Response, err error) {
+	authTime AuthTime, opt *BucketPutOptions) (resp *Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, nil, opt, nil, nil)
@@ -341,7 +341,7 @@ type BucketPutACLOptions BucketPutOptions
 // https://www.qcloud.com/document/product/436/7737
 func (s *BucketService) PutACL(ctx context.Context,
 	authTime AuthTime,
-	opt *BucketPutACLOptions, acl *BucketACLResult) (resp *http.Response, err error) {
+	opt *BucketPutACLOptions, acl *BucketACLResult) (resp *Response, err error) {
 	u := "/?acl"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, acl, nil, opt, nil)
@@ -351,7 +351,7 @@ func (s *BucketService) PutACL(ctx context.Context,
 // PutCORS Put Bucket CORS实现跨域访问设置，您可以通过传入XML格式的配置文件实现配置，文件大小限制为64 KB。
 // https://www.qcloud.com/document/product/436/8279
 func (s *BucketService) PutCORS(ctx context.Context,
-	authTime AuthTime, cos *BucketCORSResult) (resp *http.Response, err error) {
+	authTime AuthTime, cos *BucketCORSResult) (resp *Response, err error) {
 	u := "/?cors"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, cos, nil, nil, nil)
@@ -367,7 +367,7 @@ func (s *BucketService) PutCORS(ctx context.Context,
 // https://www.qcloud.com/document/product/436/8280
 // TODO: fix doesn't work
 func (s *BucketService) PutLifecycle(ctx context.Context,
-	authTime AuthTime, lc *BucketLifecycleResult) (resp *http.Response, err error) {
+	authTime AuthTime, lc *BucketLifecycleResult) (resp *Response, err error) {
 	u := "/?lifecycle"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, lc, nil, nil, nil)
@@ -380,7 +380,7 @@ func (s *BucketService) PutLifecycle(ctx context.Context,
 //
 // https://www.qcloud.com/document/product/436/8281
 func (s *BucketService) PutTagging(ctx context.Context,
-	authTime AuthTime, tg *BucketTaggingResult) (resp *http.Response, err error) {
+	authTime AuthTime, tg *BucketTaggingResult) (resp *Response, err error) {
 	u := "/?tagging"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, tg, nil, nil, nil)
@@ -391,7 +391,7 @@ func (s *BucketService) PutTagging(ctx context.Context,
 //
 // https://www.qcloud.com/document/product/436/7732
 func (s *BucketService) Delete(ctx context.Context,
-	authTime AuthTime) (resp *http.Response, err error) {
+	authTime AuthTime) (resp *Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
@@ -402,7 +402,7 @@ func (s *BucketService) Delete(ctx context.Context,
 //
 // https://www.qcloud.com/document/product/436/8283
 func (s *BucketService) DeleteCORS(ctx context.Context,
-	authTime AuthTime) (resp *http.Response, err error) {
+	authTime AuthTime) (resp *Response, err error) {
 	u := "/?cors"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
@@ -415,7 +415,7 @@ func (s *BucketService) DeleteCORS(ctx context.Context,
 //
 // https://www.qcloud.com/document/product/436/8284
 func (s *BucketService) DeleteLifecycle(ctx context.Context,
-	authTime AuthTime) (resp *http.Response, err error) {
+	authTime AuthTime) (resp *Response, err error) {
 	u := "/?lifecycle"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
@@ -426,7 +426,7 @@ func (s *BucketService) DeleteLifecycle(ctx context.Context,
 //
 // https://www.qcloud.com/document/product/436/8286
 func (s *BucketService) DeleteTagging(ctx context.Context,
-	authTime AuthTime) (resp *http.Response, err error) {
+	authTime AuthTime) (resp *Response, err error) {
 	u := "/?tagging"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
@@ -441,7 +441,7 @@ func (s *BucketService) DeleteTagging(ctx context.Context,
 //
 // https://www.qcloud.com/document/product/436/7735
 func (s *BucketService) Head(ctx context.Context,
-	authTime AuthTime) (resp *http.Response, err error) {
+	authTime AuthTime) (resp *Response, err error) {
 	u := "/"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	resp, err = s.client.sendNoBody(ctx, baseURL, u, http.MethodHead, authTime, nil, nil, nil)
@@ -495,7 +495,7 @@ type ListMultipartUploadsOptions struct {
 // https://www.qcloud.com/document/product/436/7736
 func (s *BucketService) ListMultipartUploads(ctx context.Context,
 	authTime AuthTime,
-	opt *ListMultipartUploadsOptions) (uploads *MultipartUploads, resp *http.Response, err error) {
+	opt *ListMultipartUploadsOptions) (uploads *MultipartUploads, resp *Response, err error) {
 	u := "/?uploads"
 	baseURL := s.bucket.GetBaseURL(s.client.Secure)
 	var res ListMultipartUploadsResult

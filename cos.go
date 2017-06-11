@@ -15,6 +15,7 @@ import (
 	"bitbucket.org/mozillazg/go-httpheader"
 	"github.com/google/go-querystring/query"
 	"io"
+	"io/ioutil"
 )
 
 const (
@@ -99,12 +100,12 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 		return
 	}
 
-	req.Header, err = addHeaderOptions(req, optHeader)
+	req.Header, err = addHeaderOptions(req.Header, optHeader)
 	if err != nil {
 		return
 	}
 	if body != nil {
-		req.Header.Set("Content-Length", len(bXML))
+		req.Header.Set("Content-Length", string(len(bXML)))
 		req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(calMD5Digest(bXML)))
 	}
 	if c.UserAgent != "" {
@@ -114,10 +115,10 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 }
 
 func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
-	authTime AuthTime) (resp *http.Response, err error) {
+	authTime AuthTime) (*Response, error) {
 	req = req.WithContext(ctx)
 
-	if authTime != nil {
+	if &authTime != nil {
 		AddAuthorization(
 			c.secretID, c.secretKey, req,
 			authTime.signStartTime, authTime.signEndTime,
@@ -128,33 +129,53 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 	a, _ := httputil.DumpRequest(req, true)
 	fmt.Println(string(a))
 
-	resp, err = c.Client.Do(req)
+	resp, err := c.Client.Do(req)
 	if err != nil {
-		return
+		// If we got an error, and the context has been canceled,
+		// the context's error is probably more useful.
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+		return nil, err
 	}
+
+	defer func() {
+		// Drain up to 512 bytes and close the body to let the Transport reuse the connection
+		io.CopyN(ioutil.Discard, resp.Body, 512)
+		resp.Body.Close()
+	}()
+
+	response := newResponse(resp)
 
 	b, _ := httputil.DumpResponse(resp, true)
 	fmt.Println(string(b))
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		var e ErrorResponse
-		err = xml.NewDecoder(resp.Body).Decode(&e)
-		if err == nil {
-			e.Response = resp
-			err = &e
-		}
-		return
+	err = checkResponse(resp)
+	if err != nil {
+		// even though there was an error, we still return the response
+		// in case the caller wants to inspect it further
+		return response, err
 	}
 
 	if ret != nil {
-		err = xml.NewDecoder(resp.Body).Decode(&ret)
+		if w, ok := ret.(io.Writer); ok {
+			io.Copy(w, resp.Body)
+		} else {
+			err = xml.NewDecoder(resp.Body).Decode(ret)
+			if err == io.EOF {
+				err = nil // ignore EOF errors caused by empty response body
+			}
+		}
 	}
-	return
+
+	return nil, err
 }
 
 func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method string,
 	authTime AuthTime, body interface{},
-	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
+	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *Response, err error) {
 	req, err := c.newRequest(ctx, baseURL, uri, method, body, optQuery, optHeader)
 	if err != nil {
 		return
@@ -169,7 +190,7 @@ func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method
 
 func (c *Client) sendNoBody(ctx context.Context, baseURL *url.URL, uri, method string,
 	authTime AuthTime,
-	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *http.Response, err error) {
+	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *Response, err error) {
 	return c.sendWithBody(ctx, baseURL, uri, method, authTime, nil, optQuery, optHeader, ret)
 }
 
@@ -207,10 +228,10 @@ func addURLOptions(s string, opt interface{}) (string, error) {
 
 // addHeaderOptions adds the parameters in opt as Header fields to req. opt
 // must be a struct whose fields may contain "header" tags.
-func addHeaderOptions(req http.Request, opt interface{}) (http.Request, error) {
+func addHeaderOptions(header http.Header, opt interface{}) (http.Header, error) {
 	v := reflect.ValueOf(opt)
 	if v.Kind() == reflect.Ptr && v.IsNil() {
-		return req, nil
+		return header, nil
 	}
 
 	h, err := httpheader.Header(opt)
@@ -220,10 +241,10 @@ func addHeaderOptions(req http.Request, opt interface{}) (http.Request, error) {
 
 	for key, values := range h {
 		for _, value := range values {
-			req.Header.Add(key, value)
+			header.Add(key, value)
 		}
 	}
-	return req, nil
+	return header, nil
 }
 
 // Owner ...
@@ -261,5 +282,16 @@ func NewAuthTime(signStartTime, signEndTime,
 	return AuthTime{
 		signStartTime, signEndTime,
 		keyStartTime, keyEndTime,
+	}
+}
+
+// Response API 响应
+type Response struct {
+	*http.Response
+}
+
+func newResponse(resp *http.Response) *Response {
+	return &Response{
+		Response: resp,
 	}
 }

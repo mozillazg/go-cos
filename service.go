@@ -39,7 +39,7 @@ type ServiceResult struct {
 // 且只能获取签名中AccessID所属账户的Bucket列表。
 //
 // https://www.qcloud.com/document/product/436/8291
-func (s *ServiceService) Get(ctx context.Context, authTime AuthTime) (service *Service, resp *http.Response, err error) {
+func (s *ServiceService) Get(ctx context.Context, authTime AuthTime) (service *Service, resp *Response, err error) {
 	var res ServiceResult
 	u := "/"
 	baseURL := getServiceBaseURL(s.client.Secure)
