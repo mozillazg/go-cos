@@ -21,9 +21,11 @@ type ListMultipartUploadsResult struct {
 		Key          string
 		UploadID     string
 		StorageClass string
-		Initiator    Initiator
-		Owner        *Owner
-		Initiated    string
+		Initiator    *struct {
+			UID string
+		}
+		Owner     *Owner
+		Initiated string
 	} `xml:"Upload"`
 	Prefix        string
 	Delimiter     string   `xml:"delimiter,omitempty"`

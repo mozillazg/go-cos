@@ -292,11 +292,6 @@ type Owner struct {
 	UIN string `xml:"uin"`
 }
 
-// Initiator ...
-type Initiator struct {
-	UID string
-}
-
 // AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
 type AuthTime struct {
 	signStartTime time.Time
