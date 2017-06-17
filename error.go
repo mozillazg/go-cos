@@ -3,8 +3,8 @@ package cos
 import (
 	"encoding/xml"
 	"fmt"
-	"net/http"
 	"io/ioutil"
+	"net/http"
 )
 
 // ErrorResponse 包含 API 返回的错误信息
@@ -16,7 +16,7 @@ type ErrorResponse struct {
 	Message   string
 	Resource  string
 	RequestID string `xml:"RequestId"`
-	TraceID   string `xml:"TraceId"`
+	TraceID   string `xml:"TraceId,omitempty"`
 }
 
 // Error ...
@@ -26,7 +26,7 @@ func (r *ErrorResponse) Error() string {
 		r.Response.StatusCode, r.Code, r.Message, r.RequestID, r.TraceID)
 }
 
-// 检查 response 是否时出错时的返回的 response
+// 检查 response 是否是出错时的返回的 response
 func checkResponse(r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
 		return nil

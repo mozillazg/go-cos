@@ -1,6 +1,6 @@
 # go-cos
 
-腾讯云对象存储服务（Cloud Object Storage）非官方 Go SDK（API 版本：4.0 版本的 XML API）。
+腾讯云对象存储服务（Cloud Object Storage）Go SDK（API 版本：V4 版本的 XML API）。
 
 [![Build Status](https://circleci.com/bb/mozillazg/go-cos.svg?style=svg)](https://circleci.com/bb/mozillazg/go-cos)
 [![Go Report Card](https://goreportcard.com/badge/bitbucket.org/mozillazg/go-cos)](https://goreportcard.com/report/bitbucket.org/mozillazg/go-cos)
@@ -12,11 +12,15 @@
 
 ## usage
 
-See [examples](./examples/).
+所有的 API 在 [examples](./examples/) 目录下都有对应的使用示例。
 
 ## TODO
 
+Service API:
+
 * [x] Get Service
+
+Bucket API:
 
 * [x] Get Bucket
 * [x] Get Bucket ACL
@@ -27,7 +31,7 @@ See [examples](./examples/).
 * [x] Put Bucket
 * [x] Put Bucket ACL
 * [x] Put Bucket CORS
-* [ ] Put Bucket Lifecycle
+* [x] Put Bucket Lifecycle
 * [x] Put Bucket Tagging
 * [x] Delete Bucket
 * [x] Delete Bucket CORS
@@ -36,17 +40,19 @@ See [examples](./examples/).
 * [x] Head Bucket
 * [x] List Multipart Uploads
 
-* [ ] Append Object
-* [ ] Get Object
-* [ ] Get Object ACL
-* [ ] Put Object
-* [ ] Put Object ACL
-* [ ] Delete Object
-* [ ] Delete Multiple Object
-* [ ] Head Object
-* [ ] Options Object
-* [ ] Initiate Multipart Upload
-* [ ] Upload Part
-* [ ] List Parts
-* [ ] Complete Multipart Upload
-* [ ] Abort Multipart Upload
+Object API:
+
+* [x] Append Object
+* [x] Get Object
+* [x] Get Object ACL
+* [x] Put Object
+* [x] Put Object ACL
+* [x] Delete Object
+* [x] Delete Multiple Object
+* [x] Head Object
+* [x] Options Object
+* [x] Initiate Multipart Upload
+* [x] Upload Part
+* [x] List Parts
+* [x] Complete Multipart Upload
+* [x] Abort Multipart Upload

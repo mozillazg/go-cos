@@ -6,24 +6,49 @@ import (
 	"encoding/base64"
 	"encoding/xml"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
 
 	"bitbucket.org/mozillazg/go-httpheader"
 	"github.com/google/go-querystring/query"
-	"io"
-	"io/ioutil"
 )
 
 const (
 	// Version ...
-	Version        = "0.2.0"
-	userAgent      = "go-cos/" + Version
-	contentTypeXML = "application/xml"
+	Version               = "0.2.0"
+	userAgent             = "go-cos/" + Version
+	contentTypeXML        = "application/xml"
+	defaultServiceBaseURL = "https://service.cos.myqcloud.com"
+	bucketURLFormat       = "%s://%s-%s.%s.myqcloud.com"
 )
+
+// BaseURL 访问各 API 所需的基础 URL
+type BaseURL struct {
+	// 访问 bucket, object 相关 API 的基础 URL（不包含 path 部分）: http://example.com
+	BucketURL *url.URL
+	// 访问 service API 的基础 URL（不包含 path 部分）: http://example.com
+	ServiceURL *url.URL
+}
+
+// NewBucketURL 生成 BaseURL 所需的 BucketURL
+//
+//   bucketName: bucket 名称
+//   AppID: 应用 ID
+//   Region: 区域代码: cn-east, cn-south, cn-north
+//   secure: 是否使用 https
+func NewBucketURL(bucketName, AppID, Region string, secure bool) *url.URL {
+	scheme := "https"
+	if !secure {
+		scheme = "http"
+	}
+	urlStr := fmt.Sprintf(bucketURLFormat, scheme, bucketName, AppID, Region)
+	u, _ := url.Parse(urlStr)
+	return u
+}
 
 // A Client manages communication with the COS API.
 type Client struct {
@@ -31,49 +56,47 @@ type Client struct {
 	secretID  string
 	secretKey string
 
-	UserAgent   string
-	ContentType string
-	Secure      bool // 是否使用 https
+	UserAgent string
+	BaseURL   *BaseURL
 
 	common service
 
 	Service *ServiceService
 	Bucket  *BucketService
+	Object  *ObjectService
 }
 
 type service struct {
 	client *Client
-	bucket *Bucket
-}
-
-func (s *service) SetBucket(b *Bucket) {
-	s.bucket = b
 }
 
 // NewClient returns a new COS API client.
-func NewClient(secretID, secretKey string, b *Bucket, httpClient *http.Client) *Client {
+func NewClient(secretID, secretKey string, uri *BaseURL, httpClient *http.Client) *Client {
 	if httpClient == nil {
-		httpClient = http.DefaultClient
+		httpClient = &http.Client{}
+	}
+
+	baseURL := &BaseURL{}
+	if uri != nil {
+		baseURL.BucketURL = uri.BucketURL
+		baseURL.ServiceURL = uri.ServiceURL
+	}
+	if baseURL.ServiceURL == nil {
+		baseURL.ServiceURL, _ = url.Parse(defaultServiceBaseURL)
 	}
 
 	c := &Client{
-		Client:      httpClient,
-		secretID:    secretID,
-		secretKey:   secretKey,
-		UserAgent:   userAgent,
-		ContentType: contentTypeXML,
-		Secure:      true,
+		Client:    httpClient,
+		secretID:  secretID,
+		secretKey: secretKey,
+		UserAgent: userAgent,
+		BaseURL:   baseURL,
 	}
 	c.common.client = c
-	c.common.bucket = b
 	c.Service = (*ServiceService)(&c.common)
 	c.Bucket = (*BucketService)(&c.common)
+	c.Object = (*ObjectService)(&c.common)
 	return c
-}
-
-// SetTimeout 设置超时时间
-func (c *Client) SetTimeout(t time.Duration) {
-	c.Client.Timeout = t
 }
 
 func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method string,
@@ -86,13 +109,27 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 	urlStr := baseURL.ResolveReference(u).String()
 
 	var reader io.Reader
-	var bXML []byte
+	contentType := ""
+	contentMD5 := ""
+	contentLength := ""
+	xsha1 := ""
 	if body != nil {
-		bXML, err = xml.Marshal(body)
-		if err != nil {
-			return
+		// 上传文件
+		if r, ok := body.(io.Reader); ok {
+			reader = r
+		} else {
+			b, err := xml.Marshal(body)
+			if err != nil {
+				return nil, err
+			}
+			contentType = contentTypeXML
+			reader = bytes.NewReader(b)
+			contentMD5 = base64.StdEncoding.EncodeToString(calMD5Digest(b))
+			//xsha1 = base64.StdEncoding.EncodeToString(calSHA1Digest(b))
+			contentLength = fmt.Sprintf("%d", len(b))
 		}
-		reader = bytes.NewReader(bXML)
+	} else {
+		contentType = contentTypeXML
 	}
 
 	req, err = http.NewRequest(method, urlStr, reader)
@@ -104,30 +141,36 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 	if err != nil {
 		return
 	}
-	if body != nil {
-		req.Header.Set("Content-Length", string(len(bXML)))
-		req.Header.Set("Content-MD5", base64.StdEncoding.EncodeToString(calMD5Digest(bXML)))
+
+	if contentLength != "" {
+		req.Header.Set("Content-Length", contentLength)
+	}
+	if contentMD5 != "" {
+		req.Header["Content-MD5"] = []string{contentMD5}
+	}
+	if xsha1 != "" {
+		req.Header.Set("x-cos-sha1", xsha1)
 	}
 	if c.UserAgent != "" {
 		req.Header.Set("User-Agent", c.UserAgent)
+	}
+	if req.Header.Get("Content-Type") == "" && contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
 	return
 }
 
 func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
-	authTime AuthTime) (*Response, error) {
+	authTime *AuthTime) (*Response, error) {
 	req = req.WithContext(ctx)
 
-	if &authTime != nil {
+	if authTime != nil {
 		AddAuthorization(
 			c.secretID, c.secretKey, req,
 			authTime.signStartTime, authTime.signEndTime,
 			authTime.keyStartTime, authTime.keyEndTime,
 		)
 	}
-
-	a, _ := httputil.DumpRequest(req, true)
-	fmt.Println(string(a))
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
@@ -149,9 +192,6 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 
 	response := newResponse(resp)
 
-	b, _ := httputil.DumpResponse(resp, true)
-	fmt.Println(string(b))
-
 	err = checkResponse(resp)
 	if err != nil {
 		// even though there was an error, we still return the response
@@ -170,11 +210,11 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 		}
 	}
 
-	return nil, err
+	return response, err
 }
 
 func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method string,
-	authTime AuthTime, body interface{},
+	authTime *AuthTime, body interface{},
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *Response, err error) {
 	req, err := c.newRequest(ctx, baseURL, uri, method, body, optQuery, optHeader)
 	if err != nil {
@@ -189,7 +229,7 @@ func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method
 }
 
 func (c *Client) sendNoBody(ctx context.Context, baseURL *url.URL, uri, method string,
-	authTime AuthTime,
+	authTime *AuthTime,
 	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *Response, err error) {
 	return c.sendWithBody(ctx, baseURL, uri, method, authTime, nil, optQuery, optHeader, ret)
 }
@@ -257,17 +297,6 @@ type Initiator struct {
 	UID string
 }
 
-// Opt 定义请求参数
-//type Opt struct {
-//	query  interface{} // url 参数
-//	header interface{} // request header 参数
-//}
-
-//// NewOpt ...
-//func NewOpt(query, header interface{}) {
-//
-//}
-
 // AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
 type AuthTime struct {
 	signStartTime time.Time
@@ -277,9 +306,14 @@ type AuthTime struct {
 }
 
 // NewAuthTime ...
-func NewAuthTime(signStartTime, signEndTime,
-	keyStartTime, keyEndTime time.Time) AuthTime {
-	return AuthTime{
+//
+//   expire: 从现在开始多久过期.
+func NewAuthTime(expire time.Duration) *AuthTime {
+	signStartTime := time.Now()
+	keyStartTime := signStartTime
+	signEndTime := signStartTime.Add(expire)
+	keyEndTime := signEndTime
+	return &AuthTime{
 		signStartTime, signEndTime,
 		keyStartTime, keyEndTime,
 	}
@@ -294,4 +328,12 @@ func newResponse(resp *http.Response) *Response {
 	return &Response{
 		Response: resp,
 	}
+}
+
+// ACLHeaderOptions ...
+type ACLHeaderOptions struct {
+	XCosACL              string `header:"x-cos-acl,omitempty" url:"-" xml:"-"`
+	XCosGrantRead        string `header:"x-cos-grant-read,omitempty" url:"-" xml:"-"`
+	XCosGrantWrite       string `header:"x-cos-grant-write,omitempty" url:"-" xml:"-"`
+	XCosGrantFullControl string `header:"x-cos-grant-full-control,omitempty" url:"-" xml:"-"`
 }
