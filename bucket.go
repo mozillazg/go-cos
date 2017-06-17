@@ -50,10 +50,16 @@ type BucketGetOptions struct {
 func (s *BucketService) Get(ctx context.Context,
 	authTime *AuthTime, opt *BucketGetOptions) (*BucketGetResult,
 	*Response, error) {
-	u := "/"
-	baseURL := s.client.BaseURL.BucketURL
 	var res BucketGetResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, opt, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/",
+		method:   http.MethodGet,
+		authTime: authTime,
+		optQuery: opt,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -65,9 +71,14 @@ type BucketPutOptions ACLHeaderOptions
 // https://www.qcloud.com/document/product/436/7738
 func (s *BucketService) Put(ctx context.Context,
 	authTime *AuthTime, opt *BucketPutOptions) (*Response, error) {
-	u := "/"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, nil, opt, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/",
+		method:    http.MethodPut,
+		authTime:  authTime,
+		optHeader: opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -76,9 +87,13 @@ func (s *BucketService) Put(ctx context.Context,
 // https://www.qcloud.com/document/product/436/7732
 func (s *BucketService) Delete(ctx context.Context,
 	authTime *AuthTime) (*Response, error) {
-	u := "/"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/",
+		method:   http.MethodDelete,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -91,8 +106,12 @@ func (s *BucketService) Delete(ctx context.Context,
 // https://www.qcloud.com/document/product/436/7735
 func (s *BucketService) Head(ctx context.Context,
 	authTime *AuthTime) (*Response, error) {
-	u := "/"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodHead, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/",
+		method:   http.MethodHead,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }

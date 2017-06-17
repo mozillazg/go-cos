@@ -29,7 +29,7 @@ func main() {
 	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
 	c.Client.Transport = &cos.DebugRequestTransport{
 		RequestHeader:  true,
-		RequestBody:    false,
+		RequestBody:    true,
 		ResponseHeader: true,
 		ResponseBody:   true,
 	}

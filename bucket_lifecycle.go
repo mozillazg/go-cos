@@ -49,10 +49,15 @@ type BucketGetLifecycleResult struct {
 // https://www.qcloud.com/document/product/436/8278
 func (s *BucketService) GetLifecycle(ctx context.Context,
 	authTime *AuthTime) (*BucketGetLifecycleResult, *Response, error) {
-	u := "/?lifecycle"
-	baseURL := s.client.BaseURL.BucketURL
 	var res BucketGetLifecycleResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?lifecycle",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -73,9 +78,14 @@ type BucketPutLifecycleOptions struct {
 // https://www.qcloud.com/document/product/436/8280
 func (s *BucketService) PutLifecycle(ctx context.Context,
 	authTime *AuthTime, opt *BucketPutLifecycleOptions) (*Response, error) {
-	u := "/?lifecycle"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, opt, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?lifecycle",
+		method:   http.MethodPut,
+		authTime: authTime,
+		body:     opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -88,8 +98,12 @@ func (s *BucketService) PutLifecycle(ctx context.Context,
 // https://www.qcloud.com/document/product/436/8284
 func (s *BucketService) DeleteLifecycle(ctx context.Context,
 	authTime *AuthTime) (*Response, error) {
-	u := "/?lifecycle"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?lifecycle",
+		method:   http.MethodDelete,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }

@@ -19,9 +19,14 @@ type GetLocationResult struct {
 // https://www.qcloud.com/document/product/436/8275
 func (s *BucketService) GetLocation(ctx context.Context,
 	authTime *AuthTime) (*GetLocationResult, *Response, error) {
-	u := "/?location"
-	baseURL := s.client.BaseURL.BucketURL
 	var res GetLocationResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?location",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }

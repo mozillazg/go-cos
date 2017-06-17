@@ -160,7 +160,7 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 	return
 }
 
-func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
+func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{},
 	authTime *AuthTime, closeBody bool) (*Response, error) {
 	req = req.WithContext(ctx)
 
@@ -201,11 +201,11 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 		return response, err
 	}
 
-	if ret != nil {
-		if w, ok := ret.(io.Writer); ok {
+	if result != nil {
+		if w, ok := result.(io.Writer); ok {
 			io.Copy(w, resp.Body)
 		} else {
-			err = xml.NewDecoder(resp.Body).Decode(ret)
+			err = xml.NewDecoder(resp.Body).Decode(result)
 			if err == io.EOF {
 				err = nil // ignore EOF errors caused by empty response body
 			}
@@ -215,25 +215,37 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 	return response, err
 }
 
-func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method string,
-	authTime *AuthTime, body interface{},
-	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *Response, err error) {
-	req, err := c.newRequest(ctx, baseURL, uri, method, body, optQuery, optHeader)
+type sendOptions struct {
+	// 基础 URL
+	baseURL *url.URL
+	// URL 中除基础 URL 外的剩余部分
+	uri string
+	// 请求方法
+	method   string
+	authTime *AuthTime
+	body     interface{}
+	// url 查询参数
+	optQuery interface{}
+	// http header 参数
+	optHeader interface{}
+	// 用 result 反序列化 resp.Body
+	result interface{}
+	// 是否禁用自动调用 resp.Body.Close()
+	// 自动调用 Close() 是为了能够重用连接
+	disableCloseBody bool
+}
+
+func (c *Client) send(ctx context.Context, opt *sendOptions) (resp *Response, err error) {
+	req, err := c.newRequest(ctx, opt.baseURL, opt.uri, opt.method, opt.body, opt.optQuery, opt.optHeader)
 	if err != nil {
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, ret, authTime, true)
+	resp, err = c.doAPI(ctx, req, opt.result, opt.authTime, !opt.disableCloseBody)
 	if err != nil {
 		return
 	}
 	return
-}
-
-func (c *Client) sendNoBody(ctx context.Context, baseURL *url.URL, uri, method string,
-	authTime *AuthTime,
-	optQuery interface{}, optHeader interface{}, ret interface{}) (resp *Response, err error) {
-	return c.sendWithBody(ctx, baseURL, uri, method, authTime, nil, optQuery, optHeader, ret)
 }
 
 // addURLOptions adds the parameters in opt as URL query parameters to s. opt

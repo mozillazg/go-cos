@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/url"
 	"os"
 	"strings"
 	"time"
+
+	"io/ioutil"
 
 	"bitbucket.org/mozillazg/go-cos"
 )
@@ -41,10 +42,12 @@ func main() {
 	name := "test/anonymous_get.go"
 	upload(c, name)
 
-	w := bytes.NewBufferString("")
-	_, err := c.Object.Get(context.Background(), nil, name, w, nil)
+	resp, err := c.Object.Get(context.Background(), nil, name, nil)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
+	bs, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	fmt.Printf("%s\n", string(bs))
 }

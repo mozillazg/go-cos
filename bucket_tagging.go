@@ -25,10 +25,15 @@ type BucketGetTaggingResult struct {
 // https://www.qcloud.com/document/product/436/8277
 func (s *BucketService) GetTagging(ctx context.Context,
 	authTime *AuthTime) (*BucketGetTaggingResult, *Response, error) {
-	u := "/?tagging"
-	baseURL := s.client.BaseURL.BucketURL
 	var res BucketGetTaggingResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?tagging",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -47,9 +52,14 @@ type BucketPutTaggingOptions struct {
 // https://www.qcloud.com/document/product/436/8281
 func (s *BucketService) PutTagging(ctx context.Context,
 	authTime *AuthTime, opt *BucketPutTaggingOptions) (*Response, error) {
-	u := "/?tagging"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, opt, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?tagging",
+		method:   http.MethodPut,
+		authTime: authTime,
+		body:     opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -60,8 +70,12 @@ func (s *BucketService) PutTagging(ctx context.Context,
 // https://www.qcloud.com/document/product/436/8286
 func (s *BucketService) DeleteTagging(ctx context.Context,
 	authTime *AuthTime) (*Response, error) {
-	u := "/?tagging"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?tagging",
+		method:   http.MethodDelete,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }

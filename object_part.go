@@ -30,11 +30,16 @@ type ObjectInitiateMultipartUploadResult struct {
 func (s *ObjectService) InitiateMultipartUpload(ctx context.Context,
 	authTime *AuthTime, name string, opt *ObjectInitiateMultipartUploadOptions,
 ) (*ObjectInitiateMultipartUploadResult, *Response, error) {
-
-	u := "/" + encodeURIComponent(name) + "?uploads"
-	baseURL := s.client.BaseURL.BucketURL
 	var res ObjectInitiateMultipartUploadResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodPost, authTime, nil, opt, &res)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name) + "?uploads",
+		method:    http.MethodPost,
+		authTime:  authTime,
+		optHeader: opt,
+		result:    &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -55,10 +60,16 @@ type ObjectUploadPartOptions struct {
 func (s *ObjectService) UploadPart(ctx context.Context,
 	authTime *AuthTime, name, uploadID string, partNumber int,
 	r io.Reader, opt *ObjectUploadPartOptions) (*Response, error) {
-
 	u := fmt.Sprintf("/%s?partNumber=%d&uploadId=%s", encodeURIComponent(name), partNumber, uploadID)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, r, nil, opt, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       u,
+		method:    http.MethodPut,
+		authTime:  authTime,
+		optHeader: opt,
+		body:      r,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -99,11 +110,16 @@ type ObjectListPartsResult struct {
 // https://www.qcloud.com/document/product/436/7747
 func (s *ObjectService) ListParts(ctx context.Context,
 	authTime *AuthTime, name, uploadID string) (*ObjectListPartsResult, *Response, error) {
-
 	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
-	baseURL := s.client.BaseURL.BucketURL
 	var res ObjectListPartsResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      u,
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -149,11 +165,17 @@ type ObjectCompleteMultipartUploadResult struct {
 func (s *ObjectService) CompleteMultipartUpload(ctx context.Context,
 	authTime *AuthTime, name, uploadID string, opt *ObjectCompleteMultipartUploadOption,
 ) (*ObjectCompleteMultipartUploadResult, *Response, error) {
-
 	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
-	baseURL := s.client.BaseURL.BucketURL
 	var res ObjectCompleteMultipartUploadResult
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPost, authTime, opt, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      u,
+		method:   http.MethodPost,
+		authTime: authTime,
+		body:     opt,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -167,9 +189,13 @@ func (s *ObjectService) CompleteMultipartUpload(ctx context.Context,
 // https://www.qcloud.com/document/product/436/7740
 func (s *ObjectService) AbortMultipartUpload(ctx context.Context,
 	authTime *AuthTime, name, uploadID string) (*Response, error) {
-
 	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      u,
+		method:   http.MethodDelete,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }

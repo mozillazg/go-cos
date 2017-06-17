@@ -25,7 +25,8 @@ func main() {
 	}
 
 	opt := &cos.BucketGetOptions{
-		Prefix: "test",
+		Prefix:  "test",
+		MaxKeys: 3,
 	}
 	v, _, err := c.Bucket.Get(context.Background(), cos.NewAuthTime(time.Hour), opt)
 	if err != nil {

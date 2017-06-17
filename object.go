@@ -30,11 +30,17 @@ type ObjectGetOptions struct {
 //
 // https://www.qcloud.com/document/product/436/7753
 func (s *ObjectService) Get(ctx context.Context,
-	authTime *AuthTime, name string, w io.Writer, opt *ObjectGetOptions) (*Response, error) {
-
-	u := "/" + encodeURIComponent(name)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, opt, opt, w)
+	authTime *AuthTime, name string, opt *ObjectGetOptions) (*Response, error) {
+	sendOpt := sendOptions{
+		baseURL:          s.client.BaseURL.BucketURL,
+		uri:              "/" + encodeURIComponent(name),
+		method:           http.MethodGet,
+		authTime:         authTime,
+		optQuery:         opt,
+		optHeader:        opt,
+		disableCloseBody: true,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -65,10 +71,15 @@ type ObjectPutOptions struct {
 // https://www.qcloud.com/document/product/436/7749
 func (s *ObjectService) Put(ctx context.Context,
 	authTime *AuthTime, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
-
-	u := "/" + encodeURIComponent(name)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, r, nil, opt, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name),
+		method:    http.MethodPut,
+		authTime:  authTime,
+		body:      r,
+		optHeader: opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -77,10 +88,13 @@ func (s *ObjectService) Put(ctx context.Context,
 // https://www.qcloud.com/document/product/436/7743
 func (s *ObjectService) Delete(ctx context.Context,
 	authTime *AuthTime, name string) (*Response, error) {
-
-	u := "/" + encodeURIComponent(name)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/" + encodeURIComponent(name),
+		method:   http.MethodDelete,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -94,10 +108,14 @@ type ObjectHeadOptions struct {
 // https://www.qcloud.com/document/product/436/7745
 func (s *ObjectService) Head(ctx context.Context,
 	authTime *AuthTime, name string, opt *ObjectHeadOptions) (*Response, error) {
-
-	u := "/" + encodeURIComponent(name)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodHead, authTime, nil, opt, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name),
+		method:    http.MethodHead,
+		authTime:  authTime,
+		optHeader: opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -115,10 +133,14 @@ type ObjectOptionsOptions struct {
 // https://www.qcloud.com/document/product/436/8288
 func (s *ObjectService) Options(ctx context.Context,
 	authTime *AuthTime, name string, opt *ObjectOptionsOptions) (*Response, error) {
-
-	u := "/" + encodeURIComponent(name)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodOptions, authTime, nil, opt, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name),
+		method:    http.MethodOptions,
+		authTime:  authTime,
+		optHeader: opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -138,10 +160,16 @@ func (s *ObjectService) Options(ctx context.Context,
 func (s *ObjectService) Append(ctx context.Context,
 	authTime *AuthTime, name string, position int,
 	r io.Reader, opt *ObjectPutOptions) (*Response, error) {
-
 	u := fmt.Sprintf("/%s?append&position=%d", encodeURIComponent(name), position)
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPost, authTime, r, nil, opt, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       u,
+		method:    http.MethodPost,
+		authTime:  authTime,
+		optHeader: opt,
+		body:      r,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -183,9 +211,15 @@ type ObjectDeleteMultiResult struct {
 func (s *ObjectService) DeleteMulti(ctx context.Context,
 	authTime *AuthTime, opt *ObjectDeleteMultiOptions,
 ) (*ObjectDeleteMultiResult, *Response, error) {
-	u := "/?delete"
-	baseURL := s.client.BaseURL.BucketURL
 	var res ObjectDeleteMultiResult
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPost, authTime, opt, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?delete",
+		method:   http.MethodPost,
+		authTime: authTime,
+		body:     opt,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }

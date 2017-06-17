@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"net/url"
 	"os"
 	"time"
+
+	"io/ioutil"
 
 	"bitbucket.org/mozillazg/go-cos"
 )
@@ -23,22 +24,24 @@ func main() {
 	}
 
 	name := "test/hello.txt"
-	w := bytes.NewBufferString("")
-	_, err := c.Object.Get(context.Background(), cos.NewAuthTime(time.Hour), name, w, nil)
+	resp, err := c.Object.Get(context.Background(), cos.NewAuthTime(time.Hour), name, nil)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%#v\n", w.String())
+	bs, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	fmt.Printf("%s\n", string(bs))
 
 	// range
-	w = bytes.NewBufferString("")
 	opt := &cos.ObjectGetOptions{
 		ResponseContentType: "text/html",
 		Range:               "bytes=0-3",
 	}
-	_, err = c.Object.Get(context.Background(), cos.NewAuthTime(time.Hour), name, w, opt)
+	resp, err = c.Object.Get(context.Background(), cos.NewAuthTime(time.Hour), name, opt)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%#v\n", w.String())
+	bs, _ = ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	fmt.Printf("%s\n", string(bs))
 }

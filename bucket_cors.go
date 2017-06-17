@@ -29,10 +29,15 @@ type BucketGetCORSResult struct {
 // https://www.qcloud.com/document/product/436/8274
 func (s *BucketService) GetCORS(ctx context.Context,
 	authTime *AuthTime) (*BucketGetCORSResult, *Response, error) {
-	u := "/?cors"
-	baseURL := s.client.BaseURL.BucketURL
 	var res BucketGetCORSResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?cors",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -49,9 +54,14 @@ type BucketPutCORSOptions struct {
 // https://www.qcloud.com/document/product/436/8279
 func (s *BucketService) PutCORS(ctx context.Context,
 	authTime *AuthTime, opt *BucketPutCORSOptions) (*Response, error) {
-	u := "/?cors"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, opt, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?cors",
+		method:   http.MethodPut,
+		authTime: authTime,
+		body:     opt,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
 
@@ -62,8 +72,12 @@ func (s *BucketService) PutCORS(ctx context.Context,
 // https://www.qcloud.com/document/product/436/8283
 func (s *BucketService) DeleteCORS(ctx context.Context,
 	authTime *AuthTime) (*Response, error) {
-	u := "/?cors"
-	baseURL := s.client.BaseURL.BucketURL
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodDelete, authTime, nil, nil, nil)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?cors",
+		method:   http.MethodDelete,
+		authTime: authTime,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }

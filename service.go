@@ -31,9 +31,14 @@ type ServiceGetResult struct {
 //
 // https://www.qcloud.com/document/product/436/8291
 func (s *ServiceService) Get(ctx context.Context, authTime *AuthTime) (*ServiceGetResult, *Response, error) {
-	u := "/"
-	baseURL := s.client.BaseURL.ServiceURL
 	var res ServiceGetResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.ServiceURL,
+		uri:      "/",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }

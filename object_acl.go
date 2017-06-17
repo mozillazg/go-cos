@@ -18,11 +18,15 @@ type ObjectGetACLResult struct {
 // https://www.qcloud.com/document/product/436/7744
 func (s *ObjectService) GetACL(ctx context.Context,
 	authTime *AuthTime, name string) (*ObjectGetACLResult, *Response, error) {
-
-	u := "/" + encodeURIComponent(name) + "?acl"
-	baseURL := s.client.BaseURL.BucketURL
 	var res ObjectGetACLResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, nil, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/" + encodeURIComponent(name) + "?acl",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
 
@@ -51,14 +55,19 @@ type ObjectPutACLOptions struct {
 func (s *ObjectService) PutACL(ctx context.Context,
 	authTime *AuthTime, name string,
 	opt *ObjectPutACLOptions) (*Response, error) {
-
-	u := "/" + encodeURIComponent(name) + "?acl"
-	baseURL := s.client.BaseURL.BucketURL
 	header := opt.Header
 	body := opt.Body
 	if body != nil {
 		header = nil
 	}
-	resp, err := s.client.sendWithBody(ctx, baseURL, u, http.MethodPut, authTime, body, nil, header, nil)
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name) + "?acl",
+		method:    http.MethodPut,
+		authTime:  authTime,
+		optHeader: header,
+		body:      body,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }

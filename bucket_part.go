@@ -50,9 +50,14 @@ type ListMultipartUploadsOptions struct {
 func (s *BucketService) ListMultipartUploads(ctx context.Context,
 	authTime *AuthTime,
 	opt *ListMultipartUploadsOptions) (*ListMultipartUploadsResult, *Response, error) {
-	u := "/?uploads"
-	baseURL := s.client.BaseURL.BucketURL
 	var res ListMultipartUploadsResult
-	resp, err := s.client.sendNoBody(ctx, baseURL, u, http.MethodGet, authTime, opt, nil, &res)
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      "/?uploads",
+		method:   http.MethodGet,
+		authTime: authTime,
+		result:   &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
