@@ -7,6 +7,8 @@ import (
 )
 
 // ServiceService ...
+//
+// Service 相关 API
 type ServiceService service
 
 // ServiceGetResult ...

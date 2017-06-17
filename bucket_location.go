@@ -12,7 +12,9 @@ type GetLocationResult struct {
 	Location string   `xml:",chardata"`
 }
 
-// GetLocation Get Bucket Location接口获取Bucket所在地域信息，只有Bucket所有者有权限读取信息。
+// GetLocation ...
+//
+// Get Bucket Location接口获取Bucket所在地域信息，只有Bucket所有者有权限读取信息。
 //
 // https://www.qcloud.com/document/product/436/8275
 func (s *BucketService) GetLocation(ctx context.Context,

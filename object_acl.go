@@ -26,6 +26,7 @@ func (s *ObjectService) GetACL(ctx context.Context,
 	return &res, resp, err
 }
 
+// ObjectPutACLOptions ...
 type ObjectPutACLOptions struct {
 	Header *ACLHeaderOptions   `url:"-" xml:"-"`
 	Body   *BucketGetACLResult `url:"-" header:"-"`

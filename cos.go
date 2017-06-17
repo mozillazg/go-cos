@@ -161,14 +161,14 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 }
 
 func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
-	authTime *AuthTime) (*Response, error) {
+	authTime *AuthTime, closeBody bool) (*Response, error) {
 	req = req.WithContext(ctx)
 
 	if authTime != nil {
 		AddAuthorization(
 			c.secretID, c.secretKey, req,
-			authTime.signStartTime, authTime.signEndTime,
-			authTime.keyStartTime, authTime.keyEndTime,
+			authTime.SignStartTime, authTime.SignEndTime,
+			authTime.KeyStartTime, authTime.KeyEndTime,
 		)
 	}
 
@@ -185,9 +185,11 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, ret interface{},
 	}
 
 	defer func() {
-		// Drain up to 512 bytes and close the body to let the Transport reuse the connection
-		io.CopyN(ioutil.Discard, resp.Body, 512)
-		resp.Body.Close()
+		if closeBody {
+			// Drain up to 512 bytes and close the body to let the Transport reuse the connection
+			io.CopyN(ioutil.Discard, resp.Body, 512)
+			resp.Body.Close()
+		}
 	}()
 
 	response := newResponse(resp)
@@ -221,7 +223,7 @@ func (c *Client) sendWithBody(ctx context.Context, baseURL *url.URL, uri, method
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, ret, authTime)
+	resp, err = c.doAPI(ctx, req, ret, authTime, true)
 	if err != nil {
 		return
 	}
@@ -294,13 +296,13 @@ type Owner struct {
 
 // AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
 type AuthTime struct {
-	signStartTime time.Time
-	signEndTime   time.Time
-	keyStartTime  time.Time
-	keyEndTime    time.Time
+	SignStartTime time.Time
+	SignEndTime   time.Time
+	KeyStartTime  time.Time
+	KeyEndTime    time.Time
 }
 
-// NewAuthTime ...
+// NewAuthTime 生成 AuthTime 的便捷函数
 //
 //   expire: 从现在开始多久过期.
 func NewAuthTime(expire time.Duration) *AuthTime {
@@ -309,8 +311,10 @@ func NewAuthTime(expire time.Duration) *AuthTime {
 	signEndTime := signStartTime.Add(expire)
 	keyEndTime := signEndTime
 	return &AuthTime{
-		signStartTime, signEndTime,
-		keyStartTime, keyEndTime,
+		SignStartTime: signStartTime,
+		SignEndTime:   signEndTime,
+		KeyStartTime:  keyStartTime,
+		KeyEndTime:    keyEndTime,
 	}
 }
 

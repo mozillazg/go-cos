@@ -22,7 +22,9 @@ type BucketGetCORSResult struct {
 	Rules   []*BucketCORSRule `xml:"CORSRule,omitempty"`
 }
 
-// GetCORS Get Bucket CORS实现跨域访问配置读取。
+// GetCORS ...
+//
+// Get Bucket CORS实现跨域访问配置读取。
 //
 // https://www.qcloud.com/document/product/436/8274
 func (s *BucketService) GetCORS(ctx context.Context,
@@ -34,12 +36,15 @@ func (s *BucketService) GetCORS(ctx context.Context,
 	return &res, resp, err
 }
 
+// BucketPutCORSOptions ...
 type BucketPutCORSOptions struct {
 	XMLName xml.Name          `xml:"CORSConfiguration"`
 	Rules   []*BucketCORSRule `xml:"CORSRule,omitempty"`
 }
 
-// PutCORS Put Bucket CORS实现跨域访问设置，您可以通过传入XML格式的配置文件实现配置，文件大小限制为64 KB。
+// PutCORS ...
+//
+// Put Bucket CORS实现跨域访问设置，您可以通过传入XML格式的配置文件实现配置，文件大小限制为64 KB。
 //
 // https://www.qcloud.com/document/product/436/8279
 func (s *BucketService) PutCORS(ctx context.Context,
@@ -50,7 +55,9 @@ func (s *BucketService) PutCORS(ctx context.Context,
 	return resp, err
 }
 
-// DeleteCORS Delete Bucket CORS实现跨域访问配置删除。
+// DeleteCORS ...
+//
+// Delete Bucket CORS实现跨域访问配置删除。
 //
 // https://www.qcloud.com/document/product/436/8283
 func (s *BucketService) DeleteCORS(ctx context.Context,

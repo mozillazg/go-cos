@@ -18,7 +18,9 @@ type BucketGetTaggingResult struct {
 	TagSet  []*BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
 }
 
-// GetTagging Get Bucket Tagging接口实现获取指定Bucket的标签。
+// GetTagging ...
+//
+// Get Bucket Tagging接口实现获取指定Bucket的标签。
 //
 // https://www.qcloud.com/document/product/436/8277
 func (s *BucketService) GetTagging(ctx context.Context,
@@ -30,12 +32,15 @@ func (s *BucketService) GetTagging(ctx context.Context,
 	return &res, resp, err
 }
 
+// BucketPutTaggingOptions ...
 type BucketPutTaggingOptions struct {
 	XMLName xml.Name            `xml:"Tagging"`
 	TagSet  []*BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
 }
 
-// PutTagging Put Bucket Tagging接口实现给用指定Bucket打标签。用来组织和管理相关Bucket。
+// PutTagging ...
+//
+// Put Bucket Tagging接口实现给用指定Bucket打标签。用来组织和管理相关Bucket。
 //
 // 当该请求设置相同Key名称，不同Value时，会返回400。请求成功，则返回204。
 //
@@ -48,7 +53,9 @@ func (s *BucketService) PutTagging(ctx context.Context,
 	return resp, err
 }
 
-// DeleteTagging Delete Bucket Tagging接口实现删除指定Bucket的标签。
+// DeleteTagging ...
+//
+// Delete Bucket Tagging接口实现删除指定Bucket的标签。
 //
 // https://www.qcloud.com/document/product/436/8286
 func (s *BucketService) DeleteTagging(ctx context.Context,

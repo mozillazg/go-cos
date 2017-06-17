@@ -7,6 +7,8 @@ import (
 )
 
 // BucketService ...
+//
+// Bucket 相关 API
 type BucketService service
 
 // BucketGetResult ...
@@ -59,6 +61,7 @@ func (s *BucketService) Get(ctx context.Context,
 type BucketPutOptions ACLHeaderOptions
 
 // Put Bucket请求可以在指定账号下创建一个Bucket。
+//
 // https://www.qcloud.com/document/product/436/7738
 func (s *BucketService) Put(ctx context.Context,
 	authTime *AuthTime, opt *BucketPutOptions) (*Response, error) {

@@ -40,7 +40,9 @@ type BucketGetLifecycleResult struct {
 	Rules   []*BucketLifecycleRule `xml:"Rule,omitempty"`
 }
 
-// GetLifecycle Get Bucket Lifecycle请求实现读取生命周期管理的配置。当配置不存在时，返回404 Not Found。
+// GetLifecycle ...
+//
+// Get Bucket Lifecycle请求实现读取生命周期管理的配置。当配置不存在时，返回404 Not Found。
 //
 // （目前只支持华南园区）
 //
@@ -54,12 +56,15 @@ func (s *BucketService) GetLifecycle(ctx context.Context,
 	return &res, resp, err
 }
 
+// BucketPutLifecycleOptions ...
 type BucketPutLifecycleOptions struct {
 	XMLName xml.Name               `xml:"LifecycleConfiguration"`
 	Rules   []*BucketLifecycleRule `xml:"Rule,omitempty"`
 }
 
-// PutLifecycle Put Bucket Lifecycle请求实现设置生命周期管理的功能。您可以通过该请求实现数据的生命周期管理配置和定期删除。
+// PutLifecycle ...
+//
+// Put Bucket Lifecycle请求实现设置生命周期管理的功能。您可以通过该请求实现数据的生命周期管理配置和定期删除。
 //
 // 此请求为覆盖操作，上传新的配置文件将覆盖之前的配置文件。生命周期管理对文件和文件夹同时生效。
 //
@@ -74,7 +79,9 @@ func (s *BucketService) PutLifecycle(ctx context.Context,
 	return resp, err
 }
 
-// DeleteLifecycle Delete Bucket Lifecycle请求实现删除生命周期管理。
+// DeleteLifecycle ...
+//
+// Delete Bucket Lifecycle请求实现删除生命周期管理。
 //
 // （目前只支持华南园区）
 //

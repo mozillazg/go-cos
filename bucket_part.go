@@ -42,7 +42,9 @@ type ListMultipartUploadsOptions struct {
 	UploadIDMarker string `url:"upload-id-marker,omitempty"`
 }
 
-// ListMultipartUploads List Multipart Uploads用来查询正在进行中的分块上传。单次最多列出1000个正在进行中的分块上传。
+// ListMultipartUploads ...
+//
+// List Multipart Uploads用来查询正在进行中的分块上传。单次最多列出1000个正在进行中的分块上传。
 //
 // https://www.qcloud.com/document/product/436/7736
 func (s *BucketService) ListMultipartUploads(ctx context.Context,

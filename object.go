@@ -9,6 +9,8 @@ import (
 )
 
 // ObjectService ...
+//
+// Object 相关 API
 type ObjectService service
 
 // ObjectGetOptions ...
@@ -82,6 +84,7 @@ func (s *ObjectService) Delete(ctx context.Context,
 	return resp, err
 }
 
+// ObjectHeadOptions ...
 type ObjectHeadOptions struct {
 	IfModifiedSince string `url:"-" header:"If-Modified-Since,omitempty"`
 }
@@ -98,6 +101,7 @@ func (s *ObjectService) Head(ctx context.Context,
 	return resp, err
 }
 
+// ObjectOptionsOptions ...
 type ObjectOptionsOptions struct {
 	Origin                      string `url:"-" header:"Origin"`
 	AccessControlRequestMethod  string `url:"-" header:"Access-Control-Request-Method"`
@@ -118,7 +122,7 @@ func (s *ObjectService) Options(ctx context.Context,
 	return resp, err
 }
 
-// Append
+// Append ...
 //
 // Append请求可以将一个文件（Object）以分块追加的方式上传至 Bucket 中。使用Append Upload的文件必须事前被设定为Appendable。
 // 当Appendable的文件被执行Put Object的操作以后，文件被覆盖，属性改变为Normal。
@@ -141,10 +145,12 @@ func (s *ObjectService) Append(ctx context.Context,
 	return resp, err
 }
 
+// ObjectForDelete ...
 type ObjectForDelete struct {
 	Key string
 }
 
+// ObjectDeleteMultiOptions ...
 type ObjectDeleteMultiOptions struct {
 	XMLName xml.Name           `xml:"Delete" header:"-"`
 	Quiet   bool               `xml:"Quiet" header:"-"`
@@ -152,6 +158,7 @@ type ObjectDeleteMultiOptions struct {
 	//XCosSha1 string `xml:"-" header:"x-cos-sha1"`
 }
 
+// ObjectDeleteMultiResult ...
 type ObjectDeleteMultiResult struct {
 	XMLName        xml.Name `xml:"DeleteResult"`
 	DeletedObjects []*struct {
@@ -164,7 +171,7 @@ type ObjectDeleteMultiResult struct {
 	} `xml:"Error,omitempty"`
 }
 
-// DeleteMulti
+// DeleteMulti ...
 //
 // Delete Multiple Object请求实现批量删除文件，最大支持单次删除1000个文件。
 // 对于返回结果，COS提供Verbose和Quiet两种结果模式。Verbose模式将返回每个Object的删除结果；

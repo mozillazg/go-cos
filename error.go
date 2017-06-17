@@ -8,6 +8,7 @@ import (
 )
 
 // ErrorResponse 包含 API 返回的错误信息
+//
 // https://www.qcloud.com/document/product/436/7730
 type ErrorResponse struct {
 	XMLName   xml.Name       `xml:"Error"`
