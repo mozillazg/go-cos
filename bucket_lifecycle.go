@@ -36,8 +36,8 @@ type BucketLifecycleRule struct {
 
 // BucketGetLifecycleResult ...
 type BucketGetLifecycleResult struct {
-	XMLName xml.Name               `xml:"LifecycleConfiguration"`
-	Rules   []*BucketLifecycleRule `xml:"Rule,omitempty"`
+	XMLName xml.Name              `xml:"LifecycleConfiguration"`
+	Rules   []BucketLifecycleRule `xml:"Rule,omitempty"`
 }
 
 // GetLifecycle ...
@@ -63,8 +63,8 @@ func (s *BucketService) GetLifecycle(ctx context.Context,
 
 // BucketPutLifecycleOptions ...
 type BucketPutLifecycleOptions struct {
-	XMLName xml.Name               `xml:"LifecycleConfiguration"`
-	Rules   []*BucketLifecycleRule `xml:"Rule,omitempty"`
+	XMLName xml.Name              `xml:"LifecycleConfiguration"`
+	Rules   []BucketLifecycleRule `xml:"Rule,omitempty"`
 }
 
 // PutLifecycle ...

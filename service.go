@@ -15,9 +15,10 @@ type ServiceService service
 type ServiceGetResult struct {
 	XMLName xml.Name `xml:"ListAllMyBucketsResult"`
 	Owner   *struct {
-		UIN string `xml:"uin"`
+		ID          string
+		DisplayName string
 	} `xml:"Owner"`
-	Buckets []*struct {
+	Buckets []struct {
 		Name       string
 		Location   string
 		CreateDate string

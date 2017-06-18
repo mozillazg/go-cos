@@ -24,7 +24,7 @@ func main() {
 	}
 
 	//opt := &cos.BucketPutOptions{
-	//	XCosAcl: "public-read",
+	//	XCosACL: "public-read",
 	//}
 	_, err := c.Bucket.Put(context.Background(), cos.NewAuthTime(time.Hour), nil)
 	if err != nil {

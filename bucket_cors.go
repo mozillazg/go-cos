@@ -18,8 +18,8 @@ type BucketCORSRule struct {
 
 // BucketGetCORSResult ...
 type BucketGetCORSResult struct {
-	XMLName xml.Name          `xml:"CORSConfiguration"`
-	Rules   []*BucketCORSRule `xml:"CORSRule,omitempty"`
+	XMLName xml.Name         `xml:"CORSConfiguration"`
+	Rules   []BucketCORSRule `xml:"CORSRule,omitempty"`
 }
 
 // GetCORS ...
@@ -43,8 +43,8 @@ func (s *BucketService) GetCORS(ctx context.Context,
 
 // BucketPutCORSOptions ...
 type BucketPutCORSOptions struct {
-	XMLName xml.Name          `xml:"CORSConfiguration"`
-	Rules   []*BucketCORSRule `xml:"CORSRule,omitempty"`
+	XMLName xml.Name         `xml:"CORSConfiguration"`
+	Rules   []BucketCORSRule `xml:"CORSRule,omitempty"`
 }
 
 // PutCORS ...

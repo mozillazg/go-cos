@@ -25,7 +25,7 @@ func main() {
 	startTime := time.Now()
 
 	tg := &cos.BucketPutTaggingOptions{
-		TagSet: []*cos.BucketTaggingTag{
+		TagSet: []cos.BucketTaggingTag{
 			{
 				Key:   "test_k2",
 				Value: "test_v2",

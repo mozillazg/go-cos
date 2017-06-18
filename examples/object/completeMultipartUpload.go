@@ -63,7 +63,7 @@ func main() {
 	opt := &cos.ObjectCompleteMultipartUploadOption{}
 	for i := 1; i < 5; i++ {
 		etag := uploadPart(c, authTime, name, uploadID, blockSize, i)
-		opt.Parts = append(opt.Parts, &cos.ObjectPart{
+		opt.Parts = append(opt.Parts, cos.ObjectPart{
 			PartNumber: i, ETag: etag},
 		)
 	}

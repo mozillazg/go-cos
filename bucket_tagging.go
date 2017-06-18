@@ -14,8 +14,8 @@ type BucketTaggingTag struct {
 
 // BucketGetTaggingResult ...
 type BucketGetTaggingResult struct {
-	XMLName xml.Name            `xml:"Tagging"`
-	TagSet  []*BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
+	XMLName xml.Name           `xml:"Tagging"`
+	TagSet  []BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
 }
 
 // GetTagging ...
@@ -39,8 +39,8 @@ func (s *BucketService) GetTagging(ctx context.Context,
 
 // BucketPutTaggingOptions ...
 type BucketPutTaggingOptions struct {
-	XMLName xml.Name            `xml:"Tagging"`
-	TagSet  []*BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
+	XMLName xml.Name           `xml:"Tagging"`
+	TagSet  []BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
 }
 
 // PutTagging ...

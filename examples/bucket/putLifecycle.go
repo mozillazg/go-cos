@@ -24,7 +24,7 @@ func main() {
 	}
 
 	lc := &cos.BucketPutLifecycleOptions{
-		Rules: []*cos.BucketLifecycleRule{
+		Rules: []cos.BucketLifecycleRule{
 			{
 				ID:     "1234",
 				Prefix: "test",
@@ -32,6 +32,14 @@ func main() {
 				Transition: &cos.BucketLifecycleTransition{
 					Days:         10,
 					StorageClass: "Standard",
+				},
+			},
+			{
+				ID:     "123422",
+				Prefix: "gg",
+				Status: "Disabled",
+				Expiration: &cos.BucketLifecycleExpiration{
+					Days: 10,
 				},
 			},
 		},

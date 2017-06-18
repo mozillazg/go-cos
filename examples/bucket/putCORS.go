@@ -23,23 +23,20 @@ func main() {
 		ResponseBody:   true,
 	}
 
-	//	`<CORSConfiguration>
-	//	<CORSRule>
-	//		<AllowedOrigin>www.qq.com</AllowedOrigin>
-	//		<AllowedMethod>PUT</AllowedMethod>
-	//		<MaxAgeSeconds>100</MaxAgeSeconds>
-	//	</CORSRule>
-	//</CORSConfiguration>
-	//`
 	opt := &cos.BucketPutCORSOptions{
-		Rules: []*cos.BucketCORSRule{
+		Rules: []cos.BucketCORSRule{
 			{
-				//ID:            "1234",
 				AllowedOrigins: []string{"http://www.qq.com"},
 				AllowedMethods: []string{"PUT", "GET"},
 				AllowedHeaders: []string{"x-cos-meta-test", "x-cos-xx"},
 				MaxAgeSeconds:  500,
 				ExposeHeaders:  []string{"x-cos-meta-test1"},
+			},
+			{
+				ID:             "1234",
+				AllowedOrigins: []string{"http://www.baidu.com", "twitter.com"},
+				AllowedMethods: []string{"PUT", "GET"},
+				MaxAgeSeconds:  500,
 			},
 		},
 	}

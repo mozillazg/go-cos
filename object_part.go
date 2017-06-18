@@ -82,25 +82,19 @@ type ObjectListPartsOptions struct {
 
 // ObjectListPartsResult ...
 type ObjectListPartsResult struct {
-	XMLName      xml.Name `xml:"ListPartsResult"`
-	Bucket       string
-	EncodingType string `xml:"Encoding-type,omitempty"`
-	Key          string
-	UploadID     string `xml:"UploadId"`
-	Initiator    *struct {
-		ID      string
-		Display string
-	} `xml:"Initiator,omitempty"`
-	Owner *struct {
-		ID      string
-		Display string
-	} `xml:"Owner,omitempty"`
+	XMLName              xml.Name `xml:"ListPartsResult"`
+	Bucket               string
+	EncodingType         string `xml:"Encoding-type,omitempty"`
+	Key                  string
+	UploadID             string     `xml:"UploadId"`
+	Initiator            *Initiator `xml:"Initiator,omitempty"`
+	Owner                *Owner     `xml:"Owner,omitempty"`
 	StorageClass         string
 	PartNumberMarker     int
 	NextPartNumberMarker int `xml:"NextPartNumberMarker,omitempty"`
 	MaxParts             int
 	IsTruncated          bool
-	Parts                []*ObjectPart `xml:"Part,omitempty"`
+	Parts                []ObjectPart `xml:"Part,omitempty"`
 }
 
 // ListParts ...
@@ -126,15 +120,15 @@ func (s *ObjectService) ListParts(ctx context.Context,
 // ObjectPart ...
 type ObjectPart struct {
 	PartNumber   int
-	LastModified *string `xml:",omitempty"`
+	LastModified string `xml:",omitempty"`
 	ETag         string
-	Size         *int `xml:",omitempty"`
+	Size         int `xml:",omitempty"`
 }
 
 // ObjectCompleteMultipartUploadOption ...
 type ObjectCompleteMultipartUploadOption struct {
-	XMLName xml.Name      `xml:"CompleteMultipartUpload"`
-	Parts   []*ObjectPart `xml:"Part"`
+	XMLName xml.Name     `xml:"CompleteMultipartUpload"`
+	Parts   []ObjectPart `xml:"Part"`
 }
 
 // ObjectCompleteMultipartUploadResult ...

@@ -21,7 +21,7 @@ type BucketGetResult struct {
 	Delimiter   string `xml:"Delimiter,omitempty"`
 	MaxKeys     int
 	IsTruncated bool
-	Contents    []*struct {
+	Contents    []struct {
 		Key          string
 		LastModified string
 		ETag         string

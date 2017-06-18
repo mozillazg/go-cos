@@ -303,8 +303,13 @@ func addHeaderOptions(header http.Header, opt interface{}) (http.Header, error) 
 
 // Owner ...
 type Owner struct {
-	UIN string `xml:"uin"`
+	UIN         string `xml:"uin"`
+	ID          string `xml:",omitmepty"`
+	DisplayName string `xml:",omitmepty"`
 }
+
+// Initiator ...
+type Initiator Owner
 
 // AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
 type AuthTime struct {

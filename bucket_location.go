@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-// GetLocationResult ...
-type GetLocationResult struct {
+// BucketGetLocationResult ...
+type BucketGetLocationResult struct {
 	XMLName  xml.Name `xml:"LocationConstraint"`
 	Location string   `xml:",chardata"`
 }
@@ -18,8 +18,8 @@ type GetLocationResult struct {
 //
 // https://www.qcloud.com/document/product/436/8275
 func (s *BucketService) GetLocation(ctx context.Context,
-	authTime *AuthTime) (*GetLocationResult, *Response, error) {
-	var res GetLocationResult
+	authTime *AuthTime) (*BucketGetLocationResult, *Response, error) {
+	var res BucketGetLocationResult
 	sendOpt := sendOptions{
 		baseURL:  s.client.BaseURL.BucketURL,
 		uri:      "/?location",

@@ -17,26 +17,24 @@ type ListMultipartUploadsResult struct {
 	NextUploadIDMarker string `xml:"NextUploadIdMarker"`
 	MaxUploads         int
 	IsTruncated        bool
-	Uploads            []*struct {
+	Uploads            []struct {
 		Key          string
-		UploadID     string
+		UploadID     string `xml:"UploadId"`
 		StorageClass string
-		Initiator    *struct {
-			UID string
-		}
-		Owner     *Owner
-		Initiated string
-	} `xml:"Upload"`
-	Prefix        string
-	Delimiter     string   `xml:"delimiter,omitempty"`
-	CommonPrefixs []string `xml:"CommonPrefixs>Prefix,omitempty"`
+		Initiator    *Initiator
+		Owner        *Owner
+		Initiated    string
+	} `xml:"Upload,omitempty"`
+	Prefix         string
+	Delimiter      string   `xml:"delimiter,omitempty"`
+	CommonPrefixes []string `xml:"CommonPrefixs>Prefix,omitempty"`
 }
 
 // ListMultipartUploadsOptions ...
 type ListMultipartUploadsOptions struct {
 	Delimiter      string `url:"delimiter,omitempty"`
 	EncodingType   string `url:"encoding-type,omitempty"`
-	Prefix         string `url:",omitempty"`
+	Prefix         string `url:"prefix,omitempty"`
 	MaxUploads     int    `url:"max-uploads,omitempty"`
 	KeyMarker      string `url:"key-marker,omitempty"`
 	UploadIDMarker string `url:"upload-id-marker,omitempty"`
@@ -57,6 +55,7 @@ func (s *BucketService) ListMultipartUploads(ctx context.Context,
 		method:   http.MethodGet,
 		authTime: authTime,
 		result:   &res,
+		optQuery: opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
