@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_Get(t *testing.T) {
@@ -58,7 +57,7 @@ func TestBucketService_Get(t *testing.T) {
 </ListBucketResult>`)
 	})
 
-	ref, _, err := client.Bucket.Get(context.Background(), NewAuthTime(time.Minute), opt)
+	ref, _, err := client.Bucket.Get(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.Get returned error: %v", err)
 	}
@@ -70,24 +69,13 @@ func TestBucketService_Get(t *testing.T) {
 		MaxKeys:     2,
 		IsTruncated: true,
 		NextMarker:  "test/delete.txt",
-		Contents: []struct {
-			Key          string
-			LastModified string
-			ETag         string
-			Size         int
-			Owner        *struct {
-				ID string
-			}
-			StorageClass string
-		}{
+		Contents: []Object{
 			{
 				Key:          "test/",
 				LastModified: "2017-06-09T16:32:25.000Z",
 				ETag:         "\"\"",
 				Size:         0,
-				Owner: &struct {
-					ID string
-				}{
+				Owner: &Owner{
 					ID: "1253846586",
 				},
 				StorageClass: "STANDARD",
@@ -97,9 +85,7 @@ func TestBucketService_Get(t *testing.T) {
 				LastModified: "2017-06-17T15:09:26.000Z",
 				ETag:         "\"5b7236085f08b3818bfa40b03c946dcc\"",
 				Size:         8,
-				Owner: &struct {
-					ID string
-				}{
+				Owner: &Owner{
 					ID: "1253846586",
 				},
 				StorageClass: "STANDARD",
@@ -128,7 +114,7 @@ func TestBucketService_Put(t *testing.T) {
 		testHeader(t, r, "x-cos-acl", "public-read")
 	})
 
-	_, err := client.Bucket.Put(context.Background(), NewAuthTime(time.Minute), opt)
+	_, err := client.Bucket.Put(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.Put returned error: %v", err)
 	}
@@ -144,7 +130,7 @@ func TestBucketService_Delete(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	_, err := client.Bucket.Delete(context.Background(), NewAuthTime(time.Minute))
+	_, err := client.Bucket.Delete(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.Delete returned error: %v", err)
 	}
@@ -159,7 +145,7 @@ func TestBucketService_Head(t *testing.T) {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	_, err := client.Bucket.Head(context.Background(), NewAuthTime(time.Minute))
+	_, err := client.Bucket.Head(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.Head returned error: %v", err)
 	}

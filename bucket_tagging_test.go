@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_GetTagging(t *testing.T) {
@@ -34,7 +33,7 @@ func TestBucketService_GetTagging(t *testing.T) {
 </Tagging>`)
 	})
 
-	ref, _, err := client.Bucket.GetTagging(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Bucket.GetTagging(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.GetTagging returned error: %v", err)
 	}
@@ -87,7 +86,7 @@ func TestBucketService_PutTagging(t *testing.T) {
 
 	})
 
-	_, err := client.Bucket.PutTagging(context.Background(), NewAuthTime(time.Minute), opt)
+	_, err := client.Bucket.PutTagging(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.PutTagging returned error: %v", err)
 	}
@@ -108,7 +107,7 @@ func TestBucketService_DeleteTagging(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	_, err := client.Bucket.DeleteTagging(context.Background(), NewAuthTime(time.Minute))
+	_, err := client.Bucket.DeleteTagging(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.DeleteTagging returned error: %v", err)
 	}

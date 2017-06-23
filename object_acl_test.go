@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestObjectService_GetACL(t *testing.T) {
@@ -42,7 +41,7 @@ func TestObjectService_GetACL(t *testing.T) {
 </AccessControlPolicy>`)
 	})
 
-	ref, _, err := client.Object.GetACL(context.Background(), NewAuthTime(time.Minute), name)
+	ref, _, err := client.Object.GetACL(context.Background(), name)
 	if err != nil {
 		t.Fatalf("Object.GetACL returned error: %v", err)
 	}
@@ -102,7 +101,7 @@ func TestObjectService_PutACL_with_header_opt(t *testing.T) {
 		}
 	})
 
-	_, err := client.Object.PutACL(context.Background(), NewAuthTime(time.Minute), name, opt)
+	_, err := client.Object.PutACL(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.PutACL returned error: %v", err)
 	}
@@ -158,7 +157,7 @@ func TestObjectService_PutACL_with_body_opt(t *testing.T) {
 
 	})
 
-	_, err := client.Object.PutACL(context.Background(), NewAuthTime(time.Minute), name, opt)
+	_, err := client.Object.PutACL(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.PutACL returned error: %v", err)
 	}

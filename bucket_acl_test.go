@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_GetACL(t *testing.T) {
@@ -41,7 +40,7 @@ func TestBucketService_GetACL(t *testing.T) {
 </AccessControlPolicy>`)
 	})
 
-	ref, _, err := client.Bucket.GetACL(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Bucket.GetACL(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.GetACL returned error: %v", err)
 	}
@@ -101,7 +100,7 @@ func TestBucketService_PutACL_with_header_opt(t *testing.T) {
 		}
 	})
 
-	_, err := client.Bucket.PutACL(context.Background(), NewAuthTime(time.Minute), opt)
+	_, err := client.Bucket.PutACL(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.PutACL returned error: %v", err)
 	}
@@ -156,7 +155,7 @@ func TestBucketService_PutACL_with_body_opt(t *testing.T) {
 
 	})
 
-	_, err := client.Bucket.PutACL(context.Background(), NewAuthTime(time.Minute), opt)
+	_, err := client.Bucket.PutACL(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.PutACL returned error: %v", err)
 	}

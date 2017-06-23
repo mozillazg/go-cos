@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_GetCORS(t *testing.T) {
@@ -42,7 +41,7 @@ func TestBucketService_GetCORS(t *testing.T) {
 </CORSConfiguration>`)
 	})
 
-	ref, _, err := client.Bucket.GetCORS(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Bucket.GetCORS(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.GetCORS returned error: %v", err)
 	}
@@ -111,7 +110,7 @@ func TestBucketService_PutCORS(t *testing.T) {
 
 	})
 
-	_, err := client.Bucket.PutCORS(context.Background(), NewAuthTime(time.Minute), opt)
+	_, err := client.Bucket.PutCORS(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.PutCORS returned error: %v", err)
 	}
@@ -131,7 +130,7 @@ func TestBucketService_DeleteCORS(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	_, err := client.Bucket.DeleteCORS(context.Background(), NewAuthTime(time.Minute))
+	_, err := client.Bucket.DeleteCORS(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.DeleteCORS returned error: %v", err)
 	}

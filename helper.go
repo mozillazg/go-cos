@@ -35,8 +35,8 @@ type DebugRequestTransport struct {
 	ResponseHeader bool
 	ResponseBody   bool // ResponseHeader 为 true 时,这个选项才会生效
 
-	// debug 信息输出到 w 中, 默认是 os.Stderr
-	w io.Writer
+	// debug 信息输出到 Writer 中, 默认是 os.Stderr
+	Writer io.Writer
 
 	Transport http.RoundTripper
 }
@@ -44,7 +44,7 @@ type DebugRequestTransport struct {
 // RoundTrip implements the RoundTripper interface.
 func (t *DebugRequestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req = cloneRequest(req) // per RoundTrip contract
-	w := t.w
+	w := t.Writer
 	if w == nil {
 		w = os.Stderr
 	}

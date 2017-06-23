@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestDebugRequestTransport(t *testing.T) {
@@ -22,26 +21,24 @@ func TestDebugRequestTransport(t *testing.T) {
 
 	w := bytes.NewBufferString("")
 
-	client.Client.Transport = &DebugRequestTransport{
+	client.client.Transport = &DebugRequestTransport{
 		RequestHeader:  true,
 		RequestBody:    true,
 		ResponseHeader: true,
 		ResponseBody:   true,
-		w:              w,
+		Writer:         w,
 	}
 
 	body := bytes.NewReader([]byte("test_request body"))
 	req, _ := http.NewRequest("GET", client.BaseURL.BucketURL.String(), body)
 	req.Header.Add("X-Test-Debug", "123")
-	authTime := NewAuthTime(time.Minute)
-	client.doAPI(context.Background(), req, nil, authTime, true)
+	client.doAPI(context.Background(), req, nil, true)
 
 	b := make([]byte, 800)
 	w.Read(b)
 	info := string(b)
 	if !strings.Contains(info, "GET / HTTP/1.1\r\n") ||
-		!strings.Contains(info, "X-Test-Debug: 123\r\n") ||
-		!strings.Contains(info, "Authorization: ") {
+		!strings.Contains(info, "X-Test-Debug: 123\r\n") {
 		t.Errorf("DebugRequestTransport debug info %#v don't contains request header", info)
 	}
 	if !strings.Contains(info, "\r\n\r\ntest_request body") {

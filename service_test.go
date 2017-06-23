@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestServiceService_Get(t *testing.T) {
@@ -36,7 +35,7 @@ func TestServiceService_Get(t *testing.T) {
 </ListAllMyBucketsResult>`)
 	})
 
-	ref, _, err := client.Service.Get(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Service.Get(context.Background())
 	if err != nil {
 		t.Fatalf("Service.Get returned error: %v", err)
 	}

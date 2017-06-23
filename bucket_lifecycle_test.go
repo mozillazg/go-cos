@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_GetLifecycle(t *testing.T) {
@@ -41,7 +40,7 @@ func TestBucketService_GetLifecycle(t *testing.T) {
 </LifecycleConfiguration>`)
 	})
 
-	ref, _, err := client.Bucket.GetLifecycle(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Bucket.GetLifecycle(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.GetLifecycle returned error: %v", err)
 	}
@@ -108,7 +107,7 @@ func TestBucketService_PutLifecycle(t *testing.T) {
 
 	})
 
-	_, err := client.Bucket.PutLifecycle(context.Background(), NewAuthTime(time.Minute), opt)
+	_, err := client.Bucket.PutLifecycle(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.PutLifecycle returned error: %v", err)
 	}
@@ -129,7 +128,7 @@ func TestBucketService_DeleteLifecycle(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	_, err := client.Bucket.DeleteLifecycle(context.Background(), NewAuthTime(time.Minute))
+	_, err := client.Bucket.DeleteLifecycle(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.DeleteLifecycle returned error: %v", err)
 	}

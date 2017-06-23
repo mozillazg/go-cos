@@ -27,15 +27,13 @@ type BucketGetCORSResult struct {
 // Get Bucket CORS实现跨域访问配置读取。
 //
 // https://www.qcloud.com/document/product/436/8274
-func (s *BucketService) GetCORS(ctx context.Context,
-	authTime *AuthTime) (*BucketGetCORSResult, *Response, error) {
+func (s *BucketService) GetCORS(ctx context.Context) (*BucketGetCORSResult, *Response, error) {
 	var res BucketGetCORSResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?cors",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?cors",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -52,14 +50,12 @@ type BucketPutCORSOptions struct {
 // Put Bucket CORS实现跨域访问设置，您可以通过传入XML格式的配置文件实现配置，文件大小限制为64 KB。
 //
 // https://www.qcloud.com/document/product/436/8279
-func (s *BucketService) PutCORS(ctx context.Context,
-	authTime *AuthTime, opt *BucketPutCORSOptions) (*Response, error) {
+func (s *BucketService) PutCORS(ctx context.Context, opt *BucketPutCORSOptions) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?cors",
-		method:   http.MethodPut,
-		authTime: authTime,
-		body:     opt,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?cors",
+		method:  http.MethodPut,
+		body:    opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -70,13 +66,11 @@ func (s *BucketService) PutCORS(ctx context.Context,
 // Delete Bucket CORS实现跨域访问配置删除。
 //
 // https://www.qcloud.com/document/product/436/8283
-func (s *BucketService) DeleteCORS(ctx context.Context,
-	authTime *AuthTime) (*Response, error) {
+func (s *BucketService) DeleteCORS(ctx context.Context) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?cors",
-		method:   http.MethodDelete,
-		authTime: authTime,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?cors",
+		method:  http.MethodDelete,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

@@ -31,14 +31,13 @@ type ServiceGetResult struct {
 // 且只能获取签名中AccessID所属账户的Bucket列表。
 //
 // https://www.qcloud.com/document/product/436/8291
-func (s *ServiceService) Get(ctx context.Context, authTime *AuthTime) (*ServiceGetResult, *Response, error) {
+func (s *ServiceService) Get(ctx context.Context) (*ServiceGetResult, *Response, error) {
 	var res ServiceGetResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.ServiceURL,
-		uri:      "/",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.ServiceURL,
+		uri:     "/",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err

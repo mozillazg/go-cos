@@ -5,7 +5,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
+
+	"net/http"
 
 	"bitbucket.org/mozillazg/go-cos"
 )
@@ -13,18 +14,23 @@ import (
 func main() {
 	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    true,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
+	c := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    true,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 
 	name := "test/objectPut.go"
 	f := strings.NewReader("test")
 
-	_, err := c.Object.Put(context.Background(), cos.NewAuthTime(time.Hour), name, f, nil)
+	_, err := c.Object.Put(context.Background(), name, f, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +46,7 @@ func main() {
 			XCosACL: "private",
 		},
 	}
-	_, err = c.Object.Put(context.Background(), cos.NewAuthTime(time.Hour), name, f, opt)
+	_, err = c.Object.Put(context.Background(), name, f, opt)
 	if err != nil {
 		panic(err)
 	}

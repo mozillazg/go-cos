@@ -21,7 +21,7 @@ type BucketLifecycleTransition struct {
 
 // BucketLifecycleAbortIncompleteMultipartUpload ...
 type BucketLifecycleAbortIncompleteMultipartUpload struct {
-	DaysAfterInititation string `xml:"DaysAfterInititation,omitempty"`
+	DaysAfterInitiation string `xml:"DaysAfterInititation,omitempty"`
 }
 
 // BucketLifecycleRule ...
@@ -47,15 +47,13 @@ type BucketGetLifecycleResult struct {
 // （目前只支持华南园区）
 //
 // https://www.qcloud.com/document/product/436/8278
-func (s *BucketService) GetLifecycle(ctx context.Context,
-	authTime *AuthTime) (*BucketGetLifecycleResult, *Response, error) {
+func (s *BucketService) GetLifecycle(ctx context.Context) (*BucketGetLifecycleResult, *Response, error) {
 	var res BucketGetLifecycleResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?lifecycle",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?lifecycle",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -76,14 +74,12 @@ type BucketPutLifecycleOptions struct {
 // （目前只支持华南园区）
 //
 // https://www.qcloud.com/document/product/436/8280
-func (s *BucketService) PutLifecycle(ctx context.Context,
-	authTime *AuthTime, opt *BucketPutLifecycleOptions) (*Response, error) {
+func (s *BucketService) PutLifecycle(ctx context.Context, opt *BucketPutLifecycleOptions) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?lifecycle",
-		method:   http.MethodPut,
-		authTime: authTime,
-		body:     opt,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?lifecycle",
+		method:  http.MethodPut,
+		body:    opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -96,13 +92,11 @@ func (s *BucketService) PutLifecycle(ctx context.Context,
 // （目前只支持华南园区）
 //
 // https://www.qcloud.com/document/product/436/8284
-func (s *BucketService) DeleteLifecycle(ctx context.Context,
-	authTime *AuthTime) (*Response, error) {
+func (s *BucketService) DeleteLifecycle(ctx context.Context) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?lifecycle",
-		method:   http.MethodDelete,
-		authTime: authTime,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?lifecycle",
+		method:  http.MethodDelete,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestObjectService_AbortMultipartUpload(t *testing.T) {
@@ -29,7 +28,7 @@ func TestObjectService_AbortMultipartUpload(t *testing.T) {
 	})
 
 	_, err := client.Object.AbortMultipartUpload(context.Background(),
-		NewAuthTime(time.Minute), name, uploadId)
+		name, uploadId)
 	if err != nil {
 		t.Fatalf("Object.AbortMultipartUpload returned error: %v", err)
 	}
@@ -39,7 +38,7 @@ func TestObjectService_InitiateMultipartUpload(t *testing.T) {
 	setup()
 	defer teardown()
 
-	opt := &ObjectInitiateMultipartUploadOptions{
+	opt := &InitiateMultipartUploadOptions{
 		ObjectPutHeaderOptions: &ObjectPutHeaderOptions{
 			ContentType: "text/html",
 		},
@@ -67,13 +66,13 @@ func TestObjectService_InitiateMultipartUpload(t *testing.T) {
 </InitiateMultipartUploadResult>`)
 	})
 
-	ref, _, err := client.Object.InitiateMultipartUpload(context.Background(), NewAuthTime(time.Minute),
+	ref, _, err := client.Object.InitiateMultipartUpload(context.Background(),
 		name, opt)
 	if err != nil {
 		t.Fatalf("Object.InitiateMultipartUpload returned error: %v", err)
 	}
 
-	want := &ObjectInitiateMultipartUploadResult{
+	want := &InitiateMultipartUploadResult{
 		XMLName:  xml.Name{Local: "InitiateMultipartUploadResult"},
 		Bucket:   "test-1253846586",
 		Key:      "test/hello.txt",
@@ -111,7 +110,7 @@ func TestObjectService_UploadPart(t *testing.T) {
 	})
 
 	r := bytes.NewReader([]byte("hello"))
-	_, err := client.Object.UploadPart(context.Background(), NewAuthTime(time.Minute),
+	_, err := client.Object.UploadPart(context.Background(),
 		name, uploadId, partNumber, r, opt)
 	if err != nil {
 		t.Fatalf("Object.UploadPart returned error: %v", err)
@@ -168,7 +167,7 @@ func TestObjectService_ListParts(t *testing.T) {
 </ListPartsResult>`)
 	})
 
-	ref, _, err := client.Object.ListParts(context.Background(), NewAuthTime(time.Minute),
+	ref, _, err := client.Object.ListParts(context.Background(),
 		name, uploadId)
 	if err != nil {
 		t.Fatalf("Object.ListParts returned error: %v", err)
@@ -218,7 +217,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 	name := "test/hello.txt"
 	uploadId := "149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387"
 
-	opt := &ObjectCompleteMultipartUploadOption{
+	opt := &CompleteMultipartUploadOptions{
 		Parts: []Object{
 			{
 				PartNumber: 1,
@@ -232,7 +231,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 	}
 
 	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
-		v := new(ObjectCompleteMultipartUploadOption)
+		v := new(CompleteMultipartUploadOptions)
 		xml.NewDecoder(r.Body).Decode(v)
 
 		testMethod(t, r, http.MethodPost)
@@ -254,13 +253,13 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 </CompleteMultipartUploadResult>`)
 	})
 
-	ref, _, err := client.Object.CompleteMultipartUpload(context.Background(), NewAuthTime(time.Minute),
+	ref, _, err := client.Object.CompleteMultipartUpload(context.Background(),
 		name, uploadId, opt)
 	if err != nil {
 		t.Fatalf("Object.ListParts returned error: %v", err)
 	}
 
-	want := &ObjectCompleteMultipartUploadResult{
+	want := &CompleteMultipartUploadResult{
 		XMLName:  xml.Name{Local: "CompleteMultipartUploadResult"},
 		Bucket:   "test",
 		Key:      name,

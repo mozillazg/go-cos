@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
-	"time"
 
 	"io/ioutil"
 
@@ -24,20 +22,14 @@ func upload(c *cos.Client, name string) {
 			XCosACL: "public-read",
 		},
 	}
-	c.Object.Put(context.Background(), cos.NewAuthTime(time.Hour), name, f, opt)
+	c.Object.Put(context.Background(), name, f, opt)
 	return
 }
 
 func main() {
 	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    true,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
+	c := cos.NewClient(b, nil)
 
 	name := "test/anonymous_get.go"
 	upload(c, name)

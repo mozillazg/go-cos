@@ -23,15 +23,13 @@ type BucketGetTaggingResult struct {
 // Get Bucket Tagging接口实现获取指定Bucket的标签。
 //
 // https://www.qcloud.com/document/product/436/8277
-func (s *BucketService) GetTagging(ctx context.Context,
-	authTime *AuthTime) (*BucketGetTaggingResult, *Response, error) {
+func (s *BucketService) GetTagging(ctx context.Context) (*BucketGetTaggingResult, *Response, error) {
 	var res BucketGetTaggingResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?tagging",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?tagging",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -50,14 +48,12 @@ type BucketPutTaggingOptions struct {
 // 当该请求设置相同Key名称，不同Value时，会返回400。请求成功，则返回204。
 //
 // https://www.qcloud.com/document/product/436/8281
-func (s *BucketService) PutTagging(ctx context.Context,
-	authTime *AuthTime, opt *BucketPutTaggingOptions) (*Response, error) {
+func (s *BucketService) PutTagging(ctx context.Context, opt *BucketPutTaggingOptions) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?tagging",
-		method:   http.MethodPut,
-		authTime: authTime,
-		body:     opt,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?tagging",
+		method:  http.MethodPut,
+		body:    opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -68,13 +64,11 @@ func (s *BucketService) PutTagging(ctx context.Context,
 // Delete Bucket Tagging接口实现删除指定Bucket的标签。
 //
 // https://www.qcloud.com/document/product/436/8286
-func (s *BucketService) DeleteTagging(ctx context.Context,
-	authTime *AuthTime) (*Response, error) {
+func (s *BucketService) DeleteTagging(ctx context.Context) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?tagging",
-		method:   http.MethodDelete,
-		authTime: authTime,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?tagging",
+		method:  http.MethodDelete,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

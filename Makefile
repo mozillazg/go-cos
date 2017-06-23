@@ -1,6 +1,7 @@
 help:
 	@echo "test             run test"
 	@echo "lint             run lint"
+	@echo "example          run examples"
 
 .PHONY: test
 test:
@@ -13,3 +14,7 @@ lint:
 	goimports -w .
 	golint .
 	go vet
+
+.PHONY: example
+example:
+	cd examples && sh test.sh

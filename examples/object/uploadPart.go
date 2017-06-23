@@ -4,18 +4,17 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"net/url"
 	"strings"
 
+	"net/http"
+
 	"bitbucket.org/mozillazg/go-cos"
 )
 
-func initUpload(c *cos.Client, authTime *cos.AuthTime,
-	name string,
-) *cos.ObjectInitiateMultipartUploadResult {
-	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), authTime, name, nil)
+func initUpload(c *cos.Client, name string) *cos.InitiateMultipartUploadResult {
+	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), name, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -26,22 +25,26 @@ func initUpload(c *cos.Client, authTime *cos.AuthTime,
 func main() {
 	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    true,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
+	c := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    true,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 
-	authTime := cos.NewAuthTime(time.Hour)
 	name := "test/test_multi_upload.go"
-	up := initUpload(c, authTime, name)
+	up := initUpload(c, name)
 	uploadID := up.UploadID
 
 	f := strings.NewReader("test heoo")
 	_, err := c.Object.UploadPart(
-		context.Background(), authTime, name, uploadID, 1, f, nil,
+		context.Background(), name, uploadID, 1, f, nil,
 	)
 	if err != nil {
 		panic(err)

@@ -11,15 +11,13 @@ type ObjectGetACLResult ACLXml
 // GetACL Get Object ACL接口实现使用API读取Object的ACL表，只有所有者有权操作。
 //
 // https://www.qcloud.com/document/product/436/7744
-func (s *ObjectService) GetACL(ctx context.Context,
-	authTime *AuthTime, name string) (*ObjectGetACLResult, *Response, error) {
+func (s *ObjectService) GetACL(ctx context.Context, name string) (*ObjectGetACLResult, *Response, error) {
 	var res ObjectGetACLResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/" + encodeURIComponent(name) + "?acl",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/" + encodeURIComponent(name) + "?acl",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -47,9 +45,7 @@ type ObjectPutACLOptions struct {
 // "x-cos-grant-full-control"：意味被赋予权限的用户拥有该Object的读写权限
 //
 // https://www.qcloud.com/document/product/436/7748
-func (s *ObjectService) PutACL(ctx context.Context,
-	authTime *AuthTime, name string,
-	opt *ObjectPutACLOptions) (*Response, error) {
+func (s *ObjectService) PutACL(ctx context.Context, name string, opt *ObjectPutACLOptions) (*Response, error) {
 	header := opt.Header
 	body := opt.Body
 	if body != nil {
@@ -59,7 +55,6 @@ func (s *ObjectService) PutACL(ctx context.Context,
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/" + encodeURIComponent(name) + "?acl",
 		method:    http.MethodPut,
-		authTime:  authTime,
 		optHeader: header,
 		body:      body,
 	}

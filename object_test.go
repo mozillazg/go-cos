@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestObjectService_Get(t *testing.T) {
@@ -32,7 +31,7 @@ func TestObjectService_Get(t *testing.T) {
 		Range:               "bytes=0-3",
 	}
 
-	resp, err := client.Object.Get(context.Background(), NewAuthTime(time.Minute), name, opt)
+	resp, err := client.Object.Get(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.Get returned error: %v", err)
 	}
@@ -74,7 +73,7 @@ func TestObjectService_Put(t *testing.T) {
 	})
 
 	r := bytes.NewReader([]byte("hello"))
-	_, err := client.Object.Put(context.Background(), NewAuthTime(time.Minute), name, r, opt)
+	_, err := client.Object.Put(context.Background(), name, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Put returned error: %v", err)
 	}
@@ -91,7 +90,7 @@ func TestObjectService_Delete(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	_, err := client.Object.Delete(context.Background(), NewAuthTime(time.Minute), name)
+	_, err := client.Object.Delete(context.Background(), name)
 	if err != nil {
 		t.Fatalf("Object.Delete returned error: %v", err)
 	}
@@ -111,7 +110,7 @@ func TestObjectService_Head(t *testing.T) {
 		IfModifiedSince: "Mon, 12 Jun 2017 05:36:19 GMT",
 	}
 
-	_, err := client.Object.Head(context.Background(), NewAuthTime(time.Minute), name, opt)
+	_, err := client.Object.Head(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.Head returned error: %v", err)
 	}
@@ -134,7 +133,7 @@ func TestObjectService_Options(t *testing.T) {
 		AccessControlRequestMethod: "PUT",
 	}
 
-	_, err := client.Object.Options(context.Background(), NewAuthTime(time.Minute), name, opt)
+	_, err := client.Object.Options(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.Options returned error: %v", err)
 	}
@@ -176,7 +175,7 @@ func TestObjectService_Append(t *testing.T) {
 	})
 
 	r := bytes.NewReader([]byte("hello"))
-	_, err := client.Object.Append(context.Background(), NewAuthTime(time.Minute), name, position, r, opt)
+	_, err := client.Object.Append(context.Background(), name, position, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Append returned error: %v", err)
 	}
@@ -219,7 +218,7 @@ func TestObjectService_DeleteMulti(t *testing.T) {
 		},
 	}
 
-	ref, _, err := client.Object.DeleteMulti(context.Background(), NewAuthTime(time.Minute), opt)
+	ref, _, err := client.Object.DeleteMulti(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Object.DeleteMulti returned error: %v", err)
 	}
