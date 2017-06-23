@@ -58,9 +58,9 @@ func main() {
 
 	names := uploadMulti(c, authTime)
 	names = append(names, []string{"a", "b", "c", "a+bc/xx&?+# "}...)
-	obs := []*cos.ObjectForDelete{}
+	obs := []cos.Object{}
 	for _, v := range names {
-		obs = append(obs, &cos.ObjectForDelete{Key: v})
+		obs = append(obs, cos.Object{Key: v})
 	}
 	//sha1 := ""
 	opt := &cos.ObjectDeleteMultiOptions{
@@ -72,7 +72,7 @@ func main() {
 
 	v, _, err := c.Object.DeleteMulti(ctx, authTime, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	for _, x := range v.DeletedObjects {

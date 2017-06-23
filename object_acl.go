@@ -2,16 +2,11 @@ package cos
 
 import (
 	"context"
-	"encoding/xml"
 	"net/http"
 )
 
 // ObjectGetACLResult ...
-type ObjectGetACLResult struct {
-	XMLName           xml.Name `xml:"AccessControlPolicy"`
-	Owner             *Owner
-	AccessControlList []*BucketACLGrant `xml:"AccessControlList>Grant,omitempty"`
-}
+type ObjectGetACLResult ACLXml
 
 // GetACL Get Object ACL接口实现使用API读取Object的ACL表，只有所有者有权操作。
 //
@@ -32,8 +27,8 @@ func (s *ObjectService) GetACL(ctx context.Context,
 
 // ObjectPutACLOptions ...
 type ObjectPutACLOptions struct {
-	Header *ACLHeaderOptions   `url:"-" xml:"-"`
-	Body   *BucketGetACLResult `url:"-" header:"-"`
+	Header *ACLHeaderOptions `url:"-" xml:"-"`
+	Body   *ACLXml           `url:"-" header:"-"`
 }
 
 // PutACL 使用API写入Object的ACL表，您可以通过Header："x-cos-acl", "x-cos-grant-read" ,

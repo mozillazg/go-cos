@@ -76,7 +76,6 @@ func TestBucketService_PutCORS(t *testing.T) {
 	defer teardown()
 
 	opt := &BucketPutCORSOptions{
-		XMLName: xml.Name{Local: "CORSConfiguration"},
 		Rules: []BucketCORSRule{
 			{
 				AllowedOrigins: []string{"http://www.qq.com"},
@@ -105,6 +104,7 @@ func TestBucketService_PutCORS(t *testing.T) {
 		testFormValues(t, r, vs)
 
 		want := opt
+		want.XMLName = xml.Name{Local: "CORSConfiguration"}
 		if !reflect.DeepEqual(v, want) {
 			t.Errorf("Bucket.PutCORS request body: %+v, want %+v", v, want)
 		}
@@ -114,6 +114,26 @@ func TestBucketService_PutCORS(t *testing.T) {
 	_, err := client.Bucket.PutCORS(context.Background(), NewAuthTime(time.Minute), opt)
 	if err != nil {
 		t.Fatalf("Bucket.PutCORS returned error: %v", err)
+	}
+
+}
+
+func TestBucketService_DeleteCORS(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodDelete)
+		vs := values{
+			"cors": "",
+		}
+		testFormValues(t, r, vs)
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	_, err := client.Bucket.DeleteCORS(context.Background(), NewAuthTime(time.Minute))
+	if err != nil {
+		t.Fatalf("Bucket.DeleteCORS returned error: %v", err)
 	}
 
 }

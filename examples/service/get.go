@@ -22,7 +22,7 @@ func main() {
 
 	s, _, err := c.Service.Get(context.Background(), cos.NewAuthTime(time.Hour))
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	for _, b := range s.Buckets {

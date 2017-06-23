@@ -25,7 +25,7 @@ func main() {
 
 	resp, err := c.Bucket.Head(context.Background(), cos.NewAuthTime(time.Hour))
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Println(resp.Status)
 }

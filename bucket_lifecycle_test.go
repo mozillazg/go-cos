@@ -74,7 +74,6 @@ func TestBucketService_PutLifecycle(t *testing.T) {
 	defer teardown()
 
 	opt := &BucketPutLifecycleOptions{
-		XMLName: xml.Name{Local: "LifecycleConfiguration"},
 		Rules: []BucketLifecycleRule{
 			{
 				ID:         "1234",
@@ -102,6 +101,7 @@ func TestBucketService_PutLifecycle(t *testing.T) {
 		testFormValues(t, r, vs)
 
 		want := opt
+		want.XMLName = xml.Name{Local: "LifecycleConfiguration"}
 		if !reflect.DeepEqual(v, want) {
 			t.Errorf("Bucket.PutLifecycle request body: %+v, want %+v", v, want)
 		}

@@ -30,7 +30,7 @@ func main() {
 	}
 	v, _, err := c.Bucket.Get(context.Background(), cos.NewAuthTime(time.Hour), opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	for _, c := range v.Contents {

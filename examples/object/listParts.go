@@ -17,7 +17,7 @@ func initUpload(c *cos.Client, authTime *cos.AuthTime,
 ) *cos.ObjectInitiateMultipartUploadResult {
 	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), authTime, name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%#v\n", v)
 	return v
@@ -67,7 +67,7 @@ func main() {
 
 	v, _, err := c.Object.ListParts(ctx, authTime, name, uploadID)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 		return
 	}
 	for _, p := range v.Parts {

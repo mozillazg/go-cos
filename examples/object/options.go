@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
 	"time"
@@ -28,6 +27,6 @@ func main() {
 	}
 	_, err := c.Object.Options(context.Background(), cos.NewAuthTime(time.Hour), name, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }

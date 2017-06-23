@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -27,7 +26,7 @@ func main() {
 
 	_, err := c.Object.Put(context.Background(), cos.NewAuthTime(time.Hour), name, f, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	name = "test/put_option.go"
@@ -43,6 +42,6 @@ func main() {
 	}
 	_, err = c.Object.Put(context.Background(), cos.NewAuthTime(time.Hour), name, f, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }

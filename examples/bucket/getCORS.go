@@ -25,7 +25,7 @@ func main() {
 
 	v, _, err := c.Bucket.GetCORS(context.Background(), cos.NewAuthTime(time.Hour))
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	for _, r := range v.Rules {
 

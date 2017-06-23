@@ -24,13 +24,13 @@ func main() {
 	name := "test_multipart.txt"
 	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), cos.NewAuthTime(time.Hour), name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", v.UploadID)
 
 	resp, err := c.Object.AbortMultipartUpload(context.Background(), cos.NewAuthTime(time.Hour), name, v.UploadID)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", resp.Status)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	//"net/url"
 	"os"
 	"time"
@@ -25,6 +24,6 @@ func main() {
 	name := "test/hello.txt"
 	_, err := c.Object.Head(context.Background(), cos.NewAuthTime(time.Hour), name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }

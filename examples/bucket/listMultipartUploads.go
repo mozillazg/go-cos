@@ -28,7 +28,7 @@ func main() {
 	}
 	v, _, err := c.Bucket.ListMultipartUploads(context.Background(), cos.NewAuthTime(time.Hour), opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	for _, p := range v.Uploads {
 		fmt.Printf("%s\n", p.Key)

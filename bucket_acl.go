@@ -2,29 +2,11 @@ package cos
 
 import (
 	"context"
-	"encoding/xml"
 	"net/http"
 )
 
-// BucketACLGrantee ...
-type BucketACLGrantee struct {
-	Type       string `xml:"type,attr"`
-	UIN        string `xml:"uin"`
-	SubAccount string `xml:"Subaccount,omitempty"`
-}
-
-// BucketACLGrant ...
-type BucketACLGrant struct {
-	Grantee    *BucketACLGrantee
-	Permission string
-}
-
 // BucketGetACLResult ...
-type BucketGetACLResult struct {
-	XMLName           xml.Name `xml:"AccessControlPolicy"`
-	Owner             *Owner
-	AccessControlList []*BucketACLGrant `xml:"AccessControlList>Grant,omitempty"`
-}
+type BucketGetACLResult ACLXml
 
 // GetACL 使用API读取Bucket的ACL表，只有所有者有权操作。
 //
@@ -45,8 +27,8 @@ func (s *BucketService) GetACL(ctx context.Context,
 
 // BucketPutACLOptions ...
 type BucketPutACLOptions struct {
-	Header *ACLHeaderOptions   `url:"-" xml:"-"`
-	Body   *BucketGetACLResult `url:"-" header:"-"`
+	Header *ACLHeaderOptions `url:"-" xml:"-"`
+	Body   *ACLXml           `url:"-" header:"-"`
 }
 
 // PutACL 使用API写入Bucket的ACL表，您可以通过Header："x-cos-acl","x-cos-grant-read",

@@ -44,7 +44,7 @@ func main() {
 
 	resp, err := c.Object.Get(context.Background(), nil, name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 		return
 	}
 	bs, _ := ioutil.ReadAll(resp.Body)

@@ -26,7 +26,7 @@ func main() {
 	name := "test/hello.txt"
 	resp, err := c.Object.Get(context.Background(), cos.NewAuthTime(time.Hour), name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	bs, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -39,7 +39,7 @@ func main() {
 	}
 	resp, err = c.Object.Get(context.Background(), cos.NewAuthTime(time.Hour), name, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	bs, _ = ioutil.ReadAll(resp.Body)
 	resp.Body.Close()

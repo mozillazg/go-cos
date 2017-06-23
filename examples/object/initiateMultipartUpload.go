@@ -21,10 +21,10 @@ func main() {
 		ResponseBody:   true,
 	}
 
-	name := "test_multipart.txt"
+	name := "test_multipart" + time.Now().Format(time.RFC3339)
 	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), cos.NewAuthTime(time.Hour), name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", v.UploadID)
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
 	"time"
@@ -28,6 +27,6 @@ func main() {
 	//}
 	_, err := c.Bucket.Put(context.Background(), cos.NewAuthTime(time.Hour), nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }

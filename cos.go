@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"text/template"
 	"time"
 
 	"bitbucket.org/mozillazg/go-httpheader"
@@ -23,7 +24,12 @@ const (
 	userAgent             = "go-cos/" + Version
 	contentTypeXML        = "application/xml"
 	defaultServiceBaseURL = "https://service.cos.myqcloud.com"
-	bucketURLFormat       = "%s://%s-%s.%s.myqcloud.com"
+)
+
+var bucketURLTemplate = template.Must(
+	template.New("bucketURLFormat").Parse(
+		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.{{.Region}}.myqcloud.com",
+	),
 )
 
 // BaseURL 访问各 API 所需的基础 URL
@@ -40,13 +46,23 @@ type BaseURL struct {
 //   AppID: 应用 ID
 //   Region: 区域代码: cn-east, cn-south, cn-north
 //   secure: 是否使用 https
-func NewBucketURL(bucketName, AppID, Region string, secure bool) *url.URL {
+func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
 	scheme := "https"
 	if !secure {
 		scheme = "http"
 	}
-	urlStr := fmt.Sprintf(bucketURLFormat, scheme, bucketName, AppID, Region)
-	u, _ := url.Parse(urlStr)
+
+	w := bytes.NewBuffer(nil)
+	bucketURLTemplate.Execute(w, struct {
+		Scheme     string
+		BucketName string
+		AppID      string
+		Region     string
+	}{
+		scheme, bucketName, appID, region,
+	})
+
+	u, _ := url.Parse(w.String())
 	return u
 }
 
@@ -186,8 +202,8 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{
 
 	defer func() {
 		if closeBody {
-			// Drain up to 512 bytes and close the body to let the Transport reuse the connection
-			io.CopyN(ioutil.Discard, resp.Body, 512)
+			// Close the body to let the Transport reuse the connection
+			io.Copy(ioutil.Discard, resp.Body)
 			resp.Body.Close()
 		}
 	}()
@@ -352,4 +368,24 @@ type ACLHeaderOptions struct {
 	XCosGrantRead        string `header:"x-cos-grant-read,omitempty" url:"-" xml:"-"`
 	XCosGrantWrite       string `header:"x-cos-grant-write,omitempty" url:"-" xml:"-"`
 	XCosGrantFullControl string `header:"x-cos-grant-full-control,omitempty" url:"-" xml:"-"`
+}
+
+// ACLGrantee ...
+type ACLGrantee struct {
+	Type       string `xml:"type,attr"`
+	UIN        string `xml:"uin"`
+	SubAccount string `xml:"Subaccount,omitempty"`
+}
+
+// ACLGrant ...
+type ACLGrant struct {
+	Grantee    *ACLGrantee
+	Permission string
+}
+
+// ACLXml ...
+type ACLXml struct {
+	XMLName           xml.Name `xml:"AccessControlPolicy"`
+	Owner             *Owner
+	AccessControlList []ACLGrant `xml:"AccessControlList>Grant,omitempty"`
 }

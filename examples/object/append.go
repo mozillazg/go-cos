@@ -46,14 +46,14 @@ func main() {
 	// 第一次就必须 append
 	resp, err := c.Object.Append(ctx, authTime, name, 0, r, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 		return
 	}
 	fmt.Printf("%s\n", resp.Status)
 
 	// head
 	if _, err = c.Object.Head(ctx, authTime, name, nil); err != nil {
-		fmt.Println(err)
+		panic(err)
 		return
 	}
 
@@ -62,7 +62,7 @@ func main() {
 	r = bytes.NewReader(data)
 	resp, err = c.Object.Append(context.Background(), authTime, name, length, r, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", resp.Status)
 }

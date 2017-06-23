@@ -25,7 +25,7 @@ func main() {
 
 	v, _, err := c.Bucket.GetTagging(context.Background(), cos.NewAuthTime(time.Hour))
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	for _, t := range v.TagSet {
 		fmt.Printf("%s: %s\n", t.Key, t.Value)

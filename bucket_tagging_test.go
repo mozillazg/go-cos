@@ -57,7 +57,6 @@ func TestBucketService_PutTagging(t *testing.T) {
 	defer teardown()
 
 	opt := &BucketPutTaggingOptions{
-		XMLName: xml.Name{Local: "Tagging"},
 		TagSet: []BucketTaggingTag{
 			{
 				Key:   "test_k2",
@@ -81,6 +80,7 @@ func TestBucketService_PutTagging(t *testing.T) {
 		testFormValues(t, r, vs)
 
 		want := opt
+		want.XMLName = xml.Name{Local: "Tagging"}
 		if !reflect.DeepEqual(v, want) {
 			t.Errorf("Bucket.PutTagging request body: %+v, want %+v", v, want)
 		}

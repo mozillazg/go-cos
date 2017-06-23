@@ -24,7 +24,7 @@ func main() {
 	name := "test/hello.txt"
 	v, _, err := c.Object.GetACL(context.Background(), cos.NewAuthTime(time.Hour), name)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	for _, a := range v.AccessControlList {
 		fmt.Printf("%s, %s, %s\n", a.Grantee.Type, a.Grantee.UIN, a.Permission)

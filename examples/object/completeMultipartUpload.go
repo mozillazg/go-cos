@@ -17,7 +17,7 @@ func initUpload(c *cos.Client, authTime *cos.AuthTime,
 ) *cos.ObjectInitiateMultipartUploadResult {
 	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), authTime, name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%#v\n", v)
 	return v
@@ -37,7 +37,7 @@ func uploadPart(c *cos.Client, authTime *cos.AuthTime,
 		context.Background(), authTime, name, uploadID, n, f, nil,
 	)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", resp.Status)
 	return resp.Header.Get("Etag")
@@ -63,7 +63,7 @@ func main() {
 	opt := &cos.ObjectCompleteMultipartUploadOption{}
 	for i := 1; i < 5; i++ {
 		etag := uploadPart(c, authTime, name, uploadID, blockSize, i)
-		opt.Parts = append(opt.Parts, cos.ObjectPart{
+		opt.Parts = append(opt.Parts, cos.Object{
 			PartNumber: i, ETag: etag},
 		)
 	}
@@ -78,7 +78,7 @@ func main() {
 		context.Background(), authTime, name, uploadID, opt,
 	)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", resp.Status)
 	fmt.Printf("%#v\n", v)

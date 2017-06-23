@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
 	"time"
@@ -29,18 +28,18 @@ func main() {
 	name := "test/hello.txt"
 	_, err := c.Object.PutACL(context.Background(), cos.NewAuthTime(time.Hour), name, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	// with body
 	opt = &cos.ObjectPutACLOptions{
-		Body: &cos.BucketGetACLResult{
+		Body: &cos.ACLXml{
 			Owner: &cos.Owner{
 				UIN: "100000760461",
 			},
-			AccessControlList: []*cos.BucketACLGrant{
+			AccessControlList: []cos.ACLGrant{
 				{
-					Grantee: &cos.BucketACLGrantee{
+					Grantee: &cos.ACLGrantee{
 						Type: "RootAccount",
 						UIN:  "100000760461",
 					},
@@ -53,6 +52,6 @@ func main() {
 
 	_, err = c.Object.PutACL(context.Background(), cos.NewAuthTime(time.Hour), name, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }

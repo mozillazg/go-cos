@@ -25,7 +25,7 @@ func main() {
 
 	v, _, err := c.Bucket.GetLocation(context.Background(), cos.NewAuthTime(time.Hour))
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", v.Location)
 }

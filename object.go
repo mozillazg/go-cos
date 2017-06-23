@@ -173,26 +173,19 @@ func (s *ObjectService) Append(ctx context.Context,
 	return resp, err
 }
 
-// ObjectForDelete ...
-type ObjectForDelete struct {
-	Key string
-}
-
 // ObjectDeleteMultiOptions ...
 type ObjectDeleteMultiOptions struct {
-	XMLName xml.Name           `xml:"Delete" header:"-"`
-	Quiet   bool               `xml:"Quiet" header:"-"`
-	Objects []*ObjectForDelete `xml:"Object" header:"-"`
+	XMLName xml.Name `xml:"Delete" header:"-"`
+	Quiet   bool     `xml:"Quiet" header:"-"`
+	Objects []Object `xml:"Object" header:"-"`
 	//XCosSha1 string `xml:"-" header:"x-cos-sha1"`
 }
 
 // ObjectDeleteMultiResult ...
 type ObjectDeleteMultiResult struct {
 	XMLName        xml.Name `xml:"DeleteResult"`
-	DeletedObjects []*struct {
-		Key string
-	} `xml:"Deleted,omitempty"`
-	Errors []*struct {
+	DeletedObjects []Object `xml:"Deleted,omitempty"`
+	Errors         []struct {
 		Key     string
 		Code    string
 		Message string
@@ -222,4 +215,13 @@ func (s *ObjectService) DeleteMulti(ctx context.Context,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
+}
+
+// Object ...
+type Object struct {
+	Key          string `xml:",omitempty"`
+	ETag         string `xml:",omitempty"`
+	Size         int    `xml:",omitempty"`
+	PartNumber   int    `xml:",omitempty"`
+	LastModified string `xml:",omitempty"`
 }

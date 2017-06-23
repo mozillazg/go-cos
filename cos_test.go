@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var (
@@ -120,5 +121,36 @@ func TestNewClient(t *testing.T) {
 	}
 	if got, want := c.UserAgent, userAgent; got != want {
 		t.Errorf("NewClient UserAgent is %v, want %v", got, want)
+	}
+}
+
+func TestNewBucketURL_secure_false(t *testing.T) {
+	got := NewBucketURL("bname", "idx", "cn-bj", false).String()
+	want := "http://bname-idx.cn-bj.myqcloud.com"
+	if got != want {
+		t.Errorf("NewBucketURL is %v, want %v", got, want)
+	}
+}
+
+func TestNewBucketURL_secure_true(t *testing.T) {
+	got := NewBucketURL("bname", "idx", "cn-bj", true).String()
+	want := "https://bname-idx.cn-bj.myqcloud.com"
+	if got != want {
+		t.Errorf("NewBucketURL is %v, want %v", got, want)
+	}
+}
+
+func TestClient_doAPI(t *testing.T) {
+	setup()
+	defer teardown()
+
+}
+
+func TestNewAuthTime(t *testing.T) {
+	a := NewAuthTime(time.Hour)
+	if a.SignStartTime != a.KeyStartTime ||
+		a.SignEndTime != a.SignEndTime ||
+		a.SignStartTime.Add(time.Hour) != a.SignEndTime {
+		t.Errorf("NewAuthTime request got %+v is not valid", a)
 	}
 }
