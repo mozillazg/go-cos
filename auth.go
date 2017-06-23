@@ -13,15 +13,37 @@ import (
 )
 
 const sha1SignAlgorithm = "sha1"
+const privateHeaderPrefix = "x-cos-"
 
-// NeedSignHeaders 需要校验的 Headers 列表
-var NeedSignHeaders = map[string]bool{
-	"host":                     true,
-	"range":                    true,
-	"x-cos-acl":                true,
-	"x-cos-grant-read":         true,
-	"x-cos-grant-write":        true,
-	"x-cos-grant-full-control": true,
+// 需要校验的 Headers 列表
+var needSignHeaders = map[string]bool{
+	"host":                           true,
+	"range":                          true,
+	"x-cos-acl":                      true,
+	"x-cos-grant-read":               true,
+	"x-cos-grant-write":              true,
+	"x-cos-grant-full-control":       true,
+	"response-content-type":          true,
+	"response-content-language":      true,
+	"response-expires":               true,
+	"response-cache-control":         true,
+	"response-content-disposition":   true,
+	"response-content-encoding":      true,
+	"cache-control":                  true,
+	"content-disposition":            true,
+	"content-encoding":               true,
+	"content-type":                   true,
+	"content-length":                 true,
+	"content-md5":                    true,
+	"expect":                         true,
+	"expires":                        true,
+	"x-cos-content-sha1":             true,
+	"x-cos-storage-class":            true,
+	"if-modified-since":              true,
+	"origin":                         true,
+	"access-control-request-method":  true,
+	"access-control-request-headers": true,
+	"x-cos-object-type":              true,
 }
 
 // NewAuthorization 通过一系列步骤生成最终需要的 Authorization 字符串
@@ -38,6 +60,7 @@ func NewAuthorization(secretID, secretKey string, req *http.Request,
 
 	stringToSign := CalStringToSign(sha1SignAlgorithm, keyTime, formatString)
 	signature := CalSignature(signKey, stringToSign)
+
 	return GenAuthorization(
 		secretID, signTime, keyTime, signature, signedHeaderList,
 		signedParameterList,
@@ -95,7 +118,7 @@ func GenSignTime(startTime, endTime time.Time) string {
 // GenFormatString 生成 FormatString
 func GenFormatString(method string, uri url.URL, formatParameters, formatHeaders string) string {
 	formatMethod := strings.ToLower(method)
-	formatURI := uri.EscapedPath()
+	formatURI := uri.Path
 
 	return fmt.Sprintf("%s\n%s\n%s\n%s\n", formatMethod, formatURI,
 		formatParameters, formatHeaders,
@@ -108,11 +131,12 @@ func GenFormatParameters(parameters url.Values) (formatParameters string, signed
 	for key, values := range parameters {
 		for _, value := range values {
 			key = strings.ToLower(key)
-			ps.Add(key, strings.ToLower(value))
+			ps.Add(key, value)
 			signedParameterList = append(signedParameterList, key)
 		}
 	}
-	formatParameters = strings.ToLower(ps.Encode())
+	//formatParameters = strings.ToLower(ps.Encode())
+	formatParameters = ps.Encode()
 	sort.Strings(signedParameterList)
 	return
 }
@@ -123,17 +147,13 @@ func GenFormatHeaders(headers http.Header) (formatHeaders string, signedHeaderLi
 	for key, values := range headers {
 		for _, value := range values {
 			key = strings.ToLower(key)
-			for k := range NeedSignHeaders {
-				key = strings.ToLower(key)
-				if key == k {
-					hs.Add(key, strings.ToLower(value))
-					signedHeaderList = append(signedHeaderList, key)
-					break
-				}
+			if isSignHeader(key) {
+				hs.Add(key, value)
+				signedHeaderList = append(signedHeaderList, key)
 			}
 		}
 	}
-	formatHeaders = strings.ToLower(hs.Encode())
+	formatHeaders = hs.Encode()
 	sort.Strings(signedHeaderList)
 	return
 }
@@ -150,4 +170,13 @@ func calHMACDigest(key, msg, signMethod string) []byte {
 	h := hmac.New(hashFunc, []byte(key))
 	h.Write([]byte(msg))
 	return h.Sum(nil)
+}
+
+func isSignHeader(key string) bool {
+	for k, v := range needSignHeaders {
+		if key == k && v {
+			return true
+		}
+	}
+	return strings.HasPrefix(key, privateHeaderPrefix)
 }
