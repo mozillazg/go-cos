@@ -14,15 +14,8 @@ type ServiceService service
 // ServiceGetResult ...
 type ServiceGetResult struct {
 	XMLName xml.Name `xml:"ListAllMyBucketsResult"`
-	Owner   *struct {
-		ID          string
-		DisplayName string
-	} `xml:"Owner"`
-	Buckets []struct {
-		Name       string
-		Location   string
-		CreateDate string
-	} `xml:"Buckets>Bucket,omitempty"`
+	Owner   *Owner   `xml:"Owner"`
+	Buckets []Bucket `xml:"Buckets>Bucket,omitempty"`
 }
 
 // Get Service 接口实现获取该用户下所有Bucket列表。

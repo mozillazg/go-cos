@@ -42,20 +42,21 @@ func TestServiceService_Get(t *testing.T) {
 
 	want := &ServiceGetResult{
 		XMLName: xml.Name{Local: "ListAllMyBucketsResult"},
-		Owner: &struct {
-			ID          string
-			DisplayName string
-		}{
-			"xbaccxx",
-			"100000760461",
+		Owner: &Owner{
+			ID:          "xbaccxx",
+			DisplayName: "100000760461",
 		},
-		Buckets: []struct {
-			Name       string
-			Location   string
-			CreateDate string
-		}{
-			{"huadong-1253846586", "cn-east", "2017-06-16T13:08:28Z"},
-			{"huanan-1253846586", "cn-south", "2017-06-10T09:00:07Z"},
+		Buckets: []Bucket{
+			{
+				Name:       "huadong-1253846586",
+				Region:     "cn-east",
+				CreateDate: "2017-06-16T13:08:28Z",
+			},
+			{
+				Name:       "huanan-1253846586",
+				Region:     "cn-south",
+				CreateDate: "2017-06-10T09:00:07Z",
+			},
 		},
 	}
 
