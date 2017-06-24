@@ -15,12 +15,12 @@ func TestObjectService_AbortMultipartUpload(t *testing.T) {
 	setup()
 	defer teardown()
 	name := "test/hello.txt"
-	uploadId := "xxxxaabcc"
+	uploadID := "xxxxaabcc"
 
 	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, http.MethodDelete)
 		vs := values{
-			"uploadId": uploadId,
+			"uploadId": uploadID,
 		}
 		testFormValues(t, r, vs)
 
@@ -28,7 +28,7 @@ func TestObjectService_AbortMultipartUpload(t *testing.T) {
 	})
 
 	_, err := client.Object.AbortMultipartUpload(context.Background(),
-		name, uploadId)
+		name, uploadID)
 	if err != nil {
 		t.Fatalf("Object.AbortMultipartUpload returned error: %v", err)
 	}
@@ -90,13 +90,13 @@ func TestObjectService_UploadPart(t *testing.T) {
 
 	opt := &ObjectUploadPartOptions{}
 	name := "test/hello.txt"
-	uploadId := "xxxxx"
+	uploadID := "xxxxx"
 	partNumber := 1
 
 	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, http.MethodPut)
 		vs := values{
-			"uploadId":   uploadId,
+			"uploadId":   uploadID,
 			"partNumber": "1",
 		}
 		testFormValues(t, r, vs)
@@ -111,7 +111,7 @@ func TestObjectService_UploadPart(t *testing.T) {
 
 	r := bytes.NewReader([]byte("hello"))
 	_, err := client.Object.UploadPart(context.Background(),
-		name, uploadId, partNumber, r, opt)
+		name, uploadID, partNumber, r, opt)
 	if err != nil {
 		t.Fatalf("Object.UploadPart returned error: %v", err)
 	}
@@ -123,7 +123,7 @@ func TestObjectService_ListParts(t *testing.T) {
 	defer teardown()
 
 	name := "test/hello.txt"
-	uploadId := "149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387"
+	uploadID := "149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387"
 
 	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
 		v := new(BucketPutTaggingOptions)
@@ -131,7 +131,7 @@ func TestObjectService_ListParts(t *testing.T) {
 
 		testMethod(t, r, http.MethodGet)
 		vs := values{
-			"uploadId": uploadId,
+			"uploadId": uploadID,
 		}
 		testFormValues(t, r, vs)
 
@@ -168,7 +168,7 @@ func TestObjectService_ListParts(t *testing.T) {
 	})
 
 	ref, _, err := client.Object.ListParts(context.Background(),
-		name, uploadId)
+		name, uploadID)
 	if err != nil {
 		t.Fatalf("Object.ListParts returned error: %v", err)
 	}
@@ -176,7 +176,7 @@ func TestObjectService_ListParts(t *testing.T) {
 	want := &ObjectListPartsResult{
 		XMLName:  xml.Name{Local: "ListPartsResult"},
 		Bucket:   "test-1253846586",
-		UploadID: uploadId,
+		UploadID: uploadID,
 		Key:      name,
 		Owner: &Owner{
 			ID:          "1253846586",
@@ -215,7 +215,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 	setup()
 	defer teardown()
 	name := "test/hello.txt"
-	uploadId := "149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387"
+	uploadID := "149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387"
 
 	opt := &CompleteMultipartUploadOptions{
 		Parts: []Object{
@@ -236,7 +236,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 
 		testMethod(t, r, http.MethodPost)
 		vs := values{
-			"uploadId": uploadId,
+			"uploadId": uploadID,
 		}
 		testFormValues(t, r, vs)
 
@@ -254,7 +254,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 	})
 
 	ref, _, err := client.Object.CompleteMultipartUpload(context.Background(),
-		name, uploadId, opt)
+		name, uploadID, opt)
 	if err != nil {
 		t.Fatalf("Object.ListParts returned error: %v", err)
 	}

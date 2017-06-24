@@ -100,7 +100,7 @@ func newAuthorization(secretID, secretKey string, req *http.Request, authTime *A
 	)
 }
 
-// AddAuthorization 给 req 增加签名信息
+// AddAuthorizationHeader 给 req 增加签名信息
 func AddAuthorizationHeader(secretID, secretKey string, req *http.Request, authTime *AuthTime) {
 	auth := newAuthorization(secretID, secretKey, req,
 		authTime,

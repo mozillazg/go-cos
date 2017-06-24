@@ -304,7 +304,7 @@ func addHeaderOptions(header http.Header, opt interface{}) (http.Header, error) 
 
 // Owner ...
 type Owner struct {
-	UIN         string `xml:"uin"`
+	UIN         string `xml:"uin,omitmepty"`
 	ID          string `xml:",omitmepty"`
 	DisplayName string `xml:",omitmepty"`
 }
