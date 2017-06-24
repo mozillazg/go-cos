@@ -9,7 +9,7 @@ import (
 
 	"net/http"
 
-	"bitbucket.org/mozillazg/go-cos"
+	"github.com/mozillazg/go-cos"
 )
 
 func main() {
