@@ -34,7 +34,7 @@ func main() {
 	name := "test/anonymous_get.go"
 	upload(c, name)
 
-	resp, err := c.Object.Get(context.Background(), nil, name, nil)
+	resp, err := c.Object.Get(context.Background(), name, nil)
 	if err != nil {
 		panic(err)
 		return
