@@ -8,7 +8,7 @@ import (
 
 	"io/ioutil"
 
-	"bitbucket.org/mozillazg/go-cos"
+	"github.com/mozillazg/go-cos"
 )
 
 func upload(c *cos.Client, name string) {

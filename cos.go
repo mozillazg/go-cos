@@ -13,7 +13,7 @@ import (
 	"reflect"
 	"text/template"
 
-	"bitbucket.org/mozillazg/go-httpheader"
+	"github.com/mozillazg/go-httpheader"
 	"github.com/google/go-querystring/query"
 )
 
