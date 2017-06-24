@@ -14,6 +14,7 @@ import (
 
 const sha1SignAlgorithm = "sha1"
 const privateHeaderPrefix = "x-cos-"
+const defaultAuthExpire = time.Hour
 
 // 需要校验的 Headers 列表
 var needSignHeaders = map[string]bool{
@@ -46,59 +47,88 @@ var needSignHeaders = map[string]bool{
 	"x-cos-object-type":              true,
 }
 
-// NewAuthorization 通过一系列步骤生成最终需要的 Authorization 字符串
-func NewAuthorization(secretID, secretKey string, req *http.Request,
-	signStartTime, signEndTime, keyStartTime, keyEndTime time.Time,
-) string {
-	signTime := GenSignTime(signStartTime, signEndTime)
-	keyTime := GenSignTime(keyStartTime, keyEndTime)
-	signKey := CalSignKey(secretKey, keyTime)
+// AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
+type AuthTime struct {
+	SignStartTime time.Time
+	SignEndTime   time.Time
+	KeyStartTime  time.Time
+	KeyEndTime    time.Time
+}
 
-	formatHeaders, signedHeaderList := GenFormatHeaders(req.Header)
-	formatParameters, signedParameterList := GenFormatParameters(req.URL.Query())
-	formatString := GenFormatString(req.Method, *req.URL, formatParameters, formatHeaders)
+// NewAuthTime 生成 AuthTime 的便捷函数
+//
+//   expire: 从现在开始多久过期.
+func NewAuthTime(expire time.Duration) *AuthTime {
+	signStartTime := time.Now()
+	keyStartTime := signStartTime
+	signEndTime := signStartTime.Add(expire)
+	keyEndTime := signEndTime
+	return &AuthTime{
+		SignStartTime: signStartTime,
+		SignEndTime:   signEndTime,
+		KeyStartTime:  keyStartTime,
+		KeyEndTime:    keyEndTime,
+	}
+}
 
-	stringToSign := CalStringToSign(sha1SignAlgorithm, keyTime, formatString)
-	signature := CalSignature(signKey, stringToSign)
+// signString return q-sign-time string
+func (a *AuthTime) signString() string {
+	return fmt.Sprintf("%d;%d", a.SignStartTime.Unix(), a.SignEndTime.Unix())
+}
 
-	return GenAuthorization(
+// keyString return q-key-time string
+func (a *AuthTime) keyString() string {
+	return fmt.Sprintf("%d;%d", a.KeyStartTime.Unix(), a.KeyEndTime.Unix())
+}
+
+// newAuthorization 通过一系列步骤生成最终需要的 Authorization 字符串
+func newAuthorization(secretID, secretKey string, req *http.Request, authTime *AuthTime) string {
+	signTime := authTime.signString()
+	keyTime := authTime.keyString()
+	signKey := calSignKey(secretKey, keyTime)
+
+	formatHeaders, signedHeaderList := genFormatHeaders(req.Header)
+	formatParameters, signedParameterList := genFormatParameters(req.URL.Query())
+	formatString := genFormatString(req.Method, *req.URL, formatParameters, formatHeaders)
+
+	stringToSign := calStringToSign(sha1SignAlgorithm, keyTime, formatString)
+	signature := calSignature(signKey, stringToSign)
+
+	return genAuthorization(
 		secretID, signTime, keyTime, signature, signedHeaderList,
 		signedParameterList,
 	)
 }
 
-// AddAuthorization 给 req 增加签名信息
-func AddAuthorization(secretID, secretKey string, req *http.Request,
-	signStartTime, signEndTime, keyStartTime, keyEndTime time.Time,
-) {
-	auth := NewAuthorization(secretID, secretKey, req,
-		signStartTime, signEndTime, keyStartTime, keyEndTime,
+// AddAuthorizationHeader 给 req 增加签名信息
+func AddAuthorizationHeader(secretID, secretKey string, req *http.Request, authTime *AuthTime) {
+	auth := newAuthorization(secretID, secretKey, req,
+		authTime,
 	)
 	req.Header.Set("Authorization", auth)
 }
 
-// CalSignKey 计算 SignKey
-func CalSignKey(secretKey, keyTime string) string {
+// calSignKey 计算 SignKey
+func calSignKey(secretKey, keyTime string) string {
 	digest := calHMACDigest(secretKey, keyTime, sha1SignAlgorithm)
 	return fmt.Sprintf("%x", digest)
 }
 
-// CalStringToSign 计算 StringToSign
-func CalStringToSign(signAlgorithm, signTime, formatString string) string {
+// calStringToSign 计算 StringToSign
+func calStringToSign(signAlgorithm, signTime, formatString string) string {
 	h := sha1.New()
 	h.Write([]byte(formatString))
 	return fmt.Sprintf("%s\n%s\n%x\n", signAlgorithm, signTime, h.Sum(nil))
 }
 
-// CalSignature 计算 Signature
-func CalSignature(signKey, stringToSign string) string {
+// calSignature 计算 Signature
+func calSignature(signKey, stringToSign string) string {
 	digest := calHMACDigest(signKey, stringToSign, sha1SignAlgorithm)
 	return fmt.Sprintf("%x", digest)
 }
 
-// GenAuthorization 生成 Authorization
-func GenAuthorization(secretID, signTime, keyTime, signature string,
-	signedHeaderList, signedParameterList []string) string {
+// genAuthorization 生成 Authorization
+func genAuthorization(secretID, signTime, keyTime, signature string, signedHeaderList, signedParameterList []string) string {
 	return strings.Join([]string{
 		"q-sign-algorithm=" + sha1SignAlgorithm,
 		"q-ak=" + secretID,
@@ -110,13 +140,8 @@ func GenAuthorization(secretID, signTime, keyTime, signature string,
 	}, "&")
 }
 
-// GenSignTime 生成 SignTime
-func GenSignTime(startTime, endTime time.Time) string {
-	return fmt.Sprintf("%d;%d", startTime.Unix(), endTime.Unix())
-}
-
-// GenFormatString 生成 FormatString
-func GenFormatString(method string, uri url.URL, formatParameters, formatHeaders string) string {
+// genFormatString 生成 FormatString
+func genFormatString(method string, uri url.URL, formatParameters, formatHeaders string) string {
 	formatMethod := strings.ToLower(method)
 	formatURI := uri.Path
 
@@ -125,8 +150,8 @@ func GenFormatString(method string, uri url.URL, formatParameters, formatHeaders
 	)
 }
 
-// GenFormatParameters 生成 FormatParameters 和 SignedParameterList
-func GenFormatParameters(parameters url.Values) (formatParameters string, signedParameterList []string) {
+// genFormatParameters 生成 FormatParameters 和 SignedParameterList
+func genFormatParameters(parameters url.Values) (formatParameters string, signedParameterList []string) {
 	ps := url.Values{}
 	for key, values := range parameters {
 		for _, value := range values {
@@ -141,8 +166,8 @@ func GenFormatParameters(parameters url.Values) (formatParameters string, signed
 	return
 }
 
-// GenFormatHeaders 生成 FormatHeaders 和 SignedHeaderList
-func GenFormatHeaders(headers http.Header) (formatHeaders string, signedHeaderList []string) {
+// genFormatHeaders 生成 FormatHeaders 和 SignedHeaderList
+func genFormatHeaders(headers http.Header) (formatHeaders string, signedHeaderList []string) {
 	hs := url.Values{}
 	for key, values := range headers {
 		for _, value := range values {
@@ -179,4 +204,36 @@ func isSignHeader(key string) bool {
 		}
 	}
 	return strings.HasPrefix(key, privateHeaderPrefix)
+}
+
+// AuthorizationTransport 给请求增加 Authorization header
+type AuthorizationTransport struct {
+	SecretID  string
+	SecretKey string
+	// 签名多久过期
+	Expire time.Duration
+
+	Transport http.RoundTripper
+}
+
+// RoundTrip implements the RoundTripper interface.
+func (t *AuthorizationTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req = cloneRequest(req) // per RoundTrip contract
+	if t.Expire == time.Duration(0) {
+		t.Expire = defaultAuthExpire
+	}
+
+	// 增加 Authorization header
+	authTime := NewAuthTime(t.Expire)
+	AddAuthorizationHeader(t.SecretID, t.SecretKey, req, authTime)
+
+	resp, err := t.transport().RoundTrip(req)
+	return resp, err
+}
+
+func (t *AuthorizationTransport) transport() http.RoundTripper {
+	if t.Transport != nil {
+		return t.Transport
+	}
+	return http.DefaultTransport
 }

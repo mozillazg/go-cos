@@ -1,10 +1,12 @@
 help:
 	@echo "test             run test"
 	@echo "lint             run lint"
+	@echo "example          run examples"
 
 .PHONY: test
 test:
-	go test -v -cover
+	go test -v -cover -coverprofile cover.out
+	go tool cover -html=cover.out -o cover.html
 
 .PHONY: lint
 lint:
@@ -12,3 +14,7 @@ lint:
 	goimports -w .
 	golint .
 	go vet
+
+.PHONY: example
+example:
+	cd examples && sh test.sh

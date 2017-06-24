@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 (2017-06-24)
+
+* 去掉 API 中的 authTime 参数，默认不再自动添加 Authorization header
+  改为通过自定义 client 的方式来添加认证信息
+* 增加 AuthorizationTransport 辅助添加认证信息
+
 ## 0.3.0 (2017-06-23)
 
 * 完成所有 API

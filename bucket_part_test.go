@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_ListMultipartUploads(t *testing.T) {
@@ -67,7 +66,7 @@ func TestBucketService_ListMultipartUploads(t *testing.T) {
 	opt := &ListMultipartUploadsOptions{
 		Prefix: "t",
 	}
-	ref, _, err := client.Bucket.ListMultipartUploads(context.Background(), NewAuthTime(time.Minute), opt)
+	ref, _, err := client.Bucket.ListMultipartUploads(context.Background(), opt)
 	if err != nil {
 		t.Fatalf("Bucket.ListMultipartUploads returned error: %v", err)
 	}

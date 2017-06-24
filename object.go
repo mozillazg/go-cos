@@ -29,13 +29,11 @@ type ObjectGetOptions struct {
 // 该操作需要对目标 Object 具有读权限或目标 Object 对所有人都开放了读权限（公有读）。
 //
 // https://www.qcloud.com/document/product/436/7753
-func (s *ObjectService) Get(ctx context.Context,
-	authTime *AuthTime, name string, opt *ObjectGetOptions) (*Response, error) {
+func (s *ObjectService) Get(ctx context.Context, name string, opt *ObjectGetOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:          s.client.BaseURL.BucketURL,
 		uri:              "/" + encodeURIComponent(name),
 		method:           http.MethodGet,
-		authTime:         authTime,
 		optQuery:         opt,
 		optHeader:        opt,
 		disableCloseBody: true,
@@ -69,13 +67,11 @@ type ObjectPutOptions struct {
 // Put Object请求可以将一个文件（Oject）上传至指定Bucket。
 //
 // https://www.qcloud.com/document/product/436/7749
-func (s *ObjectService) Put(ctx context.Context,
-	authTime *AuthTime, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
+func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/" + encodeURIComponent(name),
 		method:    http.MethodPut,
-		authTime:  authTime,
 		body:      r,
 		optHeader: opt,
 	}
@@ -86,13 +82,11 @@ func (s *ObjectService) Put(ctx context.Context,
 // Delete Object请求可以将一个文件（Object）删除。
 //
 // https://www.qcloud.com/document/product/436/7743
-func (s *ObjectService) Delete(ctx context.Context,
-	authTime *AuthTime, name string) (*Response, error) {
+func (s *ObjectService) Delete(ctx context.Context, name string) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/" + encodeURIComponent(name),
-		method:   http.MethodDelete,
-		authTime: authTime,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/" + encodeURIComponent(name),
+		method:  http.MethodDelete,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -106,13 +100,11 @@ type ObjectHeadOptions struct {
 // Head Object请求可以取回对应Object的元数据，Head的权限与Get的权限一致
 //
 // https://www.qcloud.com/document/product/436/7745
-func (s *ObjectService) Head(ctx context.Context,
-	authTime *AuthTime, name string, opt *ObjectHeadOptions) (*Response, error) {
+func (s *ObjectService) Head(ctx context.Context, name string, opt *ObjectHeadOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/" + encodeURIComponent(name),
 		method:    http.MethodHead,
-		authTime:  authTime,
 		optHeader: opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
@@ -131,13 +123,11 @@ type ObjectOptionsOptions struct {
 // 当CORS配置不存在时，请求返回403 Forbidden。
 //
 // https://www.qcloud.com/document/product/436/8288
-func (s *ObjectService) Options(ctx context.Context,
-	authTime *AuthTime, name string, opt *ObjectOptionsOptions) (*Response, error) {
+func (s *ObjectService) Options(ctx context.Context, name string, opt *ObjectOptionsOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/" + encodeURIComponent(name),
 		method:    http.MethodOptions,
-		authTime:  authTime,
 		optHeader: opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
@@ -157,15 +147,12 @@ func (s *ObjectService) Options(ctx context.Context,
 // Appendable的文件不可以被复制，不参与版本管理，不参与生命周期管理，不可跨区域复制。
 //
 // https://www.qcloud.com/document/product/436/7741
-func (s *ObjectService) Append(ctx context.Context,
-	authTime *AuthTime, name string, position int,
-	r io.Reader, opt *ObjectPutOptions) (*Response, error) {
+func (s *ObjectService) Append(ctx context.Context, name string, position int, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
 	u := fmt.Sprintf("/%s?append&position=%d", encodeURIComponent(name), position)
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       u,
 		method:    http.MethodPost,
-		authTime:  authTime,
 		optHeader: opt,
 		body:      r,
 	}
@@ -173,26 +160,19 @@ func (s *ObjectService) Append(ctx context.Context,
 	return resp, err
 }
 
-// ObjectForDelete ...
-type ObjectForDelete struct {
-	Key string
-}
-
 // ObjectDeleteMultiOptions ...
 type ObjectDeleteMultiOptions struct {
-	XMLName xml.Name           `xml:"Delete" header:"-"`
-	Quiet   bool               `xml:"Quiet" header:"-"`
-	Objects []*ObjectForDelete `xml:"Object" header:"-"`
+	XMLName xml.Name `xml:"Delete" header:"-"`
+	Quiet   bool     `xml:"Quiet" header:"-"`
+	Objects []Object `xml:"Object" header:"-"`
 	//XCosSha1 string `xml:"-" header:"x-cos-sha1"`
 }
 
 // ObjectDeleteMultiResult ...
 type ObjectDeleteMultiResult struct {
 	XMLName        xml.Name `xml:"DeleteResult"`
-	DeletedObjects []*struct {
-		Key string
-	} `xml:"Deleted,omitempty"`
-	Errors []*struct {
+	DeletedObjects []Object `xml:"Deleted,omitempty"`
+	Errors         []struct {
 		Key     string
 		Code    string
 		Message string
@@ -208,18 +188,26 @@ type ObjectDeleteMultiResult struct {
 // 此请求必须携带x-cos-sha1用来校验Body的完整性。
 //
 // https://www.qcloud.com/document/product/436/8289
-func (s *ObjectService) DeleteMulti(ctx context.Context,
-	authTime *AuthTime, opt *ObjectDeleteMultiOptions,
-) (*ObjectDeleteMultiResult, *Response, error) {
+func (s *ObjectService) DeleteMulti(ctx context.Context, opt *ObjectDeleteMultiOptions) (*ObjectDeleteMultiResult, *Response, error) {
 	var res ObjectDeleteMultiResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?delete",
-		method:   http.MethodPost,
-		authTime: authTime,
-		body:     opt,
-		result:   &res,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?delete",
+		method:  http.MethodPost,
+		body:    opt,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
+}
+
+// Object ...
+type Object struct {
+	Key          string `xml:",omitempty"`
+	ETag         string `xml:",omitempty"`
+	Size         int    `xml:",omitempty"`
+	PartNumber   int    `xml:",omitempty"`
+	LastModified string `xml:",omitempty"`
+	StorageClass string `xml:",omitempty"`
+	Owner        *Owner `xml:",omitempty"`
 }

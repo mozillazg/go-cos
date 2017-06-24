@@ -14,15 +14,8 @@ type ServiceService service
 // ServiceGetResult ...
 type ServiceGetResult struct {
 	XMLName xml.Name `xml:"ListAllMyBucketsResult"`
-	Owner   *struct {
-		ID          string
-		DisplayName string
-	} `xml:"Owner"`
-	Buckets []struct {
-		Name       string
-		Location   string
-		CreateDate string
-	} `xml:"Buckets>Bucket,omitempty"`
+	Owner   *Owner   `xml:"Owner"`
+	Buckets []Bucket `xml:"Buckets>Bucket,omitempty"`
 }
 
 // Get Service 接口实现获取该用户下所有Bucket列表。
@@ -31,14 +24,13 @@ type ServiceGetResult struct {
 // 且只能获取签名中AccessID所属账户的Bucket列表。
 //
 // https://www.qcloud.com/document/product/436/8291
-func (s *ServiceService) Get(ctx context.Context, authTime *AuthTime) (*ServiceGetResult, *Response, error) {
+func (s *ServiceService) Get(ctx context.Context) (*ServiceGetResult, *Response, error) {
 	var res ServiceGetResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.ServiceURL,
-		uri:      "/",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.ServiceURL,
+		uri:     "/",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err

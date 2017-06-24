@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestBucketService_GetLocation(t *testing.T) {
@@ -24,7 +23,7 @@ func TestBucketService_GetLocation(t *testing.T) {
 <LocationConstraint>cn-north</LocationConstraint>`)
 	})
 
-	ref, _, err := client.Bucket.GetLocation(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Bucket.GetLocation(context.Background())
 	if err != nil {
 		t.Fatalf("Bucket.GetLocation returned error: %v", err)
 	}

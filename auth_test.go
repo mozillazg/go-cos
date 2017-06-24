@@ -1,6 +1,7 @@
 package cos
 
 import (
+	"context"
 	"net/http"
 	"testing"
 	"time"
@@ -20,11 +21,31 @@ func TestNewAuthorization(t *testing.T) {
 	req.Header.Add("x-cos-content-sha1", "db8ac1c259eb89d4a131b253bacfca5f319d54f2")
 	req.Header.Add("x-cos-stroage-class", "nearline")
 
-	auth := NewAuthorization(secretID, secretKey, req, startTime, endTime,
-		startTime, endTime,
-	)
+	authTime := &AuthTime{
+		SignStartTime: startTime,
+		SignEndTime:   endTime,
+		KeyStartTime:  startTime,
+		KeyEndTime:    endTime,
+	}
+	auth := newAuthorization(secretID, secretKey, req, authTime)
 
 	if auth != expectAuthorization {
 		t.Errorf("NewAuthorization returned \n%#v, want \n%#v", auth, expectAuthorization)
 	}
+}
+
+func TestAuthorizationTransport(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		if auth == "" {
+			t.Error("AuthorizationTransport didn't add Authorization header")
+		}
+	})
+
+	client.client.Transport = &AuthorizationTransport{}
+	req, _ := http.NewRequest("GET", client.BaseURL.BucketURL.String(), nil)
+	client.doAPI(context.Background(), req, nil, true)
 }

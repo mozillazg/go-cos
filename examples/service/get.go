@@ -4,25 +4,29 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
+
+	"net/http"
 
 	"bitbucket.org/mozillazg/go-cos"
 )
 
 func main() {
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"),
-		nil, nil,
-	)
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    true,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
+	c := cos.NewClient(nil, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    true,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 
-	s, _, err := c.Service.Get(context.Background(), cos.NewAuthTime(time.Hour))
+	s, _, err := c.Service.Get(context.Background())
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	for _, b := range s.Buckets {

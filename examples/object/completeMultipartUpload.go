@@ -7,24 +7,22 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
+
+	"net/http"
 
 	"bitbucket.org/mozillazg/go-cos"
 )
 
-func initUpload(c *cos.Client, authTime *cos.AuthTime,
-	name string,
-) *cos.ObjectInitiateMultipartUploadResult {
-	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), authTime, name, nil)
+func initUpload(c *cos.Client, name string) *cos.InitiateMultipartUploadResult {
+	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), name, nil)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%#v\n", v)
 	return v
 }
 
-func uploadPart(c *cos.Client, authTime *cos.AuthTime,
-	name string, uploadID string, blockSize, n int) string {
+func uploadPart(c *cos.Client, name string, uploadID string, blockSize, n int) string {
 
 	b := make([]byte, blockSize)
 	if _, err := rand.Read(b); err != nil {
@@ -34,10 +32,10 @@ func uploadPart(c *cos.Client, authTime *cos.AuthTime,
 	f := strings.NewReader(s)
 
 	resp, err := c.Object.UploadPart(
-		context.Background(), authTime, name, uploadID, n, f, nil,
+		context.Background(), name, uploadID, n, f, nil,
 	)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", resp.Status)
 	return resp.Header.Get("Etag")
@@ -46,39 +44,49 @@ func uploadPart(c *cos.Client, authTime *cos.AuthTime,
 func main() {
 	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    false,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
+	c := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    false,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 
-	authTime := cos.NewAuthTime(time.Hour)
 	name := "test/test_complete_upload.go"
-	up := initUpload(c, authTime, name)
+	up := initUpload(c, name)
 	uploadID := up.UploadID
 	blockSize := 1024 * 1024 * 3
 
-	opt := &cos.ObjectCompleteMultipartUploadOption{}
+	opt := &cos.CompleteMultipartUploadOptions{}
 	for i := 1; i < 5; i++ {
-		etag := uploadPart(c, authTime, name, uploadID, blockSize, i)
-		opt.Parts = append(opt.Parts, cos.ObjectPart{
+		etag := uploadPart(c, name, uploadID, blockSize, i)
+		opt.Parts = append(opt.Parts, cos.Object{
 			PartNumber: i, ETag: etag},
 		)
 	}
 
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    true,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
+	c = cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    true,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 	v, resp, err := c.Object.CompleteMultipartUpload(
-		context.Background(), authTime, name, uploadID, opt,
+		context.Background(), name, uploadID, opt,
 	)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 	fmt.Printf("%s\n", resp.Status)
 	fmt.Printf("%#v\n", v)

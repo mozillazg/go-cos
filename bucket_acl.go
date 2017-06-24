@@ -2,42 +2,22 @@ package cos
 
 import (
 	"context"
-	"encoding/xml"
 	"net/http"
 )
 
-// BucketACLGrantee ...
-type BucketACLGrantee struct {
-	Type       string `xml:"type,attr"`
-	UIN        string `xml:"uin"`
-	SubAccount string `xml:"Subaccount,omitempty"`
-}
-
-// BucketACLGrant ...
-type BucketACLGrant struct {
-	Grantee    *BucketACLGrantee
-	Permission string
-}
-
 // BucketGetACLResult ...
-type BucketGetACLResult struct {
-	XMLName           xml.Name `xml:"AccessControlPolicy"`
-	Owner             *Owner
-	AccessControlList []*BucketACLGrant `xml:"AccessControlList>Grant,omitempty"`
-}
+type BucketGetACLResult ACLXml
 
 // GetACL 使用API读取Bucket的ACL表，只有所有者有权操作。
 //
 // https://www.qcloud.com/document/product/436/7733
-func (s *BucketService) GetACL(ctx context.Context,
-	authTime *AuthTime) (*BucketGetACLResult, *Response, error) {
+func (s *BucketService) GetACL(ctx context.Context) (*BucketGetACLResult, *Response, error) {
 	var res BucketGetACLResult
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/?acl",
-		method:   http.MethodGet,
-		authTime: authTime,
-		result:   &res,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/?acl",
+		method:  http.MethodGet,
+		result:  &res,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -45,8 +25,8 @@ func (s *BucketService) GetACL(ctx context.Context,
 
 // BucketPutACLOptions ...
 type BucketPutACLOptions struct {
-	Header *ACLHeaderOptions   `url:"-" xml:"-"`
-	Body   *BucketGetACLResult `url:"-" header:"-"`
+	Header *ACLHeaderOptions `url:"-" xml:"-"`
+	Body   *ACLXml           `url:"-" header:"-"`
 }
 
 // PutACL 使用API写入Bucket的ACL表，您可以通过Header："x-cos-acl","x-cos-grant-read",
@@ -64,9 +44,7 @@ type BucketPutACLOptions struct {
 //   "x-cos-grant-full-control"：意味被赋予权限的用户拥有该Bucket的读写权限
 //
 // https://www.qcloud.com/document/product/436/7737
-func (s *BucketService) PutACL(ctx context.Context,
-	authTime *AuthTime,
-	opt *BucketPutACLOptions) (*Response, error) {
+func (s *BucketService) PutACL(ctx context.Context, opt *BucketPutACLOptions) (*Response, error) {
 	header := opt.Header
 	body := opt.Body
 	if body != nil {
@@ -76,7 +54,6 @@ func (s *BucketService) PutACL(ctx context.Context,
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/?acl",
 		method:    http.MethodPut,
-		authTime:  authTime,
 		body:      body,
 		optHeader: header,
 	}

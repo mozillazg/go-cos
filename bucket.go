@@ -13,24 +13,15 @@ type BucketService service
 
 // BucketGetResult ...
 type BucketGetResult struct {
-	XMLName     xml.Name `xml:"ListBucketResult"`
-	Name        string
-	Prefix      string `xml:"Prefix,omitempty"`
-	Marker      string `xml:"Marker,omitempty"`
-	NextMarker  string `xml:"NextMarker,omitempty"`
-	Delimiter   string `xml:"Delimiter,omitempty"`
-	MaxKeys     int
-	IsTruncated bool
-	Contents    []struct {
-		Key          string
-		LastModified string
-		ETag         string
-		Size         int
-		Owner        *struct {
-			ID string
-		}
-		StorageClass string
-	} `xml:"Contents,omitempty"`
+	XMLName        xml.Name `xml:"ListBucketResult"`
+	Name           string
+	Prefix         string `xml:"Prefix,omitempty"`
+	Marker         string `xml:"Marker,omitempty"`
+	NextMarker     string `xml:"NextMarker,omitempty"`
+	Delimiter      string `xml:"Delimiter,omitempty"`
+	MaxKeys        int
+	IsTruncated    bool
+	Contents       []Object `xml:"Contents,omitempty"`
 	CommonPrefixes []string `xml:"CommonPrefixes>Prefix,omitempty"`
 	EncodingType   string   `xml:"Encoding-Type,omitempty"`
 }
@@ -47,15 +38,12 @@ type BucketGetOptions struct {
 // Get Bucket请求等同于 List Object请求，可以列出该Bucket下部分或者所有Object，发起该请求需要拥有Read权限。
 //
 // https://www.qcloud.com/document/product/436/7734
-func (s *BucketService) Get(ctx context.Context,
-	authTime *AuthTime, opt *BucketGetOptions) (*BucketGetResult,
-	*Response, error) {
+func (s *BucketService) Get(ctx context.Context, opt *BucketGetOptions) (*BucketGetResult, *Response, error) {
 	var res BucketGetResult
 	sendOpt := sendOptions{
 		baseURL:  s.client.BaseURL.BucketURL,
 		uri:      "/",
 		method:   http.MethodGet,
-		authTime: authTime,
 		optQuery: opt,
 		result:   &res,
 	}
@@ -69,13 +57,11 @@ type BucketPutOptions ACLHeaderOptions
 // Put Bucket请求可以在指定账号下创建一个Bucket。
 //
 // https://www.qcloud.com/document/product/436/7738
-func (s *BucketService) Put(ctx context.Context,
-	authTime *AuthTime, opt *BucketPutOptions) (*Response, error) {
+func (s *BucketService) Put(ctx context.Context, opt *BucketPutOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       "/",
 		method:    http.MethodPut,
-		authTime:  authTime,
 		optHeader: opt,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
@@ -85,13 +71,11 @@ func (s *BucketService) Put(ctx context.Context,
 // Delete Bucket请求可以在指定账号下删除Bucket，删除之前要求Bucket为空。
 //
 // https://www.qcloud.com/document/product/436/7732
-func (s *BucketService) Delete(ctx context.Context,
-	authTime *AuthTime) (*Response, error) {
+func (s *BucketService) Delete(ctx context.Context) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/",
-		method:   http.MethodDelete,
-		authTime: authTime,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/",
+		method:  http.MethodDelete,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -104,14 +88,20 @@ func (s *BucketService) Delete(ctx context.Context,
 //   当不存在时，返回 HTTP 状态码404。
 //
 // https://www.qcloud.com/document/product/436/7735
-func (s *BucketService) Head(ctx context.Context,
-	authTime *AuthTime) (*Response, error) {
+func (s *BucketService) Head(ctx context.Context) (*Response, error) {
 	sendOpt := sendOptions{
-		baseURL:  s.client.BaseURL.BucketURL,
-		uri:      "/",
-		method:   http.MethodHead,
-		authTime: authTime,
+		baseURL: s.client.BaseURL.BucketURL,
+		uri:     "/",
+		method:  http.MethodHead,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
+}
+
+// Bucket ...
+type Bucket struct {
+	Name       string
+	AppID      string `xml:",omitempty"`
+	Region     string `xml:"Location,omitempty"`
+	CreateDate string `xml:",omitempty"`
 }

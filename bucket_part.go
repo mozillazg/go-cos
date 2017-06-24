@@ -45,15 +45,12 @@ type ListMultipartUploadsOptions struct {
 // List Multipart Uploads用来查询正在进行中的分块上传。单次最多列出1000个正在进行中的分块上传。
 //
 // https://www.qcloud.com/document/product/436/7736
-func (s *BucketService) ListMultipartUploads(ctx context.Context,
-	authTime *AuthTime,
-	opt *ListMultipartUploadsOptions) (*ListMultipartUploadsResult, *Response, error) {
+func (s *BucketService) ListMultipartUploads(ctx context.Context, opt *ListMultipartUploadsOptions) (*ListMultipartUploadsResult, *Response, error) {
 	var res ListMultipartUploadsResult
 	sendOpt := sendOptions{
 		baseURL:  s.client.BaseURL.BucketURL,
 		uri:      "/?uploads",
 		method:   http.MethodGet,
-		authTime: authTime,
 		result:   &res,
 		optQuery: opt,
 	}

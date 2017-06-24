@@ -23,7 +23,7 @@ func Test_checkResponse_error(t *testing.T) {
 	})
 
 	req, _ := http.NewRequest("GET", client.BaseURL.ServiceURL.String()+"/test_409", nil)
-	resp, _ := client.Client.Do(req)
+	resp, _ := client.client.Do(req)
 	err := checkResponse(resp)
 
 	if e, ok := err.(*ErrorResponse); ok {
@@ -47,7 +47,7 @@ func Test_checkResponse_no_error(t *testing.T) {
 	})
 
 	req, _ := http.NewRequest("GET", client.BaseURL.ServiceURL.String()+"/test_200", nil)
-	resp, _ := client.Client.Do(req)
+	resp, _ := client.client.Do(req)
 	err := checkResponse(resp)
 
 	if err != nil {

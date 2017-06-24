@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+	"time"
 )
 
 var (
@@ -31,7 +32,7 @@ func setup() {
 	server = httptest.NewServer(mux)
 
 	u, _ := url.Parse(server.URL)
-	client = NewClient("", "", &BaseURL{u, u}, nil)
+	client = NewClient(&BaseURL{u, u}, nil)
 }
 
 // teardown closes the test HTTP server.
@@ -113,12 +114,43 @@ func testXMLMarshal(t *testing.T, v interface{}, want string) {
 }
 
 func TestNewClient(t *testing.T) {
-	c := NewClient("", "", nil, nil)
+	c := NewClient(nil, nil)
 
 	if got, want := c.BaseURL.ServiceURL.String(), defaultServiceBaseURL; got != want {
 		t.Errorf("NewClient BaseURL is %v, want %v", got, want)
 	}
 	if got, want := c.UserAgent, userAgent; got != want {
 		t.Errorf("NewClient UserAgent is %v, want %v", got, want)
+	}
+}
+
+func TestNewBucketURL_secure_false(t *testing.T) {
+	got := NewBucketURL("bname", "idx", "cn-bj", false).String()
+	want := "http://bname-idx.cn-bj.myqcloud.com"
+	if got != want {
+		t.Errorf("NewBucketURL is %v, want %v", got, want)
+	}
+}
+
+func TestNewBucketURL_secure_true(t *testing.T) {
+	got := NewBucketURL("bname", "idx", "cn-bj", true).String()
+	want := "https://bname-idx.cn-bj.myqcloud.com"
+	if got != want {
+		t.Errorf("NewBucketURL is %v, want %v", got, want)
+	}
+}
+
+func TestClient_doAPI(t *testing.T) {
+	setup()
+	defer teardown()
+
+}
+
+func TestNewAuthTime(t *testing.T) {
+	a := NewAuthTime(time.Hour)
+	if a.SignStartTime != a.KeyStartTime ||
+		a.SignEndTime != a.SignEndTime ||
+		a.SignStartTime.Add(time.Hour) != a.SignEndTime {
+		t.Errorf("NewAuthTime request got %+v is not valid", a)
 	}
 }

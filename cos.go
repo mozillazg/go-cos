@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"time"
+	"text/template"
 
 	"bitbucket.org/mozillazg/go-httpheader"
 	"github.com/google/go-querystring/query"
@@ -23,7 +23,12 @@ const (
 	userAgent             = "go-cos/" + Version
 	contentTypeXML        = "application/xml"
 	defaultServiceBaseURL = "https://service.cos.myqcloud.com"
-	bucketURLFormat       = "%s://%s-%s.%s.myqcloud.com"
+)
+
+var bucketURLTemplate = template.Must(
+	template.New("bucketURLFormat").Parse(
+		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.{{.Region}}.myqcloud.com",
+	),
 )
 
 // BaseURL 访问各 API 所需的基础 URL
@@ -40,21 +45,29 @@ type BaseURL struct {
 //   AppID: 应用 ID
 //   Region: 区域代码: cn-east, cn-south, cn-north
 //   secure: 是否使用 https
-func NewBucketURL(bucketName, AppID, Region string, secure bool) *url.URL {
+func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
 	scheme := "https"
 	if !secure {
 		scheme = "http"
 	}
-	urlStr := fmt.Sprintf(bucketURLFormat, scheme, bucketName, AppID, Region)
-	u, _ := url.Parse(urlStr)
+
+	w := bytes.NewBuffer(nil)
+	bucketURLTemplate.Execute(w, struct {
+		Scheme     string
+		BucketName string
+		AppID      string
+		Region     string
+	}{
+		scheme, bucketName, appID, region,
+	})
+
+	u, _ := url.Parse(w.String())
 	return u
 }
 
 // A Client manages communication with the COS API.
 type Client struct {
-	Client    *http.Client
-	secretID  string
-	secretKey string
+	client *http.Client
 
 	UserAgent string
 	BaseURL   *BaseURL
@@ -71,7 +84,7 @@ type service struct {
 }
 
 // NewClient returns a new COS API client.
-func NewClient(secretID, secretKey string, uri *BaseURL, httpClient *http.Client) *Client {
+func NewClient(uri *BaseURL, httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
@@ -86,9 +99,7 @@ func NewClient(secretID, secretKey string, uri *BaseURL, httpClient *http.Client
 	}
 
 	c := &Client{
-		Client:    httpClient,
-		secretID:  secretID,
-		secretKey: secretKey,
+		client:    httpClient,
 		UserAgent: userAgent,
 		BaseURL:   baseURL,
 	}
@@ -99,8 +110,7 @@ func NewClient(secretID, secretKey string, uri *BaseURL, httpClient *http.Client
 	return c
 }
 
-func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method string,
-	body interface{}, optQuery interface{}, optHeader interface{}) (req *http.Request, err error) {
+func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method string, body interface{}, optQuery interface{}, optHeader interface{}) (req *http.Request, err error) {
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
 		return
@@ -160,19 +170,10 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 	return
 }
 
-func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{},
-	authTime *AuthTime, closeBody bool) (*Response, error) {
+func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{}, closeBody bool) (*Response, error) {
 	req = req.WithContext(ctx)
 
-	if authTime != nil {
-		AddAuthorization(
-			c.secretID, c.secretKey, req,
-			authTime.SignStartTime, authTime.SignEndTime,
-			authTime.KeyStartTime, authTime.KeyEndTime,
-		)
-	}
-
-	resp, err := c.Client.Do(req)
+	resp, err := c.client.Do(req)
 	if err != nil {
 		// If we got an error, and the context has been canceled,
 		// the context's error is probably more useful.
@@ -186,8 +187,8 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{
 
 	defer func() {
 		if closeBody {
-			// Drain up to 512 bytes and close the body to let the Transport reuse the connection
-			io.CopyN(ioutil.Discard, resp.Body, 512)
+			// Close the body to let the Transport reuse the connection
+			io.Copy(ioutil.Discard, resp.Body)
 			resp.Body.Close()
 		}
 	}()
@@ -221,9 +222,9 @@ type sendOptions struct {
 	// URL 中除基础 URL 外的剩余部分
 	uri string
 	// 请求方法
-	method   string
-	authTime *AuthTime
-	body     interface{}
+	method string
+
+	body interface{}
 	// url 查询参数
 	optQuery interface{}
 	// http header 参数
@@ -241,7 +242,7 @@ func (c *Client) send(ctx context.Context, opt *sendOptions) (resp *Response, er
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, opt.result, opt.authTime, !opt.disableCloseBody)
+	resp, err = c.doAPI(ctx, req, opt.result, !opt.disableCloseBody)
 	if err != nil {
 		return
 	}
@@ -303,37 +304,13 @@ func addHeaderOptions(header http.Header, opt interface{}) (http.Header, error) 
 
 // Owner ...
 type Owner struct {
-	UIN         string `xml:"uin"`
+	UIN         string `xml:"uin,omitmepty"`
 	ID          string `xml:",omitmepty"`
 	DisplayName string `xml:",omitmepty"`
 }
 
 // Initiator ...
 type Initiator Owner
-
-// AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
-type AuthTime struct {
-	SignStartTime time.Time
-	SignEndTime   time.Time
-	KeyStartTime  time.Time
-	KeyEndTime    time.Time
-}
-
-// NewAuthTime 生成 AuthTime 的便捷函数
-//
-//   expire: 从现在开始多久过期.
-func NewAuthTime(expire time.Duration) *AuthTime {
-	signStartTime := time.Now()
-	keyStartTime := signStartTime
-	signEndTime := signStartTime.Add(expire)
-	keyEndTime := signEndTime
-	return &AuthTime{
-		SignStartTime: signStartTime,
-		SignEndTime:   signEndTime,
-		KeyStartTime:  keyStartTime,
-		KeyEndTime:    keyEndTime,
-	}
-}
 
 // Response API 响应
 type Response struct {
@@ -352,4 +329,24 @@ type ACLHeaderOptions struct {
 	XCosGrantRead        string `header:"x-cos-grant-read,omitempty" url:"-" xml:"-"`
 	XCosGrantWrite       string `header:"x-cos-grant-write,omitempty" url:"-" xml:"-"`
 	XCosGrantFullControl string `header:"x-cos-grant-full-control,omitempty" url:"-" xml:"-"`
+}
+
+// ACLGrantee ...
+type ACLGrantee struct {
+	Type       string `xml:"type,attr"`
+	UIN        string `xml:"uin"`
+	SubAccount string `xml:"Subaccount,omitempty"`
+}
+
+// ACLGrant ...
+type ACLGrant struct {
+	Grantee    *ACLGrantee
+	Permission string
+}
+
+// ACLXml ...
+type ACLXml struct {
+	XMLName           xml.Name `xml:"AccessControlPolicy"`
+	Owner             *Owner
+	AccessControlList []ACLGrant `xml:"AccessControlList>Grant,omitempty"`
 }

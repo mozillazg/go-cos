@@ -5,8 +5,10 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
+	"os"
 )
 
 // 计算 md5 或 sha1 时的分块大小
@@ -26,24 +28,15 @@ func calSHA1Digest(msg []byte) []byte {
 	return m.Sum(nil)
 }
 
-// Bool is a helper routine that allocates a new bool value
-// to store v and returns a pointer to it.
-func Bool(v bool) *bool { return &v }
-
-// Int is a helper routine that allocates a new int value
-// to store v and returns a pointer to it.
-func Int(v int) *int { return &v }
-
-// String is a helper routine that allocates a new string value
-// to store v and returns a pointer to it.
-func String(v string) *string { return &v }
-
-// DebugRequestTransport 会打印请求信息, 方便调试.
+// DebugRequestTransport 会打印请求和响应信息, 方便调试.
 type DebugRequestTransport struct {
 	RequestHeader  bool
 	RequestBody    bool // RequestHeader 为 true 时,这个选项才会生效
 	ResponseHeader bool
 	ResponseBody   bool // ResponseHeader 为 true 时,这个选项才会生效
+
+	// debug 信息输出到 Writer 中, 默认是 os.Stderr
+	Writer io.Writer
 
 	Transport http.RoundTripper
 }
@@ -51,10 +44,14 @@ type DebugRequestTransport struct {
 // RoundTrip implements the RoundTripper interface.
 func (t *DebugRequestTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req = cloneRequest(req) // per RoundTrip contract
+	w := t.Writer
+	if w == nil {
+		w = os.Stderr
+	}
 
 	if t.RequestHeader {
 		a, _ := httputil.DumpRequestOut(req, t.RequestBody)
-		fmt.Printf("%s\n\n", string(a))
+		fmt.Fprintf(w, "%s\n\n", string(a))
 	}
 
 	resp, err := t.transport().RoundTrip(req)
@@ -65,15 +62,10 @@ func (t *DebugRequestTransport) RoundTrip(req *http.Request) (*http.Response, er
 	if t.ResponseHeader {
 
 		b, _ := httputil.DumpResponse(resp, t.ResponseBody)
-		fmt.Printf("%s\n", string(b))
+		fmt.Fprintf(w, "%s\n", string(b))
 	}
 
 	return resp, err
-}
-
-// Client returns an *http.Client
-func (t *DebugRequestTransport) Client() *http.Client {
-	return &http.Client{Transport: t}
 }
 
 func (t *DebugRequestTransport) transport() http.RoundTripper {

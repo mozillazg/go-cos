@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
-	"time"
 )
 
 func TestServiceService_Get(t *testing.T) {
@@ -36,27 +35,28 @@ func TestServiceService_Get(t *testing.T) {
 </ListAllMyBucketsResult>`)
 	})
 
-	ref, _, err := client.Service.Get(context.Background(), NewAuthTime(time.Minute))
+	ref, _, err := client.Service.Get(context.Background())
 	if err != nil {
 		t.Fatalf("Service.Get returned error: %v", err)
 	}
 
 	want := &ServiceGetResult{
 		XMLName: xml.Name{Local: "ListAllMyBucketsResult"},
-		Owner: &struct {
-			ID          string
-			DisplayName string
-		}{
-			"xbaccxx",
-			"100000760461",
+		Owner: &Owner{
+			ID:          "xbaccxx",
+			DisplayName: "100000760461",
 		},
-		Buckets: []struct {
-			Name       string
-			Location   string
-			CreateDate string
-		}{
-			{"huadong-1253846586", "cn-east", "2017-06-16T13:08:28Z"},
-			{"huanan-1253846586", "cn-south", "2017-06-10T09:00:07Z"},
+		Buckets: []Bucket{
+			{
+				Name:       "huadong-1253846586",
+				Region:     "cn-east",
+				CreateDate: "2017-06-16T13:08:28Z",
+			},
+			{
+				Name:       "huanan-1253846586",
+				Region:     "cn-south",
+				CreateDate: "2017-06-10T09:00:07Z",
+			},
 		},
 	}
 

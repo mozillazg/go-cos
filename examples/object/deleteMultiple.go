@@ -12,6 +12,8 @@ import (
 
 	"math/rand"
 
+	"net/http"
+
 	"bitbucket.org/mozillazg/go-cos"
 )
 
@@ -23,7 +25,7 @@ func genBigData(blockSize int) []byte {
 	return b
 }
 
-func uploadMulti(c *cos.Client, authTime *cos.AuthTime) []string {
+func uploadMulti(c *cos.Client) []string {
 	names := []string{}
 	data := genBigData(1024 * 1024 * 1)
 	ctx := context.Background()
@@ -35,7 +37,7 @@ func uploadMulti(c *cos.Client, authTime *cos.AuthTime) []string {
 		name = fmt.Sprintf("test/test_multi_delete_%s", time.Now().Format(time.RFC3339))
 		r = bytes.NewReader(data)
 
-		c.Object.Put(ctx, authTime, name, r, nil)
+		c.Object.Put(ctx, name, r, nil)
 		names = append(names, name)
 		n--
 	}
@@ -45,22 +47,25 @@ func uploadMulti(c *cos.Client, authTime *cos.AuthTime) []string {
 func main() {
 	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
-	transport := &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    false,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
-	c.Client.Transport = transport
+	c := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    false,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 	ctx := context.Background()
-	authTime := cos.NewAuthTime(time.Hour)
 
-	names := uploadMulti(c, authTime)
+	names := uploadMulti(c)
 	names = append(names, []string{"a", "b", "c", "a+bc/xx&?+# "}...)
-	obs := []*cos.ObjectForDelete{}
+	obs := []cos.Object{}
 	for _, v := range names {
-		obs = append(obs, &cos.ObjectForDelete{Key: v})
+		obs = append(obs, cos.Object{Key: v})
 	}
 	//sha1 := ""
 	opt := &cos.ObjectDeleteMultiOptions{
@@ -68,11 +73,23 @@ func main() {
 		//XCosSha1: sha1,
 		//Quiet: true,
 	}
-	transport.RequestBody = true
 
-	v, _, err := c.Object.DeleteMulti(ctx, authTime, opt)
+	c = cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    true,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
+
+	v, _, err := c.Object.DeleteMulti(ctx, opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	for _, x := range v.DeletedObjects {

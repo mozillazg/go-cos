@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"os"
-	"time"
+
+	"net/http"
 
 	"bitbucket.org/mozillazg/go-cos"
 )
@@ -15,15 +15,18 @@ func main() {
 	b := &cos.BaseURL{
 		BucketURL: u,
 	}
-	c := cos.NewClient(os.Getenv("COS_SECRETID"), os.Getenv("COS_SECRETKEY"), b, nil)
-	c.Client.Transport = &cos.DebugRequestTransport{
-		RequestHeader:  true,
-		RequestBody:    true,
-		ResponseHeader: true,
-		ResponseBody:   true,
-	}
-
-	authTime := cos.NewAuthTime(time.Hour)
+	c := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+			Transport: &cos.DebugRequestTransport{
+				RequestHeader:  true,
+				RequestBody:    true,
+				ResponseHeader: true,
+				ResponseBody:   true,
+			},
+		},
+	})
 
 	// with header
 	opt := &cos.BucketPutACLOptions{
@@ -31,20 +34,20 @@ func main() {
 			XCosACL: "private",
 		},
 	}
-	_, err := c.Bucket.PutACL(context.Background(), authTime, opt)
+	_, err := c.Bucket.PutACL(context.Background(), opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 
 	// with body
 	opt = &cos.BucketPutACLOptions{
-		Body: &cos.BucketGetACLResult{
+		Body: &cos.ACLXml{
 			Owner: &cos.Owner{
 				UIN: "100000760461",
 			},
-			AccessControlList: []*cos.BucketACLGrant{
+			AccessControlList: []cos.ACLGrant{
 				{
-					Grantee: &cos.BucketACLGrantee{
+					Grantee: &cos.ACLGrantee{
 						Type: "RootAccount",
 						UIN:  "100000760461",
 					},
@@ -54,8 +57,8 @@ func main() {
 			},
 		},
 	}
-	_, err = c.Bucket.PutACL(context.Background(), authTime, opt)
+	_, err = c.Bucket.PutACL(context.Background(), opt)
 	if err != nil {
-		fmt.Println(err)
+		panic(err)
 	}
 }
