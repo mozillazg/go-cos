@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/mozillazg/go-cos"
+	"github.com/mozillazg/go-cos/examples"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
-			Transport: &cos.DebugRequestTransport{
+			Transport: &examples.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    true,
 				ResponseHeader: true,

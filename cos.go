@@ -13,8 +13,8 @@ import (
 	"reflect"
 	"text/template"
 
-	"github.com/mozillazg/go-httpheader"
 	"github.com/google/go-querystring/query"
+	"github.com/mozillazg/go-httpheader"
 )
 
 const (
