@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 (2017-06-28)
+
+* 修复 ACL 相关 API 突然失效的问题.
+  (因为 COS ACL 相关 API 的 request 和 response xml body 的结构发生了变化)
+* 删除调试用的 DebugRequestTransport(把它移动到 examples/ 中)
+
+
 ## 0.4.0 (2017-06-24)
 
 * 去掉 API 中的 authTime 参数，默认不再自动添加 Authorization header
