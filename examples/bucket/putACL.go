@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/mozillazg/go-cos"
+	"github.com/mozillazg/go-cos/examples"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
-			Transport: &cos.DebugRequestTransport{
+			Transport: &examples.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    true,
 				ResponseHeader: true,
@@ -43,13 +44,13 @@ func main() {
 	opt = &cos.BucketPutACLOptions{
 		Body: &cos.ACLXml{
 			Owner: &cos.Owner{
-				UIN: "100000760461",
+				ID: "qcs::cam::uin/100000760461:uin/100000760461",
 			},
 			AccessControlList: []cos.ACLGrant{
 				{
 					Grantee: &cos.ACLGrantee{
 						Type: "RootAccount",
-						UIN:  "100000760461",
+						ID:  "qcs::cam::uin/100000760461:uin/100000760461",
 					},
 
 					Permission: "FULL_CONTROL",

@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/mozillazg/go-cos"
+	"github.com/mozillazg/go-cos/examples"
 )
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
-			Transport: &cos.DebugRequestTransport{
+			Transport: &examples.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    true,
 				ResponseHeader: true,
@@ -33,7 +34,7 @@ func main() {
 		panic(err)
 	}
 	for _, a := range v.AccessControlList {
-		fmt.Printf("%s, %s, %s\n", a.Grantee.Type, a.Grantee.UIN, a.Permission)
+		fmt.Printf("%s, %s, %s\n", a.Grantee.Type, a.Grantee.ID, a.Permission)
 	}
 
 }
