@@ -22,18 +22,21 @@ func TestObjectService_GetACL(t *testing.T) {
 		testFormValues(t, r, vs)
 		fmt.Fprint(w, `<AccessControlPolicy>
 	<Owner>
-		<uin>100000760461</uin>
+		<ID>qcs::cam::uin/100000760461:uin/100000760461</ID>
+		<DisplayName>qcs::cam::uin/100000760461:uin/100000760461</DisplayName>
 	</Owner>
 	<AccessControlList>
 		<Grant>
-			<Grantee type="RootAccount">
-				<uin>100000760461</uin>
+			<Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="RootAccount">
+				<ID>qcs::cam::uin/100000760461:uin/100000760461</ID>
+				<DisplayName>qcs::cam::uin/100000760461:uin/100000760461</DisplayName>
 			</Grantee>
 			<Permission>FULL_CONTROL</Permission>
 		</Grant>
 		<Grant>
-			<Grantee type="RootAccount">
-				<uin>100000760463</uin>
+			<Grantee xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="RootAccount">
+				<ID>qcs::cam::uin/100000760461:uin/100000760461</ID>
+				<DisplayName>qcs::cam::uin/100000760461:uin/100000760461</DisplayName>
 			</Grantee>
 			<Permission>READ</Permission>
 		</Grant>
@@ -49,20 +52,23 @@ func TestObjectService_GetACL(t *testing.T) {
 	want := &ObjectGetACLResult{
 		XMLName: xml.Name{Local: "AccessControlPolicy"},
 		Owner: &Owner{
-			UIN: "100000760461",
+			ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+			DisplayName: "qcs::cam::uin/100000760461:uin/100000760461",
 		},
 		AccessControlList: []ACLGrant{
 			{
 				Grantee: &ACLGrantee{
-					Type: "RootAccount",
-					UIN:  "100000760461",
+					Type:        "RootAccount",
+					ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+					DisplayName: "qcs::cam::uin/100000760461:uin/100000760461",
 				},
 				Permission: "FULL_CONTROL",
 			},
 			{
 				Grantee: &ACLGrantee{
-					Type: "RootAccount",
-					UIN:  "100000760463",
+					Type:        "RootAccount",
+					ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+					DisplayName: "qcs::cam::uin/100000760461:uin/100000760461",
 				},
 				Permission: "READ",
 			},
@@ -115,21 +121,24 @@ func TestObjectService_PutACL_with_body_opt(t *testing.T) {
 	opt := &ObjectPutACLOptions{
 		Body: &ACLXml{
 			Owner: &Owner{
-				UIN: "100000760461",
+				ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+				DisplayName: "qcs::cam::uin/100000760461:uin/100000760461",
 			},
 			AccessControlList: []ACLGrant{
 				{
 					Grantee: &ACLGrantee{
-						Type: "RootAccount",
-						UIN:  "100000760461",
+						Type:        "RootAccount",
+						ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+						DisplayName: "qcs::cam::uin/100000760461:uin/100000760461",
 					},
 
 					Permission: "FULL_CONTROL",
 				},
 				{
 					Grantee: &ACLGrantee{
-						Type: "RootAccount",
-						UIN:  "100000760463",
+						Type:        "RootAccount",
+						ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+						DisplayName: "qcs::cam::uin/100000760461:uin/100000760461",
 					},
 					Permission: "READ",
 				},

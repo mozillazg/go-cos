@@ -34,7 +34,7 @@ func main() {
 		panic(err)
 	}
 	for _, a := range v.AccessControlList {
-		fmt.Printf("%s, %s, %s\n", a.Grantee.Type, a.Grantee.UIN, a.Permission)
+		fmt.Printf("%s, %s, %s\n", a.Grantee.Type, a.Grantee.ID, a.Permission)
 	}
 
 }

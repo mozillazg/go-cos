@@ -304,9 +304,9 @@ func addHeaderOptions(header http.Header, opt interface{}) (http.Header, error) 
 
 // Owner ...
 type Owner struct {
-	UIN         string `xml:"uin,omitmepty"`
-	ID          string `xml:",omitmepty"`
-	DisplayName string `xml:",omitmepty"`
+	UIN         string `xml:"uin,omitempty"`
+	ID          string `xml:",omitempty"`
+	DisplayName string `xml:",omitempty"`
 }
 
 // Initiator ...
@@ -333,9 +333,11 @@ type ACLHeaderOptions struct {
 
 // ACLGrantee ...
 type ACLGrantee struct {
-	Type       string `xml:"type,attr"`
-	UIN        string `xml:"uin"`
-	SubAccount string `xml:"Subaccount,omitempty"`
+	Type        string `xml:"type,attr"`
+	UIN         string `xml:"uin,omitempty"`
+	ID          string `xml:",omitempty"`
+	DisplayName string `xml:",omitempty"`
+	SubAccount  string `xml:"Subaccount,omitempty"`
 }
 
 // ACLGrant ...
