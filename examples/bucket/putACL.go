@@ -50,7 +50,7 @@ func main() {
 				{
 					Grantee: &cos.ACLGrantee{
 						Type: "RootAccount",
-						ID:  "qcs::cam::uin/100000760461:uin/100000760461",
+						ID:   "qcs::cam::uin/100000760461:uin/100000760461",
 					},
 
 					Permission: "FULL_CONTROL",

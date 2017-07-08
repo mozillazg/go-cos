@@ -39,6 +39,7 @@ echo '##### object ####'
 
 run ./bucket/putCORS.go
 run ./object/put.go
+run ./object/uploadFile.go
 run ./object/putACL.go
 run ./object/append.go
 run ./object/get.go

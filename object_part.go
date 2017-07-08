@@ -44,6 +44,7 @@ func (s *ObjectService) InitiateMultipartUpload(ctx context.Context, name string
 type ObjectUploadPartOptions struct {
 	Expect          string `header:"Expect,omitempty" url:"-"`
 	XCosContentSHA1 string `header:"x-cos-content-sha1" url:"-"`
+	ContentLength   int    `header:"Content-Length,omitempty" url:"-"`
 }
 
 // UploadPart ...
@@ -52,6 +53,8 @@ type ObjectUploadPartOptions struct {
 // 在每次请求Upload Part时候，需要携带partNumber和uploadID，partNumber为块的编号，支持乱序上传。
 //
 // 当传入uploadID和partNumber都相同的时候，后传入的块将覆盖之前传入的块。当uploadID不存在时会返回404错误，NoSuchUpload.
+//
+// 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ContentLength
 //
 // https://www.qcloud.com/document/product/436/7750
 func (s *ObjectService) UploadPart(ctx context.Context, name, uploadID string, partNumber int, r io.Reader, opt *ObjectUploadPartOptions) (*Response, error) {

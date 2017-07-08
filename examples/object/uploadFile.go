@@ -7,6 +7,8 @@ import (
 
 	"net/http"
 
+	"fmt"
+
 	"github.com/mozillazg/go-cos"
 	"github.com/mozillazg/go-cos/examples"
 )
@@ -20,44 +22,31 @@ func main() {
 			SecretKey: os.Getenv("COS_SECRETKEY"),
 			Transport: &examples.DebugRequestTransport{
 				RequestHeader:  true,
-				RequestBody:    true,
+				RequestBody:    false,
 				ResponseHeader: true,
 				ResponseBody:   true,
 			},
 		},
 	})
 
-	opt := &cos.ObjectPutACLOptions{
-		Header: &cos.ACLHeaderOptions{
-			XCosACL: "private",
-		},
-	}
-	name := "test/hello.txt"
-	_, err := c.Object.PutACL(context.Background(), name, opt)
+	name := "test/uploadFile.go"
+	f, err := os.Open(os.Args[0])
 	if err != nil {
 		panic(err)
 	}
-
-	// with body
-	opt = &cos.ObjectPutACLOptions{
-		Body: &cos.ACLXml{
-			Owner: &cos.Owner{
-				ID: "qcs::cam::uin/100000760461:uin/100000760461",
-			},
-			AccessControlList: []cos.ACLGrant{
-				{
-					Grantee: &cos.ACLGrantee{
-						Type: "RootAccount",
-						ID:   "qcs::cam::uin/100000760461:uin/100000760461",
-					},
-
-					Permission: "FULL_CONTROL",
-				},
-			},
+	s, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(s.Size())
+	opt := &cos.ObjectPutOptions{
+		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
+			ContentLength: int(s.Size()),
 		},
 	}
+	//opt.ContentLength = int(s.Size())
 
-	_, err = c.Object.PutACL(context.Background(), name, opt)
+	_, err = c.Object.Put(context.Background(), name, f, opt)
 	if err != nil {
 		panic(err)
 	}
