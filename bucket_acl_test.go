@@ -99,8 +99,8 @@ func TestBucketService_PutACL_with_header_opt(t *testing.T) {
 		testFormValues(t, r, vs)
 		testHeader(t, r, "x-cos-acl", "private")
 
-		want := http.NoBody
-		v := r.Body
+		want := 0
+		v, _ := r.Body.Read([]byte{})
 		if !reflect.DeepEqual(v, want) {
 			t.Errorf("Bucket.PutACL request body: %#v, want %#v", v, want)
 		}

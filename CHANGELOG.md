@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 (2017-07-09)
+
+* 增加说明在某些情况下 ObjectPutHeaderOptions.ContentLength 必须要指定
+* 增加 ObjectUploadPartOptions.ContentLength
+
+
 ## 0.5.0 (2017-06-28)
 
 * 修复 ACL 相关 API 突然失效的问题.

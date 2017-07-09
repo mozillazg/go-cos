@@ -48,6 +48,7 @@ type ObjectPutHeaderOptions struct {
 	ContentDisposition string `header:"Content-Disposition,omitempty" url:"-"`
 	ContentEncoding    string `header:"Content-Encoding,omitempty" url:"-"`
 	ContentType        string `header:"Content-Type,omitempty" url:"-"`
+	ContentLength      int    `header:"Content-Length,omitempty" url:"-"`
 	Expect             string `header:"Expect,omitempty" url:"-"`
 	Expires            string `header:"Expires,omitempty" url:"-"`
 	XCosContentSHA1    string `header:"x-cos-content-sha1,omitempty" url:"-"`
@@ -65,6 +66,8 @@ type ObjectPutOptions struct {
 }
 
 // Put Object请求可以将一个文件（Oject）上传至指定Bucket。
+//
+// 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ObjectPutHeaderOptions.ContentLength
 //
 // https://www.qcloud.com/document/product/436/7749
 func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
@@ -145,6 +148,8 @@ func (s *ObjectService) Options(ctx context.Context, name string, opt *ObjectOpt
 // 如果Append一个Normal的Object，COS会返回409 ObjectNotAppendable。
 //
 // Appendable的文件不可以被复制，不参与版本管理，不参与生命周期管理，不可跨区域复制。
+//
+// 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ObjectPutHeaderOptions.ContentLength
 //
 // https://www.qcloud.com/document/product/436/7741
 func (s *ObjectService) Append(ctx context.Context, name string, position int, r io.Reader, opt *ObjectPutOptions) (*Response, error) {

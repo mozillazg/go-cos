@@ -13,6 +13,8 @@ import (
 	"reflect"
 	"text/template"
 
+	"strconv"
+
 	"github.com/google/go-querystring/query"
 	"github.com/mozillazg/go-httpheader"
 )
@@ -121,7 +123,6 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 	var reader io.Reader
 	contentType := ""
 	contentMD5 := ""
-	contentLength := ""
 	xsha1 := ""
 	if body != nil {
 		// 上传文件
@@ -136,7 +137,6 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 			reader = bytes.NewReader(b)
 			contentMD5 = base64.StdEncoding.EncodeToString(calMD5Digest(b))
 			//xsha1 = base64.StdEncoding.EncodeToString(calSHA1Digest(b))
-			contentLength = fmt.Sprintf("%d", len(b))
 		}
 	} else {
 		contentType = contentTypeXML
@@ -151,10 +151,10 @@ func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method s
 	if err != nil {
 		return
 	}
-
-	if contentLength != "" {
-		req.Header.Set("Content-Length", contentLength)
+	if v := req.Header.Get("Content-Length"); req.ContentLength == 0 && v != "" && v != "0" {
+		req.ContentLength, _ = strconv.ParseInt(v, 10, 64)
 	}
+
 	if contentMD5 != "" {
 		req.Header["Content-MD5"] = []string{contentMD5}
 	}
