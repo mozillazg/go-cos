@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	"github.com/mozillazg/go-cos"
-	"github.com/mozillazg/go-cos/examples"
+	"github.com/mozillazg/go-cos/debug"
 )
 
 func genBigData(blockSize int) []byte {
@@ -52,7 +52,7 @@ func main() {
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
-			Transport: &examples.DebugRequestTransport{
+			Transport: &debug.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    false,
 				ResponseHeader: true,
@@ -79,7 +79,7 @@ func main() {
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
-			Transport: &examples.DebugRequestTransport{
+			Transport: &debug.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    true,
 				ResponseHeader: true,
