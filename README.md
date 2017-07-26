@@ -14,7 +14,7 @@
 
 ## usage
 
-所有的 API 在 [examples](./examples/) 目录下都有对应的使用示例。
+所有的 API 在 [_example](./_example/) 目录下都有对应的使用示例。
 
 ## TODO
 
