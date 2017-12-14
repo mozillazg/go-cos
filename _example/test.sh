@@ -54,3 +54,4 @@ run ./object/completeMultipartUpload.go
 run ./object/abortMultipartUpload.go
 run ./object/delete.go
 run ./object/deleteMultiple.go
+run ./object/copy.go

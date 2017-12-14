@@ -49,6 +49,7 @@ Object API:
 * [x] Get Object ACL
 * [x] Put Object
 * [x] Put Object ACL
+* [x] Put Object Copy
 * [x] Delete Object
 * [x] Delete Multiple Object
 * [x] Head Object
