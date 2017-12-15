@@ -82,6 +82,63 @@ func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *
 	return resp, err
 }
 
+// ObjectCopyHeaderOptions ...
+type ObjectCopyHeaderOptions struct {
+	XCosMetadataDirective           string `header:"x-cos-metadata-directive,omitempty" url:"-" xml:"-"`
+	XCosCopySourceIfModifiedSince   string `header:"x-cos-copy-source-If-Modified-Since,omitempty" url:"-" xml:"-"`
+	XCosCopySourceIfUnmodifiedSince string `header:"x-cos-copy-source-If-Unmodified-Since,omitempty" url:"-" xml:"-"`
+	XCosCopySourceIfMatch           string `header:"x-cos-copy-source-If-Match,omitempty" url:"-" xml:"-"`
+	XCosCopySourceIfNoneMatch       string `header:"x-cos-copy-source-If-None-Match,omitempty" url:"-" xml:"-"`
+	XCosStorageClass                string `header:"x-cos-storage-class,omitempty" url:"-" xml:"-"`
+	// 自定义的 x-cos-meta-* header
+	XCosMetaXXX    *http.Header `header:"x-cos-meta-*,omitempty" url:"-"`
+	XCosCopySource string       `header:"x-cos-copy-source" url:"-" xml:"-"`
+}
+
+// ObjectCopyOptions ...
+type ObjectCopyOptions struct {
+	*ObjectCopyHeaderOptions `header:",omitempty" url:"-" xml:"-"`
+	*ACLHeaderOptions        `header:",omitempty" url:"-" xml:"-"`
+}
+
+// ObjectCopyResult ...
+type ObjectCopyResult struct {
+	XMLName      xml.Name `xml:"CopyObjectResult"`
+	ETag         string   `xml:"ETag,omitempty"`
+	LastModified string   `xml:"LastModified,omitempty"`
+}
+
+// Copy ...
+// Put Object Copy 请求实现将一个文件从源路径复制到目标路径。建议文件大小 1M 到 5G，
+// 超过 5G 的文件请使用分块上传 Upload - Copy。在拷贝的过程中，文件元属性和 ACL 可以被修改。
+//
+// 用户可以通过该接口实现文件移动，文件重命名，修改文件属性和创建副本。
+//
+// 注意：在跨帐号复制的时候，需要先设置被复制文件的权限为公有读，或者对目标帐号赋权，同帐号则不需要。
+//
+// https://cloud.tencent.com/document/product/436/10881
+func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *ObjectCopyOptions) (*ObjectCopyResult, *Response, error) {
+	var res ObjectCopyResult
+	if opt == nil {
+		opt = new(ObjectCopyOptions)
+	}
+	if opt.ObjectCopyHeaderOptions == nil {
+		opt.ObjectCopyHeaderOptions = new(ObjectCopyHeaderOptions)
+	}
+	opt.XCosCopySource = sourceURL
+
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name),
+		method:    http.MethodPut,
+		body:      nil,
+		optHeader: opt,
+		result:    &res,
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
 // Delete Object请求可以将一个文件（Object）删除。
 //
 // https://www.qcloud.com/document/product/436/7743

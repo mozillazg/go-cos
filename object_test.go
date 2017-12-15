@@ -243,3 +243,32 @@ func TestObjectService_DeleteMulti(t *testing.T) {
 	}
 
 }
+
+func TestObjectService_Copy(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/test.go.copy", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+		fmt.Fprint(w, `<CopyObjectResult>
+		<ETag>"098f6bcd4621d373cade4e832627b4f6"</ETag>
+		<LastModified>2017-12-13T14:53:12</LastModified>
+	</CopyObjectResult>`)
+	})
+
+	sourceURL := "test-1253846586.cn-north.myqcloud.com/test.source"
+	ref, _, err := client.Object.Copy(context.Background(), "test.go.copy", sourceURL, nil)
+	if err != nil {
+		t.Fatalf("Object.Copy returned error: %v", err)
+	}
+
+	want := &ObjectCopyResult{
+		XMLName:      xml.Name{Local: "CopyObjectResult"},
+		ETag:         `"098f6bcd4621d373cade4e832627b4f6"`,
+		LastModified: "2017-12-13T14:53:12",
+	}
+
+	if !reflect.DeepEqual(ref, want) {
+		t.Errorf("Object.Copy returned %+v, want %+v", ref, want)
+	}
+}
