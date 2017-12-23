@@ -7,54 +7,90 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/mozillazg/go-cos)](https://goreportcard.com/report/github.com/mozillazg/go-cos)
 [![GoDoc](https://godoc.org/github.com/mozillazg/go-cos?status.svg)](https://godoc.org/github.com/mozillazg/go-cos)
 
-## install
+## Install
 
 `go get -u github.com/mozillazg/go-cos`
 
 
-## usage
+## Usage
 
-所有的 API 在 [examples](./examples/) 目录下都有对应的使用示例。
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+
+	"github.com/mozillazg/go-cos"
+)
+
+func main() {
+	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
+	b := &cos.BaseURL{BucketURL: u}
+	c := cos.NewClient(b, &http.Client{
+		Transport: &cos.AuthorizationTransport{
+			SecretID:  os.Getenv("COS_SECRETID"),
+			SecretKey: os.Getenv("COS_SECRETKEY"),
+		},
+	})
+
+	name := "test/hello.txt"
+	resp, err := c.Object.Get(context.Background(), name, nil)
+	if err != nil {
+		panic(err)
+	}
+	bs, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	fmt.Printf("%s\n", string(bs))
+}
+```
+
+所有的 API 在 [_example](./_example/) 目录下都有对应的使用示例。
 
 ## TODO
 
 Service API:
 
-* [x] Get Service
+* [x] Get Service（使用示例：[service/get.go](./_example/service/get.go)）
 
 Bucket API:
 
-* [x] Get Bucket
-* [x] Get Bucket ACL
-* [x] Get Bucket CORS
-* [x] Get Bucket Location
-* [x] Get Buket Lifecycle
-* [x] Get Bucket Tagging
-* [x] Put Bucket
-* [x] Put Bucket ACL
-* [x] Put Bucket CORS
-* [x] Put Bucket Lifecycle
-* [x] Put Bucket Tagging
-* [x] Delete Bucket
-* [x] Delete Bucket CORS
-* [x] Delete Bucket Lifecycle
-* [x] Delete Bucket Tagging
-* [x] Head Bucket
-* [x] List Multipart Uploads
+* [x] Get Bucket（使用示例：[bucket/get.go](./_example/bucket/get.go)）
+* [x] Get Bucket ACL（使用示例：[bucket/getACL.go](./_example/bucket/getACL.go)）
+* [x] Get Bucket CORS（使用示例：[bucket/getCORS.go](./_example/bucket/getCORS.go)）
+* [x] Get Bucket Location（使用示例：[bucket/getLocation.go](./_example/bucket/getLocation.go)）
+* [x] Get Buket Lifecycle（使用示例：[bucket/getLifecycle.go](./_example/bucket/getLifecycle.go)）
+* [x] Get Bucket Tagging（使用示例：[bucket/getTagging.go](./_example/bucket/getTagging.go)）
+* [x] Put Bucket（使用示例：[bucket/put.go](./_example/bucket/put.go)）
+* [x] Put Bucket ACL（使用示例：[bucket/putACL.go](./_example/bucket/putACL.go)）
+* [x] Put Bucket CORS（使用示例：[bucket/putCORS.go](./_example/bucket/putCORS.go)）
+* [x] Put Bucket Lifecycle（使用示例：[bucket/putLifecycle.go](./_example/bucket/putLifecycle.go)）
+* [x] Put Bucket Tagging（使用示例：[bucket/putTagging.go](./_example/bucket/putTagging.go)）
+* [x] Delete Bucket（使用示例：[bucket/delete.go](./_example/bucket/delete.go)）
+* [x] Delete Bucket CORS（使用示例：[bucket/deleteCORS.go](./_example/bucket/deleteCORS.go)）
+* [x] Delete Bucket Lifecycle（使用示例：[bucket/deleteLifecycle.go](./_example/bucket/deleteLifecycle.go)）
+* [x] Delete Bucket Tagging（使用示例：[bucket/deleteTagging.go](./_example/bucket/deleteTagging.go)）
+* [x] Head Bucket（使用示例：[bucket/head.go](./_example/bucket/head.go)）
+* [x] List Multipart Uploads（使用示例：[bucket/listMultipartUploads.go](./_example/bucket/listMultipartUploads.go)）
 
 Object API:
 
-* [x] Append Object
-* [x] Get Object
-* [x] Get Object ACL
-* [x] Put Object
-* [x] Put Object ACL
-* [x] Delete Object
-* [x] Delete Multiple Object
-* [x] Head Object
-* [x] Options Object
-* [x] Initiate Multipart Upload
-* [x] Upload Part
-* [x] List Parts
-* [x] Complete Multipart Upload
-* [x] Abort Multipart Upload
+* [x] Append Object（使用示例：[object/append.go](./_example/object/append.go)）
+* [x] Get Object（使用示例：[object/get.go](./_example/object/get.go)）
+* [x] Get Object ACL（使用示例：[object/getACL.go](./_example/object/getACL.go)）
+* [x] Put Object（使用示例：[object/put.go](./_example/object/put.go)）
+* [x] Put Object ACL（使用示例：[object/putACL.go](./_example/object/putACL.go)）
+* [x] Put Object Copy（使用示例：[object/copy.go](./_example/object/copy.go)）
+* [x] Delete Object（使用示例：[object/delete.go](./_example/object/delete.go)）
+* [x] Delete Multiple Object（使用示例：[object/deleteMultiple.go](./_example/object/deleteMultiple.go)）
+* [x] Head Object（使用示例：[object/head.go](./_example/object/head.go)）
+* [x] Options Object（使用示例：[object/options.go](./_example/object/options.go)）
+* [x] Initiate Multipart Upload（使用示例：[object/initiateMultipartUpload.go](./_example/object/initiateMultipartUpload.go)）
+* [x] Upload Part（使用示例：[object/uploadPart.go](./_example/object/uploadPart.go)）
+* [x] List Parts（使用示例：[object/listParts.go](./_example/object/listParts.go)）
+* [x] Complete Multipart Upload（使用示例：[object/completeMultipartUpload.go](./_example/object/completeMultipartUpload.go)）
+* [x] Abort Multipart Upload（使用示例：[object/abortMultipartUpload.go](./_example/object/abortMultipartUpload.go)）

@@ -9,7 +9,7 @@ COS API Version
 
 Usage
 
-在项目的 examples 目录下有各个 API 的使用示例 。
+在项目的 _example 目录下有各个 API 的使用示例 。
 
 
 Authentication
