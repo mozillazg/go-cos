@@ -1,10 +1,11 @@
 # Changelog
 
-## [未发布]
+## [0.7.0] (2017-12-23)
 
 ### 新增
 
 * 支持新增的 Put Object Copy API
+* 新增 `github.com/mozillazg/go-cos/debug`，目前只包含 `DebugRequestTransport`
 
 
 ## [0.6.0] (2017-07-09)
