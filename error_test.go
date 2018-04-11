@@ -16,7 +16,7 @@ func Test_checkResponse_error(t *testing.T) {
 <Error>
 	<Code>BucketAlreadyExists</Code>
 	<Message>The requested bucket name is not available.</Message>
-	<Resource>testdelete-1253846586.cn-north.myqcloud.com</Resource>
+	<Resource>testdelete-1253846586.cos.ap-guangzhou.myqcloud.com</Resource>
 	<RequestId>NTk0NTRjZjZfNTViMjM1XzlkMV9hZTZh</RequestId>
 	<TraceId>OGVmYzZiMmQzYjA2OWNhODk0NTRkMTBiOWVmMDAxODc0OWRkZjk0ZDM1NmI1M2E2MTRlY2MzZDhmNmI5MWI1OTBjYzE2MjAxN2M1MzJiOTdkZjMxMDVlYTZjN2FiMmI0NTk3NWFiNjAyMzdlM2RlMmVmOGNiNWIxYjYwNDFhYmQ=</TraceId>
 </Error>`)

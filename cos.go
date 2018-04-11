@@ -29,7 +29,7 @@ const (
 
 var bucketURLTemplate = template.Must(
 	template.New("bucketURLFormat").Parse(
-		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.cos.{{.Region}}.myqcloud.com",
+		"{{.Schema}}://{{.BucketName}}-{{.AppID}}.cos.{{.Region}}.myqcloud.com",
 	),
 )
 
@@ -45,22 +45,22 @@ type BaseURL struct {
 //
 //   bucketName: bucket 名称
 //   AppID: 应用 ID
-//   Region: 区域代码: cn-east, cn-south, cn-north
+//   Region: 区域代码: cn-east, cn-south,.cos.ap-guangzhou
 //   secure: 是否使用 https
 func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
-	scheme := "https"
+	schema := "https"
 	if !secure {
-		scheme = "http"
+		schema = "http"
 	}
 
 	w := bytes.NewBuffer(nil)
 	bucketURLTemplate.Execute(w, struct {
-		Scheme     string
+		Schema     string
 		BucketName string
 		AppID      string
 		Region     string
 	}{
-		scheme, bucketName, appID, region,
+		schema, bucketName, appID, region,
 	})
 
 	u, _ := url.Parse(w.String())

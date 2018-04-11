@@ -246,7 +246,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 			t.Errorf("Object.CompleteMultipartUpload request body: %+v, want %+v", v, want)
 		}
 		fmt.Fprint(w, `<CompleteMultipartUploadResult>
-	<Location>test-1253846586.cn-north.myqcloud.com/test/hello.txt</Location>
+	<Location>test-1253846586.cos.ap-guangzhou.myqcloud.com/test/hello.txt</Location>
 	<Bucket>test</Bucket>
 	<Key>test/hello.txt</Key>
 	<ETag>&quot;594f98b11c6901c0f0683de1085a6d0e-4&quot;</ETag>
@@ -264,7 +264,7 @@ func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 		Bucket:   "test",
 		Key:      name,
 		ETag:     "\"594f98b11c6901c0f0683de1085a6d0e-4\"",
-		Location: "test-1253846586.cn-north.myqcloud.com/test/hello.txt",
+		Location: "test-1253846586.cos.ap-guangzhou.myqcloud.com/test/hello.txt",
 	}
 
 	if !reflect.DeepEqual(ref, want) {
