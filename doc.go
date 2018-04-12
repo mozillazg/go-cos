@@ -4,7 +4,7 @@ Package cos 腾讯云对象存储服务 COS(Cloud Object Storage) Go SDK。
 
 COS API Version
 
-封装了 V4 版本的 XML API 。
+封装了 V5 版本的 XML API 。
 
 
 Usage
