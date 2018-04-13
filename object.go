@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // ObjectService ...
@@ -281,8 +282,9 @@ type MultiUploadOptions struct {
 
 // MultiUpload 为高级upload接口，分块上传
 //
+// 需要指定分块大小 partSize >= 1 ,单位为MB
+// 同时请确认分块数量不超过10000
 //
-// https://www.qcloud.com/document/product/436/7749
 func (s *ObjectService) MultiUpload(ctx context.Context, name string, r io.Reader, opt *MultiUploadOptions) (*CompleteMultipartUploadResult, *Response, error) {
 	
 	optini := opt.InitiateMultipartUploadOptions
@@ -290,7 +292,7 @@ func (s *ObjectService) MultiUpload(ctx context.Context, name string, r io.Reade
 	if err != nil{panic(err)}
 	uploadID := res.UploadID
 
-	bufSize := opt.partSize
+	bufSize := opt.partSize * 8 * 1024 *1024
     buffer := make([]byte,bufSize)  
 	optcom := &CompleteMultipartUploadOptions{}
     for i := 1 ;true; i++ { 

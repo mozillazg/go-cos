@@ -94,3 +94,4 @@ Object API:
 * [x] List Parts（使用示例：[object/listParts.go](./_example/object/listParts.go)）
 * [x] Complete Multipart Upload（使用示例：[object/completeMultipartUpload.go](./_example/object/completeMultipartUpload.go)）
 * [x] Abort Multipart Upload（使用示例：[object/abortMultipartUpload.go](./_example/object/abortMultipartUpload.go)）
+* [x] Mutipart Upload（使用示例：[object/MutiUpload.go.go](./_example/object/MutiUpload.go)）

@@ -179,6 +179,7 @@ func genFormatHeaders(headers http.Header) (formatHeaders string, signedHeaderLi
 		}
 	}
 	formatHeaders = hs.Encode()
+	formatHeaders = strings.Replace(formatHeaders, "+", "%20", -1)
 	sort.Strings(signedHeaderList)
 	return
 }
