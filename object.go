@@ -273,3 +273,41 @@ type Object struct {
 	StorageClass string `xml:",omitempty"`
 	Owner        *Owner `xml:",omitempty"`
 }
+
+type MultiUploadOptions struct {
+	*InitiateMultipartUploadOptions
+	partSize   int
+}
+
+// MultiUpload 为高级upload接口，分块上传
+//
+//
+// https://www.qcloud.com/document/product/436/7749
+func (s *ObjectService) MultiUpload(ctx context.Context, name string, r io.Reader, opt *MultiUploadOptions) (*CompleteMultipartUploadResult, *Response, error) {
+	
+	optini := opt.InitiateMultipartUploadOptions
+	res, _, err := s.InitiateMultipartUpload(ctx, name, optini)
+	if err != nil{panic(err)}
+	uploadID := res.UploadID
+
+	bufSize := opt.partSize
+    buffer := make([]byte,bufSize)  
+	optcom := &CompleteMultipartUploadOptions{}
+    for i := 1 ;true; i++ { 
+        bytesread,err := r.Read(buffer)  
+        if err != nil {  
+            if err != io.EOF {  
+                panic(err)
+            }  
+            break  
+		}  
+		resp, _ := s.UploadPart(context.Background(), name, uploadID, i, strings.NewReader(string(buffer[:bytesread])), nil)
+		etag := resp.Header.Get("Etag")
+		optcom.Parts = append(optcom.Parts, Object{
+			PartNumber: i, ETag: etag},
+		)
+	}
+	v, resp, err := s.CompleteMultipartUpload(context.Background(), name, uploadID, optcom)
+
+	return v, resp, err
+}

@@ -101,7 +101,6 @@ func (s *BucketService) Head(ctx context.Context) (*Response, error) {
 // Bucket ...
 type Bucket struct {
 	Name       string
-	AppID      string `xml:",omitempty"`
 	Region     string `xml:"Location,omitempty"`
 	CreateDate string `xml:",omitempty"`
 }

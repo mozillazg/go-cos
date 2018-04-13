@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	u, _ := url.Parse("https://testhuanan-1253846586.cn-south.myqcloud.com")
+	u, _ := url.Parse("https://testhuanan-1253846586.ap-guangzhou.myqcloud.com")
 	b := &cos.BaseURL{
 		BucketURL: u,
 	}
