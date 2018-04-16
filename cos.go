@@ -29,7 +29,7 @@ const (
 
 var bucketURLTemplate = template.Must(
 	template.New("bucketURLFormat").Parse(
-		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.{{.Region}}.myqcloud.com",
+		"{{.Schema}}://{{.BucketName}}.cos.{{.Region}}.myqcloud.com",
 	),
 )
 
@@ -43,24 +43,22 @@ type BaseURL struct {
 
 // NewBucketURL 生成 BaseURL 所需的 BucketURL
 //
-//   bucketName: bucket 名称
-//   AppID: 应用 ID
-//   Region: 区域代码: cn-east, cn-south, cn-north
+//   bucketName: bucket名称, bucket的命名规则为{name}-{appid} ，此处填写的存储桶名称必须为此格式
+//   Region: 区域代码: ap-beijing-1,ap-beijing,ap-shanghai,ap-guangzhou...
 //   secure: 是否使用 https
-func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
-	scheme := "https"
+func NewBucketURL(bucketName, region string, secure bool) *url.URL {
+	schema := "https"
 	if !secure {
-		scheme = "http"
+		schema = "http"
 	}
 
 	w := bytes.NewBuffer(nil)
 	bucketURLTemplate.Execute(w, struct {
-		Scheme     string
+		Schema     string
 		BucketName string
-		AppID      string
 		Region     string
 	}{
-		scheme, bucketName, appID, region,
+		schema, bucketName, region,
 	})
 
 	u, _ := url.Parse(w.String())

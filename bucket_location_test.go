@@ -20,7 +20,7 @@ func TestBucketService_GetLocation(t *testing.T) {
 		}
 		testFormValues(t, r, vs)
 		fmt.Fprint(w, `<?xml version='1.0' encoding='utf-8' ?>
-<LocationConstraint>cn-north</LocationConstraint>`)
+<LocationConstraint>ap-guangzhou</LocationConstraint>`)
 	})
 
 	ref, _, err := client.Bucket.GetLocation(context.Background())
@@ -30,7 +30,7 @@ func TestBucketService_GetLocation(t *testing.T) {
 
 	want := &BucketGetLocationResult{
 		XMLName:  xml.Name{Local: "LocationConstraint"},
-		Location: "cn-north",
+		Location: "ap-guangzhou",
 	}
 
 	if !reflect.DeepEqual(ref, want) {

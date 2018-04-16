@@ -29,10 +29,15 @@ import (
 )
 
 func main() {
-	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
+	//将<bucket>和<region>修改为真实的信息
+	//bucket的命名规则为{name}-{appid} ，此处填写的存储桶名称必须为此格式
+	u, _ := url.Parse("https://<bucket>.cos.<region>.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, &http.Client{
+		//设置超时时间
+		Timeout: 100 * time.Second,
 		Transport: &cos.AuthorizationTransport{
+			//如实填写账号和密钥，也可以设置为环境变量
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
 		},
@@ -94,3 +99,4 @@ Object API:
 * [x] List Parts（使用示例：[object/listParts.go](./_example/object/listParts.go)）
 * [x] Complete Multipart Upload（使用示例：[object/completeMultipartUpload.go](./_example/object/completeMultipartUpload.go)）
 * [x] Abort Multipart Upload（使用示例：[object/abortMultipartUpload.go](./_example/object/abortMultipartUpload.go)）
+* [x] Mutipart Upload（使用示例：[object/MutiUpload.go.go](./_example/object/MutiUpload.go)）

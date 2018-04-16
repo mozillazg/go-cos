@@ -27,7 +27,7 @@ func upload(c *cos.Client, name string) {
 }
 
 func main() {
-	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
+	u, _ := url.Parse("https://test-1253846586.cos.ap-guangzhou.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, nil)
 

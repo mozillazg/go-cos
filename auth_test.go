@@ -8,11 +8,11 @@ import (
 )
 
 func TestNewAuthorization(t *testing.T) {
-	expectAuthorization := `q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=host;x-cos-content-sha1;x-cos-stroage-class&q-url-param-list=&q-signature=b237c36c5495b048519b82b17a200840594c0339`
+	expectAuthorization := `q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=host;x-cos-content-sha1;x-cos-stroage-class&q-url-param-list=&q-signature=ce4ac0ecbcdb30538b3fee0a97cc6389694ce53a`
 	secretID := "QmFzZTY0IGlzIGEgZ2VuZXJp"
 	secretKey := "AKIDZfbOA78asKUYBcXFrJD0a1ICvR98JM"
-	host := "testbucket-125000000.cn-north.myqcloud.com"
-	uri := "http://testbucket-125000000.cn-north.myqcloud.com/testfile2"
+	host := "testbucket-125000000.cos.ap-guangzhou.myqcloud.com"
+	uri := "http://testbucket-125000000.cos.ap-guangzhou.myqcloud.com/testfile2"
 	startTime := time.Unix(int64(1480932292), 0)
 	endTime := time.Unix(int64(1481012292), 0)
 

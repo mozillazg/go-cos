@@ -256,7 +256,7 @@ func TestObjectService_Copy(t *testing.T) {
 	</CopyObjectResult>`)
 	})
 
-	sourceURL := "test-1253846586.cn-north.myqcloud.com/test.source"
+	sourceURL := "test-1253846586.cos.ap-guangzhou.myqcloud.com/test.source"
 	ref, _, err := client.Object.Copy(context.Background(), "test.go.copy", sourceURL, nil)
 	if err != nil {
 		t.Fatalf("Object.Copy returned error: %v", err)

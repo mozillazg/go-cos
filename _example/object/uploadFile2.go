@@ -4,49 +4,48 @@ import (
 	"context"
 	"net/url"
 	"os"
-	"strings"
 
 	"net/http"
+
+	"fmt"
 
 	"github.com/mozillazg/go-cos"
 	"github.com/mozillazg/go-cos/debug"
 )
 
 func main() {
-	u, _ := url.Parse("https://test-1253846586.cos.ap-guangzhou.myqcloud.com")
+	u, _ := url.Parse("https://lewzylu02-1252448703.cos.ap-guangzhou.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
-			SecretID:  os.Getenv("COS_SECRETID"),
-			SecretKey: os.Getenv("COS_SECRETKEY"),
+			SecretID:  os.Getenv("COS_Key"),
+			SecretKey: os.Getenv("COS_Secret"),
 			Transport: &debug.DebugRequestTransport{
 				RequestHeader:  true,
-				RequestBody:    true,
+				RequestBody:    false,
 				ResponseHeader: true,
 				ResponseBody:   true,
 			},
 		},
 	})
 
-	name := "test/objectPut.go"
-	f := strings.NewReader("test")
-
-	_, err := c.Object.Put(context.Background(), name, f, nil)
+	name := "E:/cppsdk中文.zip"
+	f, err := os.Open(os.Args[0])
 	if err != nil {
 		panic(err)
 	}
-
-	name = "test/put_option.go"
-	f = strings.NewReader("test xxx")
+	s, err := f.Stat()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(s.Size())
 	opt := &cos.ObjectPutOptions{
 		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
-			ContentType: "text/html",
-		},
-		ACLHeaderOptions: &cos.ACLHeaderOptions{
-			//XCosACL: "public-read",
-			XCosACL: "private",
+			ContentLength: int(s.Size()),
 		},
 	}
+	//opt.ContentLength = int(s.Size())
+
 	_, err = c.Object.Put(context.Background(), name, f, opt)
 	if err != nil {
 		panic(err)
