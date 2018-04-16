@@ -29,10 +29,14 @@ import (
 )
 
 func main() {
+	//将<bucket>和<region>修改为真实的信息
 	u, _ := url.Parse("https://test-1253846586.cos.ap-guangzhou.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, &http.Client{
+		//设置超时时间
+		Timeout: 100 * time.Second,
 		Transport: &cos.AuthorizationTransport{
+			//如实填写账号和密钥，也可以设置为环境变量
 			SecretID:  os.Getenv("COS_SECRETID"),
 			SecretKey: os.Getenv("COS_SECRETKEY"),
 		},

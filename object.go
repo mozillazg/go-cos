@@ -276,8 +276,8 @@ type Object struct {
 }
 
 type MultiUploadOptions struct {
-	*InitiateMultipartUploadOptions
-	partSize   int
+	OptIni *InitiateMultipartUploadOptions
+	PartSize int
 }
 
 // MultiUpload 为高级upload接口，分块上传
@@ -287,12 +287,11 @@ type MultiUploadOptions struct {
 //
 func (s *ObjectService) MultiUpload(ctx context.Context, name string, r io.Reader, opt *MultiUploadOptions) (*CompleteMultipartUploadResult, *Response, error) {
 	
-	optini := opt.InitiateMultipartUploadOptions
+	optini := opt.OptIni
 	res, _, err := s.InitiateMultipartUpload(ctx, name, optini)
 	if err != nil{panic(err)}
 	uploadID := res.UploadID
-
-	bufSize := opt.partSize * 8 * 1024 *1024
+	bufSize := opt.PartSize * 8 * 1024 *1024
     buffer := make([]byte,bufSize)  
 	optcom := &CompleteMultipartUploadOptions{}
     for i := 1 ;true; i++ { 
