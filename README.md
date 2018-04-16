@@ -30,7 +30,8 @@ import (
 
 func main() {
 	//将<bucket>和<region>修改为真实的信息
-	u, _ := url.Parse("https://test-1253846586.cos.ap-guangzhou.myqcloud.com")
+	//bucket的命名规则为{name}-{appid} ，此处填写的存储桶名称必须为此格式
+	u, _ := url.Parse("https://<bucket>.cos.<region>.myqcloud.com")
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, &http.Client{
 		//设置超时时间
