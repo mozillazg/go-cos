@@ -15,7 +15,7 @@ run ./service/get.go
 
 echo '##### bucket ####'
 
-run ./bucket/delete.go
+# run ./bucket/delete.go
 run ./bucket/put.go
 run ./bucket/putACL.go
 run ./bucket/putCORS.go
