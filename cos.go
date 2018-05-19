@@ -29,7 +29,7 @@ const (
 
 var bucketURLTemplate = template.Must(
 	template.New("bucketURLFormat").Parse(
-		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.{{.Region}}.myqcloud.com",
+		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.cos.{{.Region}}.myqcloud.com",
 	),
 )
 
@@ -62,7 +62,7 @@ func NewBaseURL(bucketURL string) (u *BaseURL, err error) {
 //
 //   bucketName: bucket 名称
 //   AppID: 应用 ID
-//   Region: 区域代码: cn-east, cn-south, cn-north
+//   Region: 区域代码，详见 https://cloud.tencent.com/document/product/436/6224
 //   secure: 是否使用 https
 func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
 	scheme := "https"

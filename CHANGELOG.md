@@ -6,6 +6,12 @@
 
 * 新增 `func NewBaseURL(bucketURL string) (u *BaseURL, err error)`
 
+### 变更
+
+* `NewBucketURL` 函数使用新的 URL 域名规则。
+  影响：如果有使用 `NewBucketURL` 函数生成 bucketURL 的话，使用时需要使用新的 Region 名称，
+  详见 https://cloud.tencent.com/document/product/436/6224 ，未使用 `NewBucketURL` 函数不受影响
+
 
 ## [0.7.0] (2017-12-23)
 
@@ -56,7 +62,7 @@
 
 ## [0.2.0] (2017-06-10)
 
-### 修改
+### 变更
 
 * 调用 bucket 相关 API 时不再需要 bucket 参数, 把参数移到 service 中
 * 把参数 signStartTime, signEndTime, keyStartTime, keyEndTime 合并为 authTime
