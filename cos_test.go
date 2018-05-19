@@ -140,6 +140,17 @@ func TestNewBucketURL_secure_true(t *testing.T) {
 	}
 }
 
+func TestNewBaseURL(t *testing.T) {
+	bu := "https://test-1253846586.cos.ap-beijing.myqcloud.com"
+	got, _ := NewBaseURL(bu)
+	if got.BucketURL.String() != bu {
+		t.Errorf("bucketURL want %s, but got %s", bu, got.BucketURL.String())
+	}
+	if got.ServiceURL.String() != defaultServiceBaseURL {
+		t.Errorf("serviceURL want %s, but got %s", defaultServiceBaseURL, got.ServiceURL.String())
+	}
+}
+
 func TestClient_doAPI(t *testing.T) {
 	setup()
 	defer teardown()

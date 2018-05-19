@@ -2,20 +2,16 @@ package main
 
 import (
 	"context"
-	"net/url"
-	"os"
-
-	"net/http"
-
 	"fmt"
+	"net/http"
+	"os"
 
 	"github.com/mozillazg/go-cos"
 	"github.com/mozillazg/go-cos/debug"
 )
 
 func main() {
-	u, _ := url.Parse(os.Getenv("COS_BUCKET_URL"))
-	b := &cos.BaseURL{BucketURL: u}
+	b, _ := cos.NewBaseURL(os.Getenv("COS_BUCKET_URL"))
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),

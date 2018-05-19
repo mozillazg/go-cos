@@ -2,6 +2,11 @@
 
 ## [未发布]
 
+### 新增
+
+* 新增 `func NewBaseURL(bucketURL string) (u *BaseURL, err error)`
+
+
 ## [0.7.0] (2017-12-23)
 
 ### 新增
