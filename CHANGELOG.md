@@ -4,11 +4,11 @@
 
 ### 新增
 
-* 新增 `func NewBaseURL(bucketURL string) (u *BaseURL, err error)`
+* 新增 `func NewBaseURL(bucketURL string) (u *BaseURL, err error)` (via [91f7759])
 
 ### 变更
 
-* `NewBucketURL` 函数使用新的 URL 域名规则。
+* `NewBucketURL` 函数使用新的 URL 域名规则。(via [7dcd701])     
   影响：如果有使用 `NewBucketURL` 函数生成 bucketURL 的话，使用时需要使用新的 Region 名称，
   详见 https://cloud.tencent.com/document/product/436/6224 ，未使用 `NewBucketURL` 函数不受影响
 
@@ -83,3 +83,6 @@
 [0.4.0]: https://github.com/mozillazg/go-cos/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/mozillazg/go-cos/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mozillazg/go-cos/compare/v0.1.0...v0.2.0
+
+[91f7759]: https://github.com/mozillazg/go-cos/commit/91f7759958f9631e8997f47d30ae4044455fc971
+[7dcd701]: https://github.com/mozillazg/go-cos/commit/7dcd701975f483d57525b292ab31d0f9a6c8866c

@@ -29,7 +29,7 @@ import (
 )
 
 func main() {
-	b, _ := cos.NewBaseURL("https://<bucket>-<appid>.<region>.myqcloud.com")
+	b, _ := cos.NewBaseURL("https://<bucket>-<appid>.cos.<region>.myqcloud.com")
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
