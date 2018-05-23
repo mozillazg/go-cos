@@ -20,6 +20,7 @@ script:
   - make test
   - go test -coverprofile=cover.out github.com/mozillazg/go-cos
   - $HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=cover.out
+  - make example
 
 matrix:
   allow_failures:
