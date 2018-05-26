@@ -1,6 +1,6 @@
 # Changelog
 
-## [未发布]
+## [0.8.0] (2018-05-26)
 
 ### 新增
 
@@ -76,7 +76,7 @@
 * 完成大部分 Bucket API(还剩一个 Put Bucket Lifecycle)
 
 
-[未发布]: https://github.com/mozillazg/go-cos/compare/v0.7.0...HEAD
+[0.8.0]: https://github.com/mozillazg/go-cos/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mozillazg/go-cos/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mozillazg/go-cos/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mozillazg/go-cos/compare/v0.4.0...v0.5.0
