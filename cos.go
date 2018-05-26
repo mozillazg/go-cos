@@ -29,23 +29,40 @@ const (
 
 var bucketURLTemplate = template.Must(
 	template.New("bucketURLFormat").Parse(
-		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.{{.Region}}.myqcloud.com",
+		"{{.Scheme}}://{{.BucketName}}-{{.AppID}}.cos.{{.Region}}.myqcloud.com",
 	),
 )
 
 // BaseURL 访问各 API 所需的基础 URL
 type BaseURL struct {
-	// 访问 bucket, object 相关 API 的基础 URL（不包含 path 部分）: http://example.com
+	// 访问 bucket, object 相关 API 的基础 URL（不包含 path 部分）
+	// 比如：https://test-1253846586.cos.ap-beijing.myqcloud.com
+	// 详见 https://cloud.tencent.com/document/product/436/6224
 	BucketURL *url.URL
-	// 访问 service API 的基础 URL（不包含 path 部分）: http://example.com
+	// 访问 service API 的基础 URL（不包含 path 部分）
+	// 比如：https://service.cos.myqcloud.com
 	ServiceURL *url.URL
+}
+
+// NewBaseURL 生成 BaseURL
+func NewBaseURL(bucketURL string) (u *BaseURL, err error) {
+	bu, err := url.Parse(bucketURL)
+	if err != nil {
+		return
+	}
+	su, _ := url.Parse(defaultServiceBaseURL)
+	u = &BaseURL{
+		BucketURL:  bu,
+		ServiceURL: su,
+	}
+	return
 }
 
 // NewBucketURL 生成 BaseURL 所需的 BucketURL
 //
 //   bucketName: bucket 名称
 //   AppID: 应用 ID
-//   Region: 区域代码: cn-east, cn-south, cn-north
+//   Region: 区域代码，详见 https://cloud.tencent.com/document/product/436/6224
 //   secure: 是否使用 https
 func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
 	scheme := "https"

@@ -17,4 +17,4 @@ lint:
 
 .PHONY: example
 example:
-	cd examples && sh test.sh
+	cd _example && bash test.sh

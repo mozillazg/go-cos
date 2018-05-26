@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
+	u, _ := url.Parse(os.Getenv("COS_BUCKET_URL"))
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{

@@ -125,18 +125,29 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestNewBucketURL_secure_false(t *testing.T) {
-	got := NewBucketURL("bname", "idx", "cn-bj", false).String()
-	want := "http://bname-idx.cn-bj.myqcloud.com"
+	got := NewBucketURL("bname", "idx", "ap-beijing", false).String()
+	want := "http://bname-idx.cos.ap-beijing.myqcloud.com"
 	if got != want {
 		t.Errorf("NewBucketURL is %v, want %v", got, want)
 	}
 }
 
 func TestNewBucketURL_secure_true(t *testing.T) {
-	got := NewBucketURL("bname", "idx", "cn-bj", true).String()
-	want := "https://bname-idx.cn-bj.myqcloud.com"
+	got := NewBucketURL("bname", "idx", "ap-beijing", true).String()
+	want := "https://bname-idx.cos.ap-beijing.myqcloud.com"
 	if got != want {
 		t.Errorf("NewBucketURL is %v, want %v", got, want)
+	}
+}
+
+func TestNewBaseURL(t *testing.T) {
+	bu := "https://test-1253846586.cos.ap-beijing.myqcloud.com"
+	got, _ := NewBaseURL(bu)
+	if got.BucketURL.String() != bu {
+		t.Errorf("bucketURL want %s, but got %s", bu, got.BucketURL.String())
+	}
+	if got.ServiceURL.String() != defaultServiceBaseURL {
+		t.Errorf("serviceURL want %s, but got %s", defaultServiceBaseURL, got.ServiceURL.String())
 	}
 }
 

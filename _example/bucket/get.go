@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 
-	"net/url"
-
 	"net/http"
 
 	"github.com/mozillazg/go-cos"
@@ -14,10 +12,7 @@ import (
 )
 
 func main() {
-	u, _ := url.Parse("https://test-1253846586.cn-north.myqcloud.com")
-	b := &cos.BaseURL{
-		BucketURL: u,
-	}
+	b, _ := cos.NewBaseURL(os.Getenv("COS_BUCKET_URL"))
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  os.Getenv("COS_SECRETID"),
