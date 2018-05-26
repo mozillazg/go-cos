@@ -1,6 +1,5 @@
 language: go
 go:
-  - 1.6
   - 1.7
   - 1.8
   - 1.9
@@ -23,6 +22,4 @@ script:
 
 matrix:
   allow_failures:
-    - go: 1.6
-    - go: 1.7
     - go: master
