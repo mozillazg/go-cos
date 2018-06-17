@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"os"
 
@@ -29,8 +30,10 @@ func main() {
 		},
 	})
 
-	_, err := c.Bucket.Delete(context.Background())
-	if err != nil {
+	resp, err := c.Bucket.Delete(context.Background())
+	if resp != nil && resp.StatusCode == 404 {
+		fmt.Println(err)
+	} else if err != nil {
 		panic(err)
 	}
 }

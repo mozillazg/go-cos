@@ -11,9 +11,8 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"text/template"
-
 	"strconv"
+	"text/template"
 
 	"github.com/google/go-querystring/query"
 	"github.com/mozillazg/go-httpheader"
@@ -129,7 +128,7 @@ func NewClient(uri *BaseURL, httpClient *http.Client) *Client {
 	return c
 }
 
-func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method string, body interface{}, optQuery interface{}, optHeader interface{}) (req *http.Request, err error) {
+func (c *Client) newRequest(baseURL *url.URL, uri, method string, body interface{}, optQuery interface{}, optHeader interface{}) (req *http.Request, err error) {
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
 		return
@@ -251,12 +250,23 @@ type sendOptions struct {
 	// 是否禁用自动调用 resp.Body.Close()
 	// 自动调用 Close() 是为了能够重用连接
 	disableCloseBody bool
+
+	req *http.Request
+}
+
+func (opt *sendOptions) newRequest(c *Client) (*http.Request, error) {
+	return c.newRequest(opt.baseURL, opt.uri, opt.method, opt.body, opt.optQuery, opt.optHeader)
 }
 
 func (c *Client) send(ctx context.Context, opt *sendOptions) (resp *Response, err error) {
-	req, err := c.newRequest(ctx, opt.baseURL, opt.uri, opt.method, opt.body, opt.optQuery, opt.optHeader)
-	if err != nil {
-		return
+	var req *http.Request
+	if opt.req != nil {
+		req = opt.req
+	} else {
+		req, err = opt.newRequest(c)
+		if err != nil {
+			return
+		}
 	}
 
 	resp, err = c.doAPI(ctx, req, opt.result, !opt.disableCloseBody)
@@ -306,9 +316,17 @@ func addHeaderOptions(header http.Header, opt interface{}) (http.Header, error) 
 		return header, nil
 	}
 
-	h, err := httpheader.Header(opt)
-	if err != nil {
-		return nil, err
+	var h http.Header
+	switch opt.(type) {
+	case http.Header:
+		h = opt.(http.Header)
+		break
+	default:
+		rs, err := httpheader.Header(opt)
+		if err != nil {
+			return nil, err
+		}
+		h = rs
 	}
 
 	for key, values := range h {

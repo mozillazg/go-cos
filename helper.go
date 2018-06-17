@@ -5,7 +5,11 @@ import (
 	"crypto/md5"
 	"crypto/sha1"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"net/http"
+	"reflect"
+	"strings"
 )
 
 // 计算 md5 或 sha1 时的分块大小
@@ -57,17 +61,13 @@ func encodeURIComponent(s string) string {
 		default:
 			// Unreserved according to RFC 3986 sec 2.3
 			if 'a' <= c && c <= 'z' {
-
 				continue
-
 			}
 			if 'A' <= c && c <= 'Z' {
 
 				continue
-
 			}
 			if '0' <= c && c <= '9' {
-
 				continue
 			}
 		}
@@ -82,4 +82,92 @@ func encodeURIComponent(s string) string {
 	}
 	b.WriteString(s[written:])
 	return b.String()
+}
+
+type fileField struct {
+	file      io.Reader
+	fileName  string
+	fieldName string
+}
+
+func newMultiPartForm(bw *multipart.Writer, fields []interface{}) error {
+	for _, f := range fields {
+		switch f.(type) {
+		case map[string][]string:
+			for k, vs := range f.(map[string][]string) {
+				for _, v := range vs {
+					bw.WriteField(k, v)
+				}
+			}
+		case []fileField:
+			for _, v := range f.([]fileField) {
+				fw, err := bw.CreateFormFile(v.fieldName, v.fileName)
+				if err != nil {
+					return err
+				}
+				if _, err := io.Copy(fw, v.file); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
+}
+
+var mapFieldType = reflect.TypeOf(map[string][]string{})
+
+func structToMap(v interface{}) (map[string][]string, error) {
+	m := make(map[string][]string)
+	val := reflect.ValueOf(v)
+	for val.Kind() == reflect.Ptr {
+		if val.IsNil() {
+			return m, nil
+		}
+		val = val.Elem()
+	}
+	typ := val.Type()
+	for i := 0; i < typ.NumField(); i++ {
+		sf := typ.Field(i)
+		if sf.PkgPath != "" { // unexported
+			continue
+		}
+
+		sv := val.Field(i)
+		tag := sf.Tag.Get("field")
+		if tag == "-" {
+			continue
+		}
+		name := strings.Split(tag, ",")[0]
+
+		switch sv.Kind() {
+		case reflect.Slice, reflect.Array:
+			for i := 0; i < sv.Len(); i++ {
+				if v := fmt.Sprint(sv.Index(i).Interface()); v != "" {
+					appendMap(m, name, v)
+				}
+			}
+		case reflect.String:
+			if v := fmt.Sprint(sv.Interface()); v != "" {
+				appendMap(m, name, v)
+			}
+		}
+		if sv.Type() == mapFieldType {
+			for k, vs := range sv.Interface().(map[string][]string) {
+				for _, v := range vs {
+					if v != "" {
+						appendMap(m, k, v)
+					}
+				}
+			}
+		}
+	}
+	return m, nil
+}
+
+func appendMap(m map[string][]string, k, v string) {
+	if _, ok := m[k]; !ok {
+		m[k] = []string{v}
+	} else {
+		m[k] = append(m[k], v)
+	}
 }

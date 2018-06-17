@@ -18,22 +18,22 @@ const defaultAuthExpire = time.Hour
 
 // 需要校验的 Headers 列表
 var needSignHeaders = map[string]bool{
-	"host":                           true,
-	"range":                          true,
-	"x-cos-acl":                      true,
-	"x-cos-grant-read":               true,
-	"x-cos-grant-write":              true,
-	"x-cos-grant-full-control":       true,
-	"response-content-type":          true,
-	"response-content-language":      true,
-	"response-expires":               true,
-	"response-cache-control":         true,
-	"response-content-disposition":   true,
-	"response-content-encoding":      true,
-	"cache-control":                  true,
-	"content-disposition":            true,
-	"content-encoding":               true,
-	"content-type":                   true,
+	"host":                         true,
+	"range":                        true,
+	"x-cos-acl":                    true,
+	"x-cos-grant-read":             true,
+	"x-cos-grant-write":            true,
+	"x-cos-grant-full-control":     true,
+	"response-content-type":        true,
+	"response-content-language":    true,
+	"response-expires":             true,
+	"response-cache-control":       true,
+	"response-content-disposition": true,
+	"response-content-encoding":    true,
+	"cache-control":                true,
+	"content-disposition":          true,
+	"content-encoding":             true,
+	//"content-type":                   true,
 	"content-length":                 true,
 	"content-md5":                    true,
 	"expect":                         true,
@@ -204,6 +204,14 @@ func isSignHeader(key string) bool {
 		}
 	}
 	return strings.HasPrefix(key, privateHeaderPrefix)
+}
+
+// Auth 签名相关的认证信息
+type Auth struct {
+	SecretID  string
+	SecretKey string
+	// 签名多久过期
+	Expire time.Duration
 }
 
 // AuthorizationTransport 给请求增加 Authorization header

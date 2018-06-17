@@ -15,7 +15,7 @@ run ./service/get.go
 
 echo '##### bucket ####'
 
-# run ./bucket/delete.go
+run ./bucket/delete.go
 run ./bucket/put.go
 run ./bucket/putACL.go
 run ./bucket/putCORS.go
@@ -40,6 +40,7 @@ echo '##### object ####'
 run ./bucket/putCORS.go
 run ./object/put.go
 run ./object/uploadFile.go
+run ./object/postFile.go ./README.md
 run ./object/putACL.go
 run ./object/append.go
 run ./object/get.go

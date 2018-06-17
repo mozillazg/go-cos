@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"os"
 
@@ -32,8 +33,10 @@ func main() {
 	//opt := &cos.BucketPutOptions{
 	//	XCosACL: "public-read",
 	//}
-	_, err := c.Bucket.Put(context.Background(), nil)
-	if err != nil {
+	resp, err := c.Bucket.Put(context.Background(), nil)
+	if resp != nil && resp.StatusCode == 429 {
+		fmt.Println(err)
+	} else if err != nil {
 		panic(err)
 	}
 }

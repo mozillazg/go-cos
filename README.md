@@ -78,18 +78,21 @@ Bucket API:
 
 Object API:
 
-* [x] Append Object（使用示例：[object/append.go](./_example/object/append.go)）
 * [x] Get Object（使用示例：[object/get.go](./_example/object/get.go)）
 * [x] Get Object ACL（使用示例：[object/getACL.go](./_example/object/getACL.go)）
+* [x] Head Object（使用示例：[object/head.go](./_example/object/head.go)）
+* [x] Options Object（使用示例：[object/options.go](./_example/object/options.go)）
+* [x] Append Object（使用示例：[object/append.go](./_example/object/append.go)）
+* [x] Post Object（使用示例：[object/postFile.go](./_example/object/postFile.go)）
+* [ ] Post Object Restore
 * [x] Put Object（使用示例：[object/put.go](./_example/object/put.go)）
 * [x] Put Object ACL（使用示例：[object/putACL.go](./_example/object/putACL.go)）
 * [x] Put Object Copy（使用示例：[object/copy.go](./_example/object/copy.go)）
 * [x] Delete Object（使用示例：[object/delete.go](./_example/object/delete.go)）
-* [x] Delete Multiple Object（使用示例：[object/deleteMultiple.go](./_example/object/deleteMultiple.go)）
-* [x] Head Object（使用示例：[object/head.go](./_example/object/head.go)）
-* [x] Options Object（使用示例：[object/options.go](./_example/object/options.go)）
 * [x] Initiate Multipart Upload（使用示例：[object/initiateMultipartUpload.go](./_example/object/initiateMultipartUpload.go)）
 * [x] Upload Part（使用示例：[object/uploadPart.go](./_example/object/uploadPart.go)）
+* [ ] Upload Part Copy
 * [x] List Parts（使用示例：[object/listParts.go](./_example/object/listParts.go)）
 * [x] Complete Multipart Upload（使用示例：[object/completeMultipartUpload.go](./_example/object/completeMultipartUpload.go)）
 * [x] Abort Multipart Upload（使用示例：[object/abortMultipartUpload.go](./_example/object/abortMultipartUpload.go)）
+* [x] Delete Multiple Object（使用示例：[object/deleteMultiple.go](./_example/object/deleteMultiple.go)）

@@ -1,10 +1,12 @@
 package cos
 
 import (
+	"bytes"
 	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 )
 
@@ -259,6 +261,85 @@ func (s *ObjectService) DeleteMulti(ctx context.Context, opt *ObjectDeleteMultiO
 		body:    opt,
 		result:  &res,
 	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+// ObjectPostOptions ...
+type ObjectPostOptions struct {
+	ACL                   string              `field:"acl,omitempty" url:"-"`
+	CacheControl          string              `field:"Cache-Control,omitempty" url:"-"`
+	ContentDisposition    string              `field:"Content-Disposition,omitempty" url:"-"`
+	ContentEncoding       string              `field:"Content-Encoding,omitempty" url:"-"`
+	ContentType           string              `field:"Content-Type,omitempty" url:"-"`
+	Expires               string              `field:"Expires,omitempty" url:"-"`
+	SuccessActionRedirect string              `field:"success_action_redirect,omitempty" url:"-"`
+	SuccessActionStatus   string              `field:"success_action_status,omitempty" url:"-"`
+	XCosMetaXXX           map[string][]string `field:"x-cos-meta-xxx,omitempty" url:"-"`
+	XCosStorageClass      string              `field:"x-cos-storage-class,omitempty" url:"-"`
+	Policy                string              `field:"policy,omitempty" url:"-"`
+}
+
+// ObjectPostResult ...
+type ObjectPostResult struct {
+	XMLName  xml.Name `xml:"PostResponse"`
+	Location string   `xml:"Location,omitempty"`
+	Bucket   string   `xml:"Bucket,omitempty"`
+	Key      string   `xml:"Key,omitempty"`
+	ETag     string   `xml:"ETag,omitempty"`
+}
+
+// Post ...
+//
+// POST Object 接口请求允许使用者用表单的形式将文件（Object）上传至指定 Bucket 中。
+// 该操作需要请求者对 Bucket 有 WRITE 权限。所有由 HTTP 头部携带的 API 参数，都使用表单字段请求。
+//
+// 需要有 Bucket 的写权限；
+// 如果试图添加的 Object 的同名文件已经存在，那么新上传的文件，将覆盖原来的文件，成功时返回 200 OK。
+// （才怪！测试发现是返回：`HTTP/1.1 204 204` ，没错，不是我写错了，就是返回的这个。）
+//
+// https://cloud.tencent.com/document/product/436/14690
+func (s *ObjectService) Post(ctx context.Context, name string, f io.Reader, auth Auth, opt *ObjectPostOptions) (*ObjectPostResult, *Response, error) {
+	var res ObjectPostResult
+	fieldMap := map[string][]string{}
+	if opt != nil {
+		m, err := structToMap(opt)
+		if err != nil {
+			return nil, nil, err
+		}
+		fieldMap = m
+	}
+	fieldMap["key"] = []string{name}
+
+	bf := new(bytes.Buffer)
+	bw := multipart.NewWriter(bf)
+	defer bw.Close()
+	optHeader := http.Header{}
+	optHeader.Set("Content-Type", bw.FormDataContentType())
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/",
+		method:    http.MethodPost,
+		optHeader: optHeader,
+		result:    &res,
+	}
+	req, err := sendOpt.newRequest(s.client)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	signature := newAuthorization(
+		auth.SecretID, auth.SecretKey, req, NewAuthTime(defaultAuthExpire))
+	fieldMap["Signature"] = []string{signature}
+
+	fields := []interface{}{fieldMap}
+	fields = append(fields, []fileField{
+		{f, name, "file"},
+	})
+	if err := newMultiPartForm(bw, fields); err != nil {
+		return nil, nil, err
+	}
+	sendOpt.body = bf
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
