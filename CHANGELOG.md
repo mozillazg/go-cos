@@ -1,5 +1,20 @@
 # Changelog
 
+
+## [0.9.0]
+
+### 新增
+
+* 新增 `c.Object.PresignedURL` 用于获取预签名授权 URL。可用于无需知道 SecretID 和 SecretKey 就可以上传和下载文件。
+* 新增 `Auth` struct
+* 上传和下载 Object 的功能支持指定预签名授权 URL。
+
+详见 PR 以及使用示例：
+
+* 通过预签名授权 URL 下载文件，示例：[object/getWithPresignedURL.go](./_example/object/getWithPresignedURL.go)
+* 通过预签名授权 URL 上传文件，示例：[object/putWithPresignedURL.go](./_example/object/putWithPresignedURL.go)
+
+
 ## [0.8.0] (2018-05-26)
 
 ### 新增
