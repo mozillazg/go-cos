@@ -11,9 +11,9 @@ test:
 
 .PHONY: lint
 lint:
-	gofmt -s -w .
-	goimports -w .
-	golint .
+	gofmt -s -w . _example
+	goimports -w . _example
+	golint . _example
 	go vet
 
 .PHONY: example

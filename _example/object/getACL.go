@@ -28,7 +28,7 @@ func main() {
 		},
 	})
 
-	name := "test/hello.txt"
+	key := "test/hello.txt"
 	v, _, err := c.Object.GetACL(context.Background(), name)
 	if err != nil {
 		panic(err)

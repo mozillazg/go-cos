@@ -25,7 +25,7 @@ func main() {
 		},
 	})
 
-	name := "test/uploadFile.go"
+	key := "test/uploadFile.go"
 	f, err := os.Open(os.Args[0])
 	if err != nil {
 		panic(err)
@@ -42,7 +42,7 @@ func main() {
 	}
 	//opt.ContentLength = int(s.Size())
 
-	_, err = c.Object.Put(context.Background(), name, f, opt)
+	_, err = c.Object.Put(context.Background(), key, f, opt)
 	if err != nil {
 		panic(err)
 	}

@@ -33,9 +33,9 @@ type ObjectGetOptions struct {
 // 该操作需要对目标 Object 具有读权限或目标 Object 对所有人都开放了读权限（公有读）。
 //
 // https://www.qcloud.com/document/product/436/7753
-func (s *ObjectService) Get(ctx context.Context, name string, opt *ObjectGetOptions) (*Response, error) {
+func (s *ObjectService) Get(ctx context.Context, key string, opt *ObjectGetOptions) (*Response, error) {
 	baseURL := s.client.BaseURL.BucketURL
-	uri := "/" + encodeURIComponent(name)
+	uri := "/" + encodeURIComponent(key)
 	if opt != nil && opt.PresignedURL != nil {
 		baseURL = opt.PresignedURL
 		uri = ""
@@ -83,9 +83,9 @@ type ObjectPutOptions struct {
 // 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ObjectPutHeaderOptions.ContentLength
 //
 // https://www.qcloud.com/document/product/436/7749
-func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
+func (s *ObjectService) Put(ctx context.Context, key string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
 	baseURL := s.client.BaseURL.BucketURL
-	uri := "/" + encodeURIComponent(name)
+	uri := "/" + encodeURIComponent(key)
 	if opt != nil && opt.PresignedURL != nil {
 		baseURL = opt.PresignedURL
 		uri = ""
@@ -136,7 +136,7 @@ type ObjectCopyResult struct {
 // 注意：在跨帐号复制的时候，需要先设置被复制文件的权限为公有读，或者对目标帐号赋权，同帐号则不需要。
 //
 // https://cloud.tencent.com/document/product/436/10881
-func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *ObjectCopyOptions) (*ObjectCopyResult, *Response, error) {
+func (s *ObjectService) Copy(ctx context.Context, key, sourceURL string, opt *ObjectCopyOptions) (*ObjectCopyResult, *Response, error) {
 	var res ObjectCopyResult
 	if opt == nil {
 		opt = new(ObjectCopyOptions)
@@ -148,7 +148,7 @@ func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *O
 
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
-		uri:       "/" + encodeURIComponent(name),
+		uri:       "/" + encodeURIComponent(key),
 		method:    http.MethodPut,
 		body:      nil,
 		optHeader: opt,
@@ -161,10 +161,10 @@ func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *O
 // Delete Object请求可以将一个文件（Object）删除。
 //
 // https://www.qcloud.com/document/product/436/7743
-func (s *ObjectService) Delete(ctx context.Context, name string) (*Response, error) {
+func (s *ObjectService) Delete(ctx context.Context, key string) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL: s.client.BaseURL.BucketURL,
-		uri:     "/" + encodeURIComponent(name),
+		uri:     "/" + encodeURIComponent(key),
 		method:  http.MethodDelete,
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
@@ -179,10 +179,10 @@ type ObjectHeadOptions struct {
 // Head Object请求可以取回对应Object的元数据，Head的权限与Get的权限一致
 //
 // https://www.qcloud.com/document/product/436/7745
-func (s *ObjectService) Head(ctx context.Context, name string, opt *ObjectHeadOptions) (*Response, error) {
+func (s *ObjectService) Head(ctx context.Context, key string, opt *ObjectHeadOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
-		uri:       "/" + encodeURIComponent(name),
+		uri:       "/" + encodeURIComponent(key),
 		method:    http.MethodHead,
 		optHeader: opt,
 	}
@@ -202,10 +202,10 @@ type ObjectOptionsOptions struct {
 // 当CORS配置不存在时，请求返回403 Forbidden。
 //
 // https://www.qcloud.com/document/product/436/8288
-func (s *ObjectService) Options(ctx context.Context, name string, opt *ObjectOptionsOptions) (*Response, error) {
+func (s *ObjectService) Options(ctx context.Context, key string, opt *ObjectOptionsOptions) (*Response, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
-		uri:       "/" + encodeURIComponent(name),
+		uri:       "/" + encodeURIComponent(key),
 		method:    http.MethodOptions,
 		optHeader: opt,
 	}
@@ -228,8 +228,8 @@ func (s *ObjectService) Options(ctx context.Context, name string, opt *ObjectOpt
 // 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ObjectPutHeaderOptions.ContentLength
 //
 // https://www.qcloud.com/document/product/436/7741
-func (s *ObjectService) Append(ctx context.Context, name string, position int, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
-	u := fmt.Sprintf("/%s?append&position=%d", encodeURIComponent(name), position)
+func (s *ObjectService) Append(ctx context.Context, key string, position int, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
+	u := fmt.Sprintf("/%s?append&position=%d", encodeURIComponent(key), position)
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       u,
@@ -294,10 +294,10 @@ type objectPresignedURLTestingOptions struct {
 //
 // https://cloud.tencent.com/document/product/436/14116
 // https://cloud.tencent.com/document/product/436/14114
-func (s *ObjectService) PresignedURL(ctx context.Context, httpMethod, name string, auth Auth, opt interface{}) (*url.URL, error) {
+func (s *ObjectService) PresignedURL(ctx context.Context, httpMethod, key string, auth Auth, opt interface{}) (*url.URL, error) {
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
-		uri:       "/" + encodeURIComponent(name),
+		uri:       "/" + encodeURIComponent(key),
 		method:    httpMethod,
 		optQuery:  opt,
 		optHeader: opt,

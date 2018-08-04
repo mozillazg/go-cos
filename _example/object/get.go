@@ -30,8 +30,8 @@ func main() {
 		},
 	})
 
-	name := "test/hello.txt"
-	resp, err := c.Object.Get(context.Background(), name, nil)
+	key := "test/hello.txt"
+	resp, err := c.Object.Get(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +44,7 @@ func main() {
 		ResponseContentType: "text/html",
 		Range:               "bytes=0-3",
 	}
-	resp, err = c.Object.Get(context.Background(), name, opt)
+	resp, err = c.Object.Get(context.Background(), key, opt)
 	if err != nil {
 		panic(err)
 	}

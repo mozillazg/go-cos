@@ -25,15 +25,15 @@ func main() {
 		},
 	})
 
-	name := "test/objectPut.go"
+	key := "test/objectPut.go"
 	f := strings.NewReader("test")
 
-	_, err := c.Object.Put(context.Background(), name, f, nil)
+	_, err := c.Object.Put(context.Background(), key, f, nil)
 	if err != nil {
 		panic(err)
 	}
 
-	name = "test/put_option.go"
+	key = "test/put_option.go"
 	f = strings.NewReader("test xxx")
 	opt := &cos.ObjectPutOptions{
 		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
@@ -44,7 +44,7 @@ func main() {
 			XCosACL: "private",
 		},
 	}
-	_, err = c.Object.Put(context.Background(), name, f, opt)
+	_, err = c.Object.Put(context.Background(), key, f, opt)
 	if err != nil {
 		panic(err)
 	}

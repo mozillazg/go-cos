@@ -14,8 +14,8 @@ import (
 	"github.com/mozillazg/go-cos/debug"
 )
 
-func initUpload(c *cos.Client, name string) *cos.InitiateMultipartUploadResult {
-	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), name, nil)
+func initUpload(c *cos.Client, key string) *cos.InitiateMultipartUploadResult {
+	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -23,7 +23,7 @@ func initUpload(c *cos.Client, name string) *cos.InitiateMultipartUploadResult {
 	return v
 }
 
-func uploadPart(c *cos.Client, name string, uploadID string, blockSize, n int) string {
+func uploadPart(c *cos.Client, key string, uploadID string, blockSize, n int) string {
 
 	b := make([]byte, blockSize)
 	if _, err := rand.Read(b); err != nil {
@@ -33,7 +33,7 @@ func uploadPart(c *cos.Client, name string, uploadID string, blockSize, n int) s
 	f := strings.NewReader(s)
 
 	resp, err := c.Object.UploadPart(
-		context.Background(), name, uploadID, n, f, nil,
+		context.Background(), key, uploadID, n, f, nil,
 	)
 	if err != nil {
 		panic(err)
@@ -58,17 +58,17 @@ func main() {
 		},
 	})
 
-	name := "test/test_list_parts.go"
+	key := "test/test_list_parts.go"
 	up := initUpload(c, name)
 	uploadID := up.UploadID
 	ctx := context.Background()
 	blockSize := 1024 * 1024 * 3
 
 	for i := 1; i < 5; i++ {
-		uploadPart(c, name, uploadID, blockSize, i)
+		uploadPart(c, key, uploadID, blockSize, i)
 	}
 
-	v, _, err := c.Object.ListParts(ctx, name, uploadID)
+	v, _, err := c.Object.ListParts(ctx, key, uploadID)
 	if err != nil {
 		panic(err)
 		return

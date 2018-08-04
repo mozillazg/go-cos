@@ -27,7 +27,7 @@ func main() {
 		},
 	})
 
-	name := "test/objectPut.go"
+	key := "test/objectPut.go"
 
 	_, err := c.Object.Delete(context.Background(), name)
 	if err != nil {

@@ -34,11 +34,11 @@ func main() {
 		},
 	})
 
-	name := "test/hello.txt"
+	key := "test/hello.txt"
 	ctx := context.Background()
 
 	// 通过生成签名 header 下载文件
-	resp, err := c.Object.Get(ctx, name, nil)
+	resp, err := c.Object.Get(ctx, key, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -47,7 +47,7 @@ func main() {
 	fmt.Printf("%s\n", string(bs))
 
 	// 获取预签名授权 URL
-	presignedURL, err := c.Object.PresignedURL(ctx, http.MethodGet, name, auth, nil)
+	presignedURL, err := c.Object.PresignedURL(ctx, http.MethodGet, key, auth, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,7 @@ func main() {
 			ResponseBody:   true,
 		},
 	})
-	resp3, err := c2.Object.Get(ctx, name, &cos.ObjectGetOptions{
+	resp3, err := c2.Object.Get(ctx, key, &cos.ObjectGetOptions{
 		PresignedURL: presignedURL,
 	})
 	if err != nil {

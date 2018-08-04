@@ -34,12 +34,12 @@ func main() {
 		},
 	})
 
-	name := "test/objectPut.go"
+	key := "test/objectPut.go"
 	ctx := context.Background()
 	f := strings.NewReader("test")
 
 	// 通过生成签名 header 上传文件
-	_, err := c.Object.Put(ctx, name, f, nil)
+	_, err := c.Object.Put(ctx, key, f, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -51,7 +51,7 @@ func main() {
 			ContentType: "text/html",
 		},
 	}
-	presignedURL, err := c.Object.PresignedURL(ctx, http.MethodPut, name, auth, opt)
+	presignedURL, err := c.Object.PresignedURL(ctx, http.MethodPut, key, auth, opt)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +71,7 @@ func main() {
 	}
 
 	// 验证上传的内容
-	resp, err := c.Object.Get(ctx, name, nil)
+	resp, err := c.Object.Get(ctx, key, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -92,7 +92,7 @@ func main() {
 	})
 	f = strings.NewReader("test c.Object.Put with presignedURL")
 	opt.PresignedURL = presignedURL
-	resp2, err := c2.Object.Put(ctx, name, f, opt)
+	resp2, err := c2.Object.Put(ctx, key, f, opt)
 	if err != nil {
 		panic(err)
 	}

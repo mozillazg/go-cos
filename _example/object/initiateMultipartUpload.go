@@ -29,8 +29,8 @@ func main() {
 		},
 	})
 
-	name := "test_multipart" + time.Now().Format(time.RFC3339)
-	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), name, nil)
+	key := "test_multipart" + time.Now().Format(time.RFC3339)
+	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 	}

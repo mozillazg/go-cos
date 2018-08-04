@@ -44,7 +44,7 @@ func main() {
 
 	startTime := time.Now()
 
-	name := fmt.Sprintf("test/test_object_append_%s", startTime.Format(time.RFC3339))
+	key := fmt.Sprintf("test/test_object_append_%s", startTime.Format(time.RFC3339))
 	data := genBigData(1024 * 1024 * 1)
 	length := len(data)
 	r := bytes.NewReader(data)
@@ -52,7 +52,7 @@ func main() {
 	ctx := context.Background()
 
 	// 第一次就必须 append
-	resp, err := c.Object.Append(ctx, name, 0, r, nil)
+	resp, err := c.Object.Append(ctx, key, 0, r, nil)
 	if err != nil {
 		panic(err)
 		return
@@ -60,7 +60,7 @@ func main() {
 	fmt.Printf("%s\n", resp.Status)
 
 	// head
-	if _, err = c.Object.Head(ctx, name, nil); err != nil {
+	if _, err = c.Object.Head(ctx, key, nil); err != nil {
 		panic(err)
 		return
 	}
@@ -68,7 +68,7 @@ func main() {
 	// 再次 append
 	data = genBigData(1024 * 1024 * 5)
 	r = bytes.NewReader(data)
-	resp, err = c.Object.Append(context.Background(), name, length, r, nil)
+	resp, err = c.Object.Append(context.Background(), key, length, r, nil)
 	if err != nil {
 		panic(err)
 	}

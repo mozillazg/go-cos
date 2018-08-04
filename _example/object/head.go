@@ -28,8 +28,8 @@ func main() {
 		},
 	})
 
-	name := "test/hello.txt"
-	_, err := c.Object.Head(context.Background(), name, nil)
+	key := "test/hello.txt"
+	_, err := c.Object.Head(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 	}

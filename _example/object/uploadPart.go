@@ -14,8 +14,8 @@ import (
 	"github.com/mozillazg/go-cos/debug"
 )
 
-func initUpload(c *cos.Client, name string) *cos.InitiateMultipartUploadResult {
-	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), name, nil)
+func initUpload(c *cos.Client, key string) *cos.InitiateMultipartUploadResult {
+	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -39,13 +39,13 @@ func main() {
 		},
 	})
 
-	name := "test/test_multi_upload.go"
+	key := "test/test_multi_upload.go"
 	up := initUpload(c, name)
 	uploadID := up.UploadID
 
 	f := strings.NewReader("test heoo")
 	_, err := c.Object.UploadPart(
-		context.Background(), name, uploadID, 1, f, nil,
+		context.Background(), key, uploadID, 1, f, nil,
 	)
 	if err != nil {
 		panic(err)

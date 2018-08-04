@@ -32,8 +32,8 @@ func main() {
 			XCosACL: "private",
 		},
 	}
-	name := "test/hello.txt"
-	_, err := c.Object.PutACL(context.Background(), name, opt)
+	key := "test/hello.txt"
+	_, err := c.Object.PutACL(context.Background(), key, opt)
 	if err != nil {
 		panic(err)
 	}
@@ -57,7 +57,7 @@ func main() {
 		},
 	}
 
-	_, err = c.Object.PutACL(context.Background(), name, opt)
+	_, err = c.Object.PutACL(context.Background(), key, opt)
 	if err != nil {
 		panic(err)
 	}

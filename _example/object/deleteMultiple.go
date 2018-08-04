@@ -35,10 +35,10 @@ func uploadMulti(c *cos.Client) []string {
 	n := 3
 
 	for n > 0 {
-		name = fmt.Sprintf("test/test_multi_delete_%s", time.Now().Format(time.RFC3339))
+		key = fmt.Sprintf("test/test_multi_delete_%s", time.Now().Format(time.RFC3339))
 		r = bytes.NewReader(data)
 
-		c.Object.Put(ctx, name, r, nil)
+		c.Object.Put(ctx, key, r, nil)
 		names = append(names, name)
 		n--
 	}

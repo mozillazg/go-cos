@@ -27,11 +27,11 @@ type InitiateMultipartUploadResult struct {
 // Initiate Multipart Upload请求实现初始化分片上传，成功执行此请求以后会返回Upload ID用于后续的Upload Part请求。
 //
 // https://www.qcloud.com/document/product/436/7746
-func (s *ObjectService) InitiateMultipartUpload(ctx context.Context, name string, opt *InitiateMultipartUploadOptions) (*InitiateMultipartUploadResult, *Response, error) {
+func (s *ObjectService) InitiateMultipartUpload(ctx context.Context, key string, opt *InitiateMultipartUploadOptions) (*InitiateMultipartUploadResult, *Response, error) {
 	var res InitiateMultipartUploadResult
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
-		uri:       "/" + encodeURIComponent(name) + "?uploads",
+		uri:       "/" + encodeURIComponent(key) + "?uploads",
 		method:    http.MethodPost,
 		optHeader: opt,
 		result:    &res,
@@ -57,8 +57,8 @@ type ObjectUploadPartOptions struct {
 // 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ContentLength
 //
 // https://www.qcloud.com/document/product/436/7750
-func (s *ObjectService) UploadPart(ctx context.Context, name, uploadID string, partNumber int, r io.Reader, opt *ObjectUploadPartOptions) (*Response, error) {
-	u := fmt.Sprintf("/%s?partNumber=%d&uploadId=%s", encodeURIComponent(name), partNumber, uploadID)
+func (s *ObjectService) UploadPart(ctx context.Context, key, uploadID string, partNumber int, r io.Reader, opt *ObjectUploadPartOptions) (*Response, error) {
+	u := fmt.Sprintf("/%s?partNumber=%d&uploadId=%s", encodeURIComponent(key), partNumber, uploadID)
 	sendOpt := sendOptions{
 		baseURL:   s.client.BaseURL.BucketURL,
 		uri:       u,
@@ -99,8 +99,8 @@ type ObjectListPartsResult struct {
 // List Parts用来查询特定分块上传中的已上传的块。
 //
 // https://www.qcloud.com/document/product/436/7747
-func (s *ObjectService) ListParts(ctx context.Context, name, uploadID string) (*ObjectListPartsResult, *Response, error) {
-	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
+func (s *ObjectService) ListParts(ctx context.Context, key, uploadID string) (*ObjectListPartsResult, *Response, error) {
+	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(key), uploadID)
 	var res ObjectListPartsResult
 	sendOpt := sendOptions{
 		baseURL: s.client.BaseURL.BucketURL,
@@ -143,8 +143,8 @@ type CompleteMultipartUploadResult struct {
 // 建议您及时完成分块上传或者舍弃分块上传，因为已上传但是未终止的块会占用存储空间进而产生存储费用。
 //
 // https://www.qcloud.com/document/product/436/7742
-func (s *ObjectService) CompleteMultipartUpload(ctx context.Context, name, uploadID string, opt *CompleteMultipartUploadOptions) (*CompleteMultipartUploadResult, *Response, error) {
-	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
+func (s *ObjectService) CompleteMultipartUpload(ctx context.Context, key, uploadID string, opt *CompleteMultipartUploadOptions) (*CompleteMultipartUploadResult, *Response, error) {
+	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(key), uploadID)
 	var res CompleteMultipartUploadResult
 	sendOpt := sendOptions{
 		baseURL: s.client.BaseURL.BucketURL,
@@ -165,8 +165,8 @@ func (s *ObjectService) CompleteMultipartUpload(ctx context.Context, name, uploa
 // 建议您及时完成分块上传或者舍弃分块上传，因为已上传但是未终止的块会占用存储空间进而产生存储费用。
 //
 // https://www.qcloud.com/document/product/436/7740
-func (s *ObjectService) AbortMultipartUpload(ctx context.Context, name, uploadID string) (*Response, error) {
-	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
+func (s *ObjectService) AbortMultipartUpload(ctx context.Context, key, uploadID string) (*Response, error) {
+	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(key), uploadID)
 	sendOpt := sendOptions{
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     u,

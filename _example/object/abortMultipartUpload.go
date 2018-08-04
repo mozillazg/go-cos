@@ -28,14 +28,14 @@ func main() {
 		},
 	})
 
-	name := "test_multipart.txt"
-	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), name, nil)
+	key := "test_multipart.txt"
+	v, _, err := c.Object.InitiateMultipartUpload(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("%s\n", v.UploadID)
 
-	resp, err := c.Object.AbortMultipartUpload(context.Background(), name, v.UploadID)
+	resp, err := c.Object.AbortMultipartUpload(context.Background(), key, v.UploadID)
 	if err != nil {
 		panic(err)
 	}

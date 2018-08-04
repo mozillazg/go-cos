@@ -12,7 +12,7 @@ import (
 	"github.com/mozillazg/go-cos"
 )
 
-func upload(c *cos.Client, name string) {
+func upload(c *cos.Client, key string) {
 	f := strings.NewReader("test")
 	f = strings.NewReader("test xxx")
 	opt := &cos.ObjectPutOptions{
@@ -23,7 +23,7 @@ func upload(c *cos.Client, name string) {
 			XCosACL: "public-read",
 		},
 	}
-	c.Object.Put(context.Background(), name, f, opt)
+	c.Object.Put(context.Background(), key, f, opt)
 	return
 }
 
@@ -32,10 +32,10 @@ func main() {
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, nil)
 
-	name := "test/anonymous_get.go"
+	key := "test/anonymous_get.go"
 	upload(c, name)
 
-	resp, err := c.Object.Get(context.Background(), name, nil)
+	resp, err := c.Object.Get(context.Background(), key, nil)
 	if err != nil {
 		panic(err)
 		return
