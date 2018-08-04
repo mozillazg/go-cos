@@ -129,7 +129,14 @@ func NewClient(uri *BaseURL, httpClient *http.Client) *Client {
 	return c
 }
 
-func (c *Client) newRequest(ctx context.Context, baseURL *url.URL, uri, method string, body interface{}, optQuery interface{}, optHeader interface{}) (req *http.Request, err error) {
+func (c *Client) newRequest(ctx context.Context, opt *sendOptions) (req *http.Request, err error) {
+	baseURL := opt.baseURL
+	uri := opt.uri
+	method := opt.method
+	body := opt.body
+	optQuery := opt.optQuery
+	optHeader := opt.optHeader
+
 	uri, err = addURLOptions(uri, optQuery)
 	if err != nil {
 		return
@@ -254,7 +261,7 @@ type sendOptions struct {
 }
 
 func (c *Client) send(ctx context.Context, opt *sendOptions) (resp *Response, err error) {
-	req, err := c.newRequest(ctx, opt.baseURL, opt.uri, opt.method, opt.body, opt.optQuery, opt.optHeader)
+	req, err := c.newRequest(ctx, opt)
 	if err != nil {
 		return
 	}
