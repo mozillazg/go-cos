@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"reflect"
+	"sort"
+	"strings"
 	"testing"
+	"time"
 )
 
 func TestObjectService_Get(t *testing.T) {
@@ -270,5 +274,88 @@ func TestObjectService_Copy(t *testing.T) {
 
 	if !reflect.DeepEqual(ref, want) {
 		t.Errorf("Object.Copy returned %+v, want %+v", ref, want)
+	}
+}
+
+func TestObjectService_PresignedURL(t *testing.T) {
+	testTable := map[string]string{
+		http.MethodGet: `q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=&q-url-param-list=&q-signature=a5de76b0734f084a7ea24413f7168b4bdbe5676c`,
+		http.MethodPut: `q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=&q-url-param-list=&q-signature=b13e488d105301cdc627f33448d3d4237f418256`,
+	}
+
+	for method, expectAuthorization := range testTable {
+		b, _ := NewBaseURL("https://testbucket-125000000.cos.ap-beijing-1.myqcloud.com")
+		c := NewClient(b, nil)
+		secretID := "QmFzZTY0IGlzIGEgZ2VuZXJp"
+		secretKey := "AKIDZfbOA78asKUYBcXFrJD0a1ICvR98JM"
+		startTime := time.Unix(int64(1480932292), 0)
+		endTime := time.Unix(int64(1481012292), 0)
+
+		auth := Auth{
+			SecretID:  secretID,
+			SecretKey: secretKey,
+		}
+		authTime := &AuthTime{
+			SignStartTime: startTime,
+			SignEndTime:   endTime,
+			KeyStartTime:  startTime,
+			KeyEndTime:    endTime,
+		}
+		opt := &objectPresignedURLTestingOptions{
+			authTime: authTime,
+		}
+		signURL, err := c.Object.PresignedURL(context.Background(), method, "testfile2", auth, opt)
+		if err != nil {
+			t.Errorf("PresignedURL returned error: %v", err)
+		}
+
+		sign := signURL.Query().Get("sign")
+		if strings.Compare(sign, expectAuthorization) != 0 {
+			t.Errorf("PresignedURL %s contain sign %#v, want %#v", method, sign, expectAuthorization)
+		}
+	}
+}
+
+func TestObjectService_PresignedURL_withoutMockAuthTime(t *testing.T) {
+	testTable := map[string]string{
+		http.MethodGet: `q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=&q-url-param-list=&q-signature=a5de76b0734f084a7ea24413f7168b4bdbe5676c`,
+		http.MethodPut: `q-sign-algorithm=sha1&q-ak=QmFzZTY0IGlzIGEgZ2VuZXJp&q-sign-time=1480932292;1481012292&q-key-time=1480932292;1481012292&q-header-list=&q-url-param-list=&q-signature=b13e488d105301cdc627f33448d3d4237f418256`,
+	}
+
+	for method, expectAuthorization := range testTable {
+		b, _ := NewBaseURL("https://testbucket-125000000.cos.ap-beijing-1.myqcloud.com")
+		c := NewClient(b, nil)
+		secretID := "QmFzZTY0IGlzIGEgZ2VuZXJp"
+		secretKey := "AKIDZfbOA78asKUYBcXFrJD0a1ICvR98JM"
+
+		auth := Auth{
+			SecretID:  secretID,
+			SecretKey: secretKey,
+		}
+		signURL, err := c.Object.PresignedURL(context.Background(), method, "testfile2", auth, nil)
+		if err != nil {
+			t.Errorf("PresignedURL returned error: %v", err)
+		}
+
+		sign := signURL.Query().Get("sign")
+		sign = strings.Replace(sign, ";", "-", -1)
+		var expectedKeys []string
+		var gotKeys []string
+		expectAuthorization = strings.Replace(expectAuthorization, ";", "-", -1)
+		if v, _ := url.ParseQuery(expectAuthorization); v != nil {
+			for k := range v {
+				expectedKeys = append(expectedKeys, k)
+			}
+		}
+		if v, _ := url.ParseQuery(sign); v != nil {
+			for k := range v {
+				gotKeys = append(gotKeys, k)
+			}
+		}
+		sort.Strings(expectedKeys)
+		sort.Strings(gotKeys)
+		if !reflect.DeepEqual(gotKeys, expectedKeys) {
+			t.Errorf("PresignedURL %s contain sign \n%#v, want \n%#v", method, gotKeys, expectedKeys)
+		}
 	}
 }

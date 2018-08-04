@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 // ObjectService ...
@@ -23,6 +24,9 @@ type ObjectGetOptions struct {
 	ResponseContentEncoding    string `url:"response-content-encoding,omitempty" header:"-"`
 	Range                      string `url:"-" header:"Range,omitempty"`
 	IfModifiedSince            string `url:"-" header:"If-Modified-Since,omitempty"`
+
+	// 预签名授权 URL
+	PresignedURL *url.URL `header:"-" url:"-" xml:"-"`
 }
 
 // Get Object 请求可以将一个文件（Object）下载至本地。
@@ -30,9 +34,15 @@ type ObjectGetOptions struct {
 //
 // https://www.qcloud.com/document/product/436/7753
 func (s *ObjectService) Get(ctx context.Context, name string, opt *ObjectGetOptions) (*Response, error) {
+	baseURL := s.client.BaseURL.BucketURL
+	uri := "/" + encodeURIComponent(name)
+	if opt != nil && opt.PresignedURL != nil {
+		baseURL = opt.PresignedURL
+		uri = ""
+	}
 	sendOpt := sendOptions{
-		baseURL:          s.client.BaseURL.BucketURL,
-		uri:              "/" + encodeURIComponent(name),
+		baseURL:          baseURL,
+		uri:              uri,
 		method:           http.MethodGet,
 		optQuery:         opt,
 		optHeader:        opt,
@@ -63,6 +73,9 @@ type ObjectPutHeaderOptions struct {
 type ObjectPutOptions struct {
 	*ACLHeaderOptions       `header:",omitempty" url:"-" xml:"-"`
 	*ObjectPutHeaderOptions `header:",omitempty" url:"-" xml:"-"`
+
+	// 预签名授权 URL
+	PresignedURL *url.URL `header:"-" url:"-" xml:"-"`
 }
 
 // Put Object请求可以将一个文件（Oject）上传至指定Bucket。
@@ -71,9 +84,15 @@ type ObjectPutOptions struct {
 //
 // https://www.qcloud.com/document/product/436/7749
 func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
+	baseURL := s.client.BaseURL.BucketURL
+	uri := "/" + encodeURIComponent(name)
+	if opt != nil && opt.PresignedURL != nil {
+		baseURL = opt.PresignedURL
+		uri = ""
+	}
 	sendOpt := sendOptions{
-		baseURL:   s.client.BaseURL.BucketURL,
-		uri:       "/" + encodeURIComponent(name),
+		baseURL:   baseURL,
+		uri:       uri,
 		method:    http.MethodPut,
 		body:      r,
 		optHeader: opt,
@@ -261,6 +280,51 @@ func (s *ObjectService) DeleteMulti(ctx context.Context, opt *ObjectDeleteMultiO
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
+}
+
+type objectPresignedURLTestingOptions struct {
+	authTime *AuthTime
+}
+
+// PresignedURL 生成预签名授权 URL，可用于无需知道 SecretID 和 SecretKey 就可以上传和下载文件 。
+//
+// httpMethod:
+//   * 下载文件：http.MethodGet
+//   * 上传文件: http.MethodPut
+//
+// https://cloud.tencent.com/document/product/436/14116
+// https://cloud.tencent.com/document/product/436/14114
+func (s *ObjectService) PresignedURL(ctx context.Context, httpMethod, name string, auth Auth, opt interface{}) (*url.URL, error) {
+	sendOpt := sendOptions{
+		baseURL:   s.client.BaseURL.BucketURL,
+		uri:       "/" + encodeURIComponent(name),
+		method:    httpMethod,
+		optQuery:  opt,
+		optHeader: opt,
+	}
+	req, err := s.client.newRequest(ctx, &sendOpt)
+	if err != nil {
+		return nil, err
+	}
+
+	var authTime *AuthTime
+	if opt != nil {
+		if opt, ok := opt.(*objectPresignedURLTestingOptions); ok {
+			authTime = opt.authTime
+		}
+	}
+	if authTime == nil {
+		authTime = NewAuthTime(auth.Expire)
+	}
+	authorization := newAuthorization(auth, req, *authTime)
+	sign := encodeURIComponent(authorization)
+
+	if req.URL.RawQuery == "" {
+		req.URL.RawQuery = fmt.Sprintf("sign=%s", sign)
+	} else {
+		req.URL.RawQuery = fmt.Sprintf("%s&sign=%s", req.URL.RawQuery, sign)
+	}
+	return req.URL, nil
 }
 
 // Object ...
