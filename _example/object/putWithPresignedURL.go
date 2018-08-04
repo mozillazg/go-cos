@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/mozillazg/go-cos"
 	"github.com/mozillazg/go-cos/debug"
@@ -17,11 +18,13 @@ func main() {
 	auth := cos.Auth{
 		SecretID:  os.Getenv("COS_SECRETID"),
 		SecretKey: os.Getenv("COS_SECRETKEY"),
+		Expire:    time.Hour,
 	}
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  auth.SecretID,
 			SecretKey: auth.SecretKey,
+			Expire:    auth.Expire,
 			Transport: &debug.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    true,
@@ -42,7 +45,13 @@ func main() {
 	}
 
 	// 获取预签名授权 URL
-	presignedURL, err := c.Object.PresignedURL(ctx, http.MethodPut, name, auth, nil)
+	opt := &cos.ObjectPutOptions{
+		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
+			// 指定上传内容的 Content-Type，用于指定下载时 response 的 Content-Type
+			ContentType: "text/html",
+		},
+	}
+	presignedURL, err := c.Object.PresignedURL(ctx, http.MethodPut, name, auth, opt)
 	if err != nil {
 		panic(err)
 	}
@@ -54,6 +63,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// 指定上传内容的 Content-Type，用于指定下载时 response 的 Content-Type
+	req.Header.Set("Content-Type", "text/html")
 	_, err = http.DefaultClient.Do(req)
 	if err != nil {
 		panic(err)
@@ -67,7 +78,7 @@ func main() {
 	bs, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	fmt.Printf("%s\n", string(bs))
-
+	fmt.Printf("Content-Type: %s\n\n", resp.Header.Get("Content-Type"))
 	fmt.Printf("%v\n\n", strings.Compare(data, string(bs)) == 0)
 
 	// c.Object.Put 使用 预签名授权 URL
@@ -80,9 +91,8 @@ func main() {
 		},
 	})
 	f = strings.NewReader("test c.Object.Put with presignedURL")
-	resp2, err := c2.Object.Put(ctx, name, f, &cos.ObjectPutOptions{
-		PresignedURL: presignedURL,
-	})
+	opt.PresignedURL = presignedURL
+	resp2, err := c2.Object.Put(ctx, name, f, opt)
 	if err != nil {
 		panic(err)
 	}

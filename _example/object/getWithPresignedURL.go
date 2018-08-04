@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/mozillazg/go-cos"
 	"github.com/mozillazg/go-cos/debug"
@@ -17,11 +18,13 @@ func main() {
 	auth := cos.Auth{
 		SecretID:  os.Getenv("COS_SECRETID"),
 		SecretKey: os.Getenv("COS_SECRETKEY"),
+		Expire:    time.Hour,
 	}
 	c := cos.NewClient(b, &http.Client{
 		Transport: &cos.AuthorizationTransport{
 			SecretID:  auth.SecretID,
 			SecretKey: auth.SecretKey,
+			Expire:    auth.Expire,
 			Transport: &debug.DebugRequestTransport{
 				RequestHeader:  true,
 				RequestBody:    true,

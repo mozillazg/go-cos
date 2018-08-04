@@ -343,12 +343,12 @@ func TestObjectService_PresignedURL_withoutMockAuthTime(t *testing.T) {
 		var gotKeys []string
 		expectAuthorization = strings.Replace(expectAuthorization, ";", "-", -1)
 		if v, _ := url.ParseQuery(expectAuthorization); v != nil {
-			for k, _ := range v {
+			for k := range v {
 				expectedKeys = append(expectedKeys, k)
 			}
 		}
 		if v, _ := url.ParseQuery(sign); v != nil {
-			for k, _ := range v {
+			for k := range v {
 				gotKeys = append(gotKeys, k)
 			}
 		}
