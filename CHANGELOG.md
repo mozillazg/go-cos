@@ -1,16 +1,17 @@
 # Changelog
 
 
-## [0.9.0]
+## [0.9.0] (2018-08-04)
 
 ### 新增
 
-* 新增 `c.Object.PresignedURL` 用于获取预签名授权 URL。可用于无需知道 SecretID 和 SecretKey 就可以上传和下载文件。
-* 新增 `Auth` struct
+* 新增 `c.Object.PresignedURL` 用于获取预签名授权 URL。
+  可用于无需知道 SecretID 和 SecretKey 就可以上传和下载文件。
 * 上传和下载 Object 的功能支持指定预签名授权 URL。
 
 详见 PR 以及使用示例：
 
+* https://github.com/mozillazg/go-cos/pull/5
 * 通过预签名授权 URL 下载文件，示例：[object/getWithPresignedURL.go](./_example/object/getWithPresignedURL.go)
 * 通过预签名授权 URL 上传文件，示例：[object/putWithPresignedURL.go](./_example/object/putWithPresignedURL.go)
 
@@ -91,6 +92,7 @@
 * 完成大部分 Bucket API(还剩一个 Put Bucket Lifecycle)
 
 
+[0.9.0]: https://github.com/mozillazg/go-cos/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mozillazg/go-cos/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mozillazg/go-cos/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/mozillazg/go-cos/compare/v0.5.0...v0.6.0
