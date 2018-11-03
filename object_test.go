@@ -49,6 +49,43 @@ func TestObjectService_Get(t *testing.T) {
 
 }
 
+func TestObjectService_Get_with_PresignedURL(t *testing.T) {
+	setup()
+	defer teardown()
+	name := "test/hello.txt"
+
+	mux.HandleFunc("/233/PresignedURL", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		vs := values{
+			"response-content-type": "text/html",
+		}
+		testFormValues(t, r, vs)
+		testHeader(t, r, "Range", "bytes=0-3")
+		fmt.Fprint(w, `hello`)
+	})
+
+	opt := &ObjectGetOptions{
+		ResponseContentType: "text/html",
+		Range:               "bytes=0-3",
+	}
+	PresignedURL, _ := url.Parse(
+		fmt.Sprintf("%s/%s", client.BaseURL.BucketURL.String(), "233/PresignedURL"))
+	opt.PresignedURL = PresignedURL
+
+	resp, err := client.Object.Get(context.Background(), name, opt)
+	if err != nil {
+		t.Fatalf("Object.Get returned error: %v", err)
+	}
+
+	b, _ := ioutil.ReadAll(resp.Body)
+	ref := string(b)
+	want := "hello"
+	if !reflect.DeepEqual(ref, want) {
+		t.Errorf("Object.Get returned %+v, want %+v", ref, want)
+	}
+
+}
+
 func TestObjectService_Put(t *testing.T) {
 	setup()
 	defer teardown()
@@ -80,6 +117,87 @@ func TestObjectService_Put(t *testing.T) {
 	_, err := client.Object.Put(context.Background(), name, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Put returned error: %v", err)
+	}
+
+}
+
+func TestObjectService_Put_with_PresignedURL(t *testing.T) {
+	setup()
+	defer teardown()
+
+	opt := &ObjectPutOptions{
+		ObjectPutHeaderOptions: &ObjectPutHeaderOptions{
+			ContentType: "text/html",
+		},
+		ACLHeaderOptions: &ACLHeaderOptions{
+			XCosACL: "private",
+		},
+	}
+	PresignedURL, _ := url.Parse(
+		fmt.Sprintf("%s/%s", client.BaseURL.BucketURL.String(), "233/PresignedURL"))
+	opt.PresignedURL = PresignedURL
+
+	name := "test/hello.txt"
+
+	mux.HandleFunc("/233/PresignedURL", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+		testHeader(t, r, "x-cos-acl", "private")
+		testHeader(t, r, "Content-Type", "text/html")
+
+		b, _ := ioutil.ReadAll(r.Body)
+		v := string(b)
+		want := "hello"
+		if !reflect.DeepEqual(v, want) {
+			t.Errorf("Object.Put request body: %#v, want %#v", v, want)
+		}
+	})
+
+	r := bytes.NewReader([]byte("hello"))
+	_, err := client.Object.Put(context.Background(), name, r, opt)
+	if err != nil {
+		t.Fatalf("Object.Put returned error: %v", err)
+	}
+
+}
+
+func TestObjectService_Put_not_close(t *testing.T) {
+	setup()
+	defer teardown()
+
+	opt := &ObjectPutOptions{
+		ObjectPutHeaderOptions: &ObjectPutHeaderOptions{
+			ContentType:   "text/html",
+			ContentLength: 5,
+		},
+		ACLHeaderOptions: &ACLHeaderOptions{
+			XCosACL: "private",
+		},
+	}
+	name := "test/hello.txt"
+
+	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodPut)
+		testHeader(t, r, "x-cos-acl", "private")
+		testHeader(t, r, "Content-Type", "text/html")
+
+		b, _ := ioutil.ReadAll(r.Body)
+		v := string(b)
+		want := "hello"
+		if !reflect.DeepEqual(v, want) {
+			t.Errorf("Object.Put request body: %#v, want %#v", v, want)
+		}
+		if r.ContentLength != 5 {
+			t.Error("ContentLength should be 5")
+		}
+	})
+
+	r := newTraceCloser(bytes.NewReader([]byte("hello")))
+	_, err := client.Object.Put(context.Background(), name, r, opt)
+	if err != nil {
+		t.Fatalf("Object.Put returned error: %v", err)
+	}
+	if r.Called {
+		t.Fatal("Should not close input")
 	}
 
 }
@@ -133,7 +251,7 @@ func TestObjectService_Options(t *testing.T) {
 	})
 
 	opt := &ObjectOptionsOptions{
-		Origin: "www.qq.com",
+		Origin:                     "www.qq.com",
 		AccessControlRequestMethod: "PUT",
 	}
 
@@ -183,6 +301,55 @@ func TestObjectService_Append(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Object.Append returned error: %v", err)
 	}
+}
+
+func TestObjectService_Append_not_close(t *testing.T) {
+	setup()
+	defer teardown()
+
+	opt := &ObjectPutOptions{
+		ObjectPutHeaderOptions: &ObjectPutHeaderOptions{
+			ContentType:   "text/html",
+			ContentLength: 5,
+		},
+		ACLHeaderOptions: &ACLHeaderOptions{
+			XCosACL: "private",
+		},
+	}
+	name := "test/hello.txt"
+	position := 0
+
+	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
+		vs := values{
+			"append":   "",
+			"position": "0",
+		}
+		testFormValues(t, r, vs)
+
+		testMethod(t, r, http.MethodPost)
+		testHeader(t, r, "x-cos-acl", "private")
+		testHeader(t, r, "Content-Type", "text/html")
+
+		b, _ := ioutil.ReadAll(r.Body)
+		v := string(b)
+		want := "hello"
+		if !reflect.DeepEqual(v, want) {
+			t.Errorf("Object.Append request body: %#v, want %#v", v, want)
+		}
+		if r.ContentLength != 5 {
+			t.Error("ContentLength should be 5")
+		}
+	})
+
+	r := newTraceCloser(bytes.NewReader([]byte("hello")))
+	_, err := client.Object.Append(context.Background(), name, position, r, opt)
+	if err != nil {
+		t.Fatalf("Object.Append returned error: %v", err)
+	}
+	if r.Called {
+		t.Fatal("Should not close input")
+	}
+
 }
 
 func TestObjectService_DeleteMulti(t *testing.T) {

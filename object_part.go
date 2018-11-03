@@ -55,6 +55,7 @@ type ObjectUploadPartOptions struct {
 // 当传入uploadID和partNumber都相同的时候，后传入的块将覆盖之前传入的块。当uploadID不存在时会返回404错误，NoSuchUpload.
 //
 // 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ContentLength
+// 当 r 是个 io.ReadCloser 时 UploadPart 方法不会自动调用 r.Close()，用户需要自行选择合适的时机去调用 r.Close() 方法对 r 进行资源回收
 //
 // https://www.qcloud.com/document/product/436/7750
 func (s *ObjectService) UploadPart(ctx context.Context, name, uploadID string, partNumber int, r io.Reader, opt *ObjectUploadPartOptions) (*Response, error) {

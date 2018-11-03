@@ -81,6 +81,7 @@ type ObjectPutOptions struct {
 // Put Object请求可以将一个文件（Oject）上传至指定Bucket。
 //
 // 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ObjectPutHeaderOptions.ContentLength
+// 当 r 是个 io.ReadCloser 时 Put 方法不会自动调用 r.Close()，用户需要自行选择合适的时机去调用 r.Close() 方法对 r 进行资源回收
 //
 // https://www.qcloud.com/document/product/436/7749
 func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
@@ -226,6 +227,7 @@ func (s *ObjectService) Options(ctx context.Context, name string, opt *ObjectOpt
 // Appendable的文件不可以被复制，不参与版本管理，不参与生命周期管理，不可跨区域复制。
 //
 // 当 r 不是 bytes.Buffer/bytes.Reader/strings.Reader 时，必须指定 opt.ObjectPutHeaderOptions.ContentLength
+// 当 r 是个 io.ReadCloser 时 Append 方法不会自动调用 r.Close()，用户需要自行选择合适的时机去调用 r.Close() 方法对 r 进行资源回收
 //
 // https://www.qcloud.com/document/product/436/7741
 func (s *ObjectService) Append(ctx context.Context, name string, position int, r io.Reader, opt *ObjectPutOptions) (*Response, error) {
@@ -291,6 +293,8 @@ type objectPresignedURLTestingOptions struct {
 // httpMethod:
 //   * 下载文件：http.MethodGet
 //   * 上传文件: http.MethodPut
+//
+// 下载文件 时 opt 可以是 *ObjectGetOptions ，下载文件时 opt 可以是 *ObjectPutOptions
 //
 // https://cloud.tencent.com/document/product/436/14116
 // https://cloud.tencent.com/document/product/436/14114
