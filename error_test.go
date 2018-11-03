@@ -70,8 +70,11 @@ func Test_error_network_error(t *testing.T) {
 		uri:     "/233",
 		method:  "GET",
 	})
-	if !strings.Contains(err.Error(), "can't assign requested address") {
-		t.Errorf(`Expected error contains "can't assign requested address", got %+v`, err)
+	if !(strings.Contains(err.Error(), "can't assign requested address") ||
+		strings.Contains(err.Error(), "connection refused")) {
+		t.Errorf(
+			`Expected error contains "can't assign requested address" or "connection refused",
+			got %+v`, err)
 	}
 }
 
