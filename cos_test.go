@@ -2,7 +2,10 @@ package cos
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -163,5 +166,46 @@ func TestNewAuthTime(t *testing.T) {
 		a.SignEndTime != a.SignEndTime ||
 		a.SignStartTime.Add(time.Hour) != a.SignEndTime {
 		t.Errorf("NewAuthTime request got %+v is not valid", a)
+	}
+}
+
+type traceCloser struct {
+	io.Reader
+	Called bool
+}
+
+func (t traceCloser) Close() error {
+	t.Called = true
+	return nil
+}
+
+func newTraceCloser(r io.Reader) traceCloser {
+	return traceCloser{r, false}
+}
+
+func Test_doAPI_copy_body(t *testing.T) {
+	setup()
+	defer teardown()
+
+	mux.HandleFunc("/test_down", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `test`)
+	})
+
+	w := bytes.NewBuffer([]byte{})
+	resp, err := client.send(context.TODO(), &sendOptions{
+		baseURL: client.BaseURL.ServiceURL,
+		uri:     "/test_down",
+		method:  "GET",
+		result:  w,
+	})
+
+	if err != nil {
+		t.Errorf("Expected error == nil, got %+v", err)
+	}
+	b, _ := ioutil.ReadAll(resp.Body)
+	if len(b) != 0 || string(w.Bytes()) != "test" {
+		t.Errorf(
+			"Expected body was copy and close, got %+v, %+v",
+			string(b), string(w.Bytes()))
 	}
 }

@@ -177,6 +177,7 @@ func (c *Client) newRequest(ctx context.Context, opt *sendOptions) (req *http.Re
 	}
 	if v := req.Header.Get("Content-Length"); req.ContentLength == 0 && v != "" && v != "0" {
 		req.ContentLength, _ = strconv.ParseInt(v, 10, 64)
+		req.Body = ioutil.NopCloser(reader)
 	}
 
 	if contentMD5 != "" {

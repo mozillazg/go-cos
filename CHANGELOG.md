@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [0.10.0] (2018-11-03)
+
+### 变更
+
+* 当上传文件相关方法的 `r io.Reader` 参数是个 `io.ReadCloser` 时不会再自动调用 `r.Close()` ，
+  用户需要自行选择合适的时机去调用 `r.Close()` 方法对 r 进行资源回收。(via [#7] Thanks [@jojohappy])
+
+
 ## [0.9.0] (2018-08-04)
 
 ### 新增
@@ -92,6 +100,7 @@
 * 完成大部分 Bucket API(还剩一个 Put Bucket Lifecycle)
 
 
+[0.10.0]: https://github.com/mozillazg/go-cos/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/mozillazg/go-cos/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mozillazg/go-cos/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/mozillazg/go-cos/compare/v0.6.0...v0.7.0
@@ -103,3 +112,5 @@
 
 [91f7759]: https://github.com/mozillazg/go-cos/commit/91f7759958f9631e8997f47d30ae4044455fc971
 [7dcd701]: https://github.com/mozillazg/go-cos/commit/7dcd701975f483d57525b292ab31d0f9a6c8866c
+[#7]: https://github.com/mozillazg/go-cos/pull/7
+[@jojohappy]: https://github.com/jojohappy

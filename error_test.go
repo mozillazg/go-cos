@@ -1,8 +1,11 @@
 package cos
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -22,9 +25,11 @@ func Test_checkResponse_error(t *testing.T) {
 </Error>`)
 	})
 
-	req, _ := http.NewRequest("GET", client.BaseURL.ServiceURL.String()+"/test_409", nil)
-	resp, _ := client.client.Do(req)
-	err := checkResponse(resp)
+	_, err := client.send(context.TODO(), &sendOptions{
+		baseURL: client.BaseURL.ServiceURL,
+		uri:     "/test_409",
+		method:  "GET",
+	})
 
 	if e, ok := err.(*ErrorResponse); ok {
 		if e.Error() == "" {
@@ -46,11 +51,46 @@ func Test_checkResponse_no_error(t *testing.T) {
 		fmt.Fprint(w, `test`)
 	})
 
-	req, _ := http.NewRequest("GET", client.BaseURL.ServiceURL.String()+"/test_200", nil)
-	resp, _ := client.client.Do(req)
-	err := checkResponse(resp)
-
+	_, err := client.send(context.TODO(), &sendOptions{
+		baseURL: client.BaseURL.ServiceURL,
+		uri:     "/test_200",
+		method:  "GET",
+	})
 	if err != nil {
 		t.Errorf("Expected error == nil, got %+v", err)
+	}
+}
+
+func Test_error_network_error(t *testing.T) {
+	setup()
+	defer teardown()
+
+	_, err := client.send(context.TODO(), &sendOptions{
+		baseURL: &url.URL{Scheme: "http", Host: "127.0.0.1:0"},
+		uri:     "/233",
+		method:  "GET",
+	})
+	if !(strings.Contains(err.Error(), "can't assign requested address") ||
+		strings.Contains(err.Error(), "connection refused")) {
+		t.Errorf(
+			`Expected error contains "can't assign requested address" or "connection refused",
+			got %+v`, err)
+	}
+}
+
+func Test_error_cancel_error(t *testing.T) {
+	setup()
+	defer teardown()
+
+	ctx := context.TODO()
+	ctx, cancel := context.WithCancel(ctx)
+	cancel()
+	_, err := client.send(ctx, &sendOptions{
+		baseURL: &url.URL{Scheme: "http", Host: "127.0.0.1:0"},
+		uri:     "/233",
+		method:  "GET",
+	})
+	if !strings.Contains(err.Error(), "context canceled") {
+		t.Errorf(`Expected error contains "context canceled", got %+v`, err)
 	}
 }
