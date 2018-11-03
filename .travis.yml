@@ -4,12 +4,13 @@ go:
   - 1.8
   - 1.9
   - '1.10'
+  - '1.11'
   - master
 
 sudo: false
 
 before_install:
-  - go get github.com/mattn/goveralls
+  - go get -t -v ./...
 
 install:
   - go get
@@ -17,8 +18,10 @@ install:
 
 script:
   - make test
-  - go test -coverprofile=cover.out github.com/mozillazg/go-cos
-  - $HOME/gopath/bin/goveralls -service=travis-ci -coverprofile=cover.out
+  - go test -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 matrix:
   allow_failures:
