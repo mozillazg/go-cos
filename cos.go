@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
-	"text/template"
-
 	"strconv"
+	"strings"
+	"text/template"
 
 	"github.com/google/go-querystring/query"
 	"github.com/mozillazg/go-httpheader"
@@ -160,7 +160,7 @@ func (c *Client) newRequest(ctx context.Context, opt *sendOptions) (req *http.Re
 			contentType = contentTypeXML
 			reader = bytes.NewReader(b)
 			contentMD5 = base64.StdEncoding.EncodeToString(calMD5Digest(b))
-			//xsha1 = base64.StdEncoding.EncodeToString(calSHA1Digest(b))
+			// xsha1 = base64.StdEncoding.EncodeToString(calSHA1Digest(b))
 		}
 	} else {
 		contentType = contentTypeXML
@@ -224,6 +224,7 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{
 	if err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
+		resp.Body.Close()
 		return response, err
 	}
 
@@ -348,11 +349,69 @@ func newResponse(resp *http.Response) *Response {
 	}
 }
 
+var (
+	xCosRequestID            = "x-cos-request-id"
+	xCosTraceID              = "x-cos-trace-id"
+	xCosObjectType           = "x-cos-object-type"
+	xCosStorageClass         = "x-cos-storage-class"
+	xCosVersionID            = "x-cos-version-id"
+	xCosServerSideEncryption = "x-cos-server-side-encryption"
+	xCosMetaPrefix           = "x-cos-meta-"
+)
+
+// RequestID 每次请求发送时，服务端将会自动为请求生成一个ID。
+func (resp *Response) RequestID() string {
+	return resp.Header.Get(xCosRequestID)
+}
+
+// TraceID 每次请求出错时，服务端将会自动为这个错误生成一个ID。
+func (resp *Response) TraceID() string {
+	return resp.Header.Get(xCosTraceID)
+}
+
+// ObjectType 用来表示 Object 是否可以被追加上传，枚举值：normal 或者 appendable
+func (resp *Response) ObjectType() string {
+	return resp.Header.Get(xCosObjectType)
+}
+
+// StorageClass Object 的存储级别，枚举值：STANDARD，STANDARD_IA
+func (resp *Response) StorageClass() string {
+	return resp.Header.Get(xCosStorageClass)
+}
+
+// VersionID 如果检索到的对象具有唯一的版本ID，则返回版本ID。
+func (resp *Response) VersionID() string {
+	return resp.Header.Get(xCosVersionID)
+}
+
+// ServerSideEncryption 如果通过 COS 管理的服务端加密来存储对象，响应将包含此头部和所使用的加密算法的值，AES256。
+func (resp *Response) ServerSideEncryption() string {
+	return resp.Header.Get(xCosServerSideEncryption)
+}
+
+// MetaHeaders 用户自定义的元数据
+func (resp *Response) MetaHeaders() http.Header {
+	h := http.Header{}
+	for k := range resp.Header {
+		if !strings.HasPrefix(strings.ToLower(k), xCosMetaPrefix) {
+			continue
+		}
+		for _, v := range resp.Header[k] {
+			h.Add(k, v)
+		}
+	}
+	return h
+}
+
 // ACLHeaderOptions ...
 type ACLHeaderOptions struct {
-	XCosACL              string `header:"x-cos-acl,omitempty" url:"-" xml:"-"`
-	XCosGrantRead        string `header:"x-cos-grant-read,omitempty" url:"-" xml:"-"`
-	XCosGrantWrite       string `header:"x-cos-grant-write,omitempty" url:"-" xml:"-"`
+	// 定义 Object 的 acl 属性。有效值：private，public-read-write，public-read；默认值：private
+	XCosACL string `header:"x-cos-acl,omitempty" url:"-" xml:"-"`
+	// 	赋予被授权者读的权限。格式：id="[OwnerUin]"
+	XCosGrantRead string `header:"x-cos-grant-read,omitempty" url:"-" xml:"-"`
+	// 赋予被授权者写的权限。格式：id="[OwnerUin]"
+	XCosGrantWrite string `header:"x-cos-grant-write,omitempty" url:"-" xml:"-"`
+	// 赋予被授权者所有的权限。格式：id="[OwnerUin]"
 	XCosGrantFullControl string `header:"x-cos-grant-full-control,omitempty" url:"-" xml:"-"`
 }
 
@@ -367,13 +426,40 @@ type ACLGrantee struct {
 
 // ACLGrant ...
 type ACLGrant struct {
-	Grantee    *ACLGrantee
+	Grantee *ACLGrantee
+	// 指明授予被授权者的权限信息，枚举值：READ，WRITE，FULL_CONTROL
 	Permission string
 }
 
 // ACLXml ...
+//
+// https://cloud.tencent.com/document/product/436/7733
 type ACLXml struct {
 	XMLName           xml.Name `xml:"AccessControlPolicy"`
 	Owner             *Owner
 	AccessControlList []ACLGrant `xml:"AccessControlList>Grant,omitempty"`
 }
+
+const (
+	// StorageClassStandard Object 的存储级别: STANDARD
+	StorageClassStandard string = "STANDARD"
+	// StorageClassStandardTA Object 的存储级别: STANDARD_IA
+	StorageClassStandardTA string = "STANDARD_IA"
+	// StorageClassArchive Object 的存储级别: ARCHIVE
+	StorageClassArchive string = "ARCHIVE"
+
+	// ObjectTypeAppendable : appendable
+	ObjectTypeAppendable string = "appendable"
+	// ObjectTypeNormal : normal
+	ObjectTypeNormal string = "normal"
+
+	// ServerSideEncryptionAES256 服务端加密算法: AES256
+	ServerSideEncryptionAES256 string = "AES256"
+
+	// PermissionRead 权限值: READ
+	PermissionRead string = "READ"
+	// PermissionWrite 权限值: WRITE
+	PermissionWrite string = "WRITE"
+	// PermissionFullControl  权限值: FULL_CONTROL
+	PermissionFullControl string = "FULL_CONTROL"
+)

@@ -12,6 +12,13 @@ Usage
 在项目的 _example 目录下有各个 API 的使用示例 。
 
 
+备注
+
+* SDK 不会自动设置超时时间，用户根据需要设置合适的超时时间（比如，设置 `http.Client` 的 `Timeout` 字段之类的）
+  或在需要时实现所需的超时机制（比如，通过 `context` 包实现）。
+* 所有的 API 在 [_example](./_example/) 目录下都有对应的使用示例（示例程序中用到的 `debug` 包只是调试用的不是必需的依赖）。
+
+
 Authentication
 
 默认所有 API 都是匿名访问. 如果想添加认证信息的话,可以通过自定义一个 http.Client 来添加认证信息.

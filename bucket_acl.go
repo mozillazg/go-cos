@@ -6,11 +6,13 @@ import (
 )
 
 // BucketGetACLResult ...
+//
+// https://cloud.tencent.com/document/product/436/7733
 type BucketGetACLResult ACLXml
 
-// GetACL 使用API读取Bucket的ACL表，只有所有者有权操作。
+// GetACL 接口用来获取存储桶的访问权限控制列表。
 //
-// https://www.qcloud.com/document/product/436/7733
+// https://cloud.tencent.com/document/product/436/7733
 func (s *BucketService) GetACL(ctx context.Context) (*BucketGetACLResult, *Response, error) {
 	var res BucketGetACLResult
 	sendOpt := sendOptions{
@@ -24,26 +26,20 @@ func (s *BucketService) GetACL(ctx context.Context) (*BucketGetACLResult, *Respo
 }
 
 // BucketPutACLOptions ...
+// Header 和 Body 二选一
 type BucketPutACLOptions struct {
 	Header *ACLHeaderOptions `url:"-" xml:"-"`
 	Body   *ACLXml           `url:"-" header:"-"`
 }
 
-// PutACL 使用API写入Bucket的ACL表，您可以通过Header："x-cos-acl","x-cos-grant-read",
-// "x-cos-grant-write","x-cos-grant-full-control"传入ACL信息，也可以通过body以XML格式传入ACL信息，
+// PutACL 使用API写入Bucket的ACL表
 //
-// 但是只能选择Header和Body其中一种，否则返回冲突。
+// Put Bucket ACL 是一个覆盖操作，传入新的ACL将覆盖原有ACL。只有所有者有权操作。
 //
-// Put Bucket ACL是一个覆盖操作，传入新的ACL将覆盖原有ACL。只有所有者有权操作。
+// 私有 Bucket 可以下可以给某个文件夹设置成公有，那么该文件夹下的文件都是公有；
+// 但是把文件夹设置成私有后，在该文件夹中设置的公有属性，不会生效。
 //
-//   "x-cos-acl"：枚举值为public-read，private；public-read意味这个Bucket有公有读私有写的权限，
-//   private意味这个Bucket有私有读写的权限。
-//
-//   "x-cos-grant-read"：意味被赋予权限的用户拥有该Bucket的读权限
-//   "x-cos-grant-write"：意味被赋予权限的用户拥有该Bucket的写权限
-//   "x-cos-grant-full-control"：意味被赋予权限的用户拥有该Bucket的读写权限
-//
-// https://www.qcloud.com/document/product/436/7737
+// https://cloud.tencent.com/document/product/436/7737
 func (s *BucketService) PutACL(ctx context.Context, opt *BucketPutACLOptions) (*Response, error) {
 	header := opt.Header
 	body := opt.Body

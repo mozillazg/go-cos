@@ -1,6 +1,35 @@
 # Changelog
 
 
+## [0.11.0]
+
+### 不兼容旧版的变更
+
+* 根据 COS [官方文档](https://cloud.tencent.com/document/product/436/7751) 更新最新版本下
+  各个 API 的参数和响应中包含的字段（新增了部分字段，废弃了一些字段）。
+
+影响：
+
+* 大部分用户无需修改任何代码，部分依赖了字段结构的高级用户需要更新代码。
+
+### 新增
+
+* `Response` 新增几个方法用于快速获取常用的 COS Header 的值:
+  * `RequestID()`
+  * `TraceID()`
+  * `ObjectType()`
+  * `StorageClass()`
+  * `VersionID()`
+  * `ServerSideEncryption()`
+  * `MetaHeaders()`
+* 新增了几个常量用于判断部分固定值
+
+### 文档
+
+* 上传文件操作不再需要在特定情况下强制指定 ContentLength 了（COS 服务端新功能）。
+* 强调一下用户可以自己设置超时时间或通过 context 实现终止请求的功能。
+
+
 ## [0.10.0] (2018-11-03)
 
 ### 变更
@@ -30,11 +59,14 @@
 
 * 新增 `func NewBaseURL(bucketURL string) (u *BaseURL, err error)` (via [91f7759])
 
-### 变更
+### 不兼容旧版的变更
 
-* `NewBucketURL` 函数使用新的 URL 域名规则。(via [7dcd701])     
-  影响：如果有使用 `NewBucketURL` 函数生成 bucketURL 的话，使用时需要使用新的 Region 名称，
-  详见 https://cloud.tencent.com/document/product/436/6224 ，未使用 `NewBucketURL` 函数不受影响
+* `NewBucketURL` 函数使用新的 URL 域名规则。(via [7dcd701])
+
+影响：
+
+* 如果有使用 `NewBucketURL` 函数生成 bucketURL 的话，使用时需要使用新的 Region 名称，
+详见 https://cloud.tencent.com/document/product/436/6224 ，未使用 `NewBucketURL` 函数不受影响
 
 
 ## [0.7.0] (2017-12-23)
@@ -86,7 +118,7 @@
 
 ## [0.2.0] (2017-06-10)
 
-### 变更
+### 不兼容旧版的变更
 
 * 调用 bucket 相关 API 时不再需要 bucket 参数, 把参数移到 service 中
 * 把参数 signStartTime, signEndTime, keyStartTime, keyEndTime 合并为 authTime
@@ -100,6 +132,7 @@
 * 完成大部分 Bucket API(还剩一个 Put Bucket Lifecycle)
 
 
+[0.11.0]: https://github.com/mozillazg/go-cos/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/mozillazg/go-cos/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/mozillazg/go-cos/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/mozillazg/go-cos/compare/v0.7.0...v0.8.0

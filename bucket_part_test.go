@@ -34,7 +34,7 @@ func TestBucketService_ListMultipartUploads(t *testing.T) {
 	</CommonPrefixs>
 	<Upload>
 		<Key>test_multipart.txt</Key>
-		<UploadId>14972623850a5de3f4f10605ab9f339c8bdf1b77e06f03fb981e7e76c86554b7bdb6072b36</UploadId>
+		<UploadID>14972623850a5de3f4f10605ab9f339c8bdf1b77e06f03fb981e7e76c86554b7bdb6072b36</UploadID>
 		<Initiator>
 			<ID>100000760461/100000760461</ID>
 			<DisplayName/>
@@ -48,7 +48,7 @@ func TestBucketService_ListMultipartUploads(t *testing.T) {
 	</Upload>
 	<Upload>
 		<Key>test_multipar2t.txt</Key>
-		<UploadId>1497515958744e899fc341bfbb995ebd57b395f63930411d855aaac1b5cd7d834a15442831</UploadId>
+		<UploadID>1497515958744e899fc341bfbb995ebd57b395f63930411d855aaac1b5cd7d834a15442831</UploadID>
 		<Initiator>
 			<ID>qcs::cam::uin/100000760461:uin/100000760461</ID>
 			<DisplayName>100000760461</DisplayName>
@@ -76,14 +76,7 @@ func TestBucketService_ListMultipartUploads(t *testing.T) {
 		Bucket:      "test-1253846586",
 		MaxUploads:  1000,
 		IsTruncated: false,
-		Uploads: []struct {
-			Key          string
-			UploadID     string `xml:"UploadId"`
-			StorageClass string
-			Initiator    *Initiator
-			Owner        *Owner
-			Initiated    string
-		}{
+		Uploads: []MultipartUpload{
 			{
 				Key:      "test_multipart.txt",
 				UploadID: "14972623850a5de3f4f10605ab9f339c8bdf1b77e06f03fb981e7e76c86554b7bdb6072b36",

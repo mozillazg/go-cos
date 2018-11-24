@@ -24,12 +24,12 @@ func TestServiceService_Get(t *testing.T) {
 		<Bucket>
 			<Name>huadong-1253846586</Name>
 			<Location>cn-east</Location>
-			<CreateDate>2017-06-16T13:08:28Z</CreateDate>
+			<CreationDate>2017-06-16T13:08:28Z</CreationDate>
 		</Bucket>
 		<Bucket>
 			<Name>huanan-1253846586</Name>
 			<Location>cn-south</Location>
-			<CreateDate>2017-06-10T09:00:07Z</CreateDate>
+			<CreationDate>2017-06-10T09:00:07Z</CreationDate>
 		</Bucket>
 	</Buckets>
 </ListAllMyBucketsResult>`)
