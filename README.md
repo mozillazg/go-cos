@@ -11,6 +11,8 @@
 
 `go get -u github.com/mozillazg/go-cos`
 
+推荐使用 [go mod](https://github.com/golang/go/wiki/Modules) 之类的技术指定使用的 go-cos 包版本号。
+
 
 ## Usage
 
@@ -88,7 +90,7 @@ Object API:
 * [x] **Append Object**（增量更新文件，使用示例：[object/append.go](./_example/object/append.go)）
 * [x] **Get Object**（下载文件，使用示例：[object/get.go](./_example/object/get.go)）
 * [x] Get Object ACL（使用示例：[object/getACL.go](./_example/object/getACL.go)）
-* [x] **Put Object**（上传文件，使用示例：[object/put.go](./_example/object/put.go)）
+* [x] **Put Object**（上传文件，使用示例：[object/put.go](./_example/object/put.go) or [object/uploadFile.go](./_example/object/uploadFile.go)）
 * [x] Put Object ACL（使用示例：[object/putACL.go](./_example/object/putACL.go)）
 * [x] Put Object Copy（使用示例：[object/copy.go](./_example/object/copy.go)）
 * [x] **Delete Object**（删除文件，使用示例：[object/delete.go](./_example/object/delete.go)）
@@ -109,3 +111,5 @@ Object API:
 * [x] **生成预签名授权 URL**
     * [x] 通过预签名授权 URL 下载文件，示例：[object/getWithPresignedURL.go](./_example/object/getWithPresignedURL.go)
     * [x] 通过预签名授权 URL 上传文件，示例：[object/putWithPresignedURL.go](./_example/object/putWithPresignedURL.go)
+* [ ] 支持临时密钥
+* [ ] 支持 mock api 结果，方便用户对 cos 调用写单元测试
