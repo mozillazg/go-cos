@@ -9,7 +9,17 @@ COS API Version
 
 Usage
 
-在项目的 _example 目录下有各个 API 的使用示例 。
+在项目的 _example 目录下有各个 API 的使用示例[1] 。
+
+[1]: 示例文件所对应的 API 说明 https://github.com/mozillazg/go-cos#todo
+
+备注
+
+* SDK 不会自动设置超时时间，用户根据需要设置合适的超时时间（比如，设置 `http.Client` 的 `Timeout` 字段之类的）或在需要时实现所需的超时机制（比如，通过 `context` 包实现）。
+
+* 所有的 API 在 _example 目录下都有对应的使用示例[1]（示例程序中用到的 `debug` 包只是调试用的不是必需的依赖）。
+
+[1]: 示例文件所对应的 API 说明 https://github.com/mozillazg/go-cos#todo
 
 
 Authentication

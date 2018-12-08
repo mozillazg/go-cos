@@ -7,9 +7,9 @@ import (
 	"net/http"
 )
 
-// ErrorResponse 包含 API 返回的错误信息
+// ErrorResponse 包含 COS HTTP API 返回的错误信息
 //
-// https://www.qcloud.com/document/product/436/7730
+// https://cloud.tencent.com/document/product/436/7730
 type ErrorResponse struct {
 	XMLName   xml.Name       `xml:"Error"`
 	Response  *http.Response `xml:"-"`
@@ -36,6 +36,12 @@ func checkResponse(r *http.Response) error {
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && data != nil {
 		xml.Unmarshal(data, errorResponse)
+	}
+	if errorResponse.RequestID == "" {
+		errorResponse.RequestID = r.Header.Get(xCosRequestID)
+	}
+	if errorResponse.TraceID == "" {
+		errorResponse.TraceID = r.Header.Get(xCosTraceID)
 	}
 	return errorResponse
 }

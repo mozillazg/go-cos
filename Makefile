@@ -3,9 +3,11 @@ help:
 	@echo "lint             run lint"
 	@echo "example          run examples"
 
+export GO111MODULE=on
+
 .PHONY: test
 test:
-	go test -v -cover -coverprofile cover.out
+	go test -race -v -cover -coverprofile cover.out
 	go tool cover -html=cover.out -o cover.html
 	-open cover.html
 

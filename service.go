@@ -18,12 +18,9 @@ type ServiceGetResult struct {
 	Buckets []Bucket `xml:"Buckets>Bucket,omitempty"`
 }
 
-// Get Service 接口实现获取该用户下所有Bucket列表。
+// Get Service 接口是用来获取请求者名下的所有存储空间列表（Bucket list）。
 //
-// 该API接口需要使用Authorization签名认证，
-// 且只能获取签名中AccessID所属账户的Bucket列表。
-//
-// https://www.qcloud.com/document/product/436/8291
+// https://cloud.tencent.com/document/product/436/8291
 func (s *ServiceService) Get(ctx context.Context) (*ServiceGetResult, *Response, error) {
 	var res ServiceGetResult
 	sendOpt := sendOptions{

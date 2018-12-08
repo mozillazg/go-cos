@@ -35,14 +35,8 @@ func main() {
 		panic(err)
 	}
 	fmt.Println(s.Size())
-	opt := &cos.ObjectPutOptions{
-		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
-			ContentLength: int(s.Size()),
-		},
-	}
-	//opt.ContentLength = int(s.Size())
 
-	_, err = c.Object.Put(context.Background(), name, f, opt)
+	_, err = c.Object.Put(context.Background(), name, f, nil)
 	if err != nil {
 		panic(err)
 	}

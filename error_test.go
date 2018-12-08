@@ -43,6 +43,48 @@ func Test_checkResponse_error(t *testing.T) {
 	}
 }
 
+func Test_checkResponse_header(t *testing.T) {
+	setup()
+	defer teardown()
+	reqID := "NTk0NTRjZjZfNTViMjM1XzlkMV9hZTZh"
+	traceID := "OGVmYzZiMmQzYjA2OWNhODk0NTRkMTBiOWVmMDAxODc0OWRkZjk0ZDM1NmI1M2E2MTRlY2MzZDhmNmI5MWI1OTBjYzE2MjAxN2M1MzJiOTdkZjMxMDVlYTZjN2FiMmI0NTk3NWFiNjAyMzdlM2RlMmVmOGNiNWIxYjYwNDFhYmQ="
+
+	mux.HandleFunc("/test_409", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(xCosRequestID, reqID)
+		w.Header().Set(xCosTraceID, traceID)
+		w.WriteHeader(http.StatusConflict)
+		fmt.Fprint(w, `<?xml version='1.0' encoding='utf-8' ?>
+<Error>
+	<Code>BucketAlreadyExists</Code>
+	<Message>The requested bucket name is not available.</Message>
+	<Resource>testdelete-1253846586.cn-north.myqcloud.com</Resource>
+</Error>`)
+	})
+
+	_, err := client.send(context.TODO(), &sendOptions{
+		baseURL: client.BaseURL.ServiceURL,
+		uri:     "/test_409",
+		method:  "GET",
+	})
+
+	if e, ok := err.(*ErrorResponse); ok {
+		if e.Error() == "" {
+			t.Errorf("Expected e.Error() not empty, got %+v", e.Error())
+		}
+		if e.Code != "BucketAlreadyExists" {
+			t.Errorf("Expected BucketAlreadyExists error, got %+v", e.Code)
+		}
+		if e.RequestID != reqID {
+			t.Errorf("Expected use header field when RequestId is missing, got %+v", e.RequestID)
+		}
+		if e.TraceID != traceID {
+			t.Errorf("Expected use header field when TraceId is missing, got %+v", e.TraceID)
+		}
+	} else {
+		t.Errorf("Expected ErrorResponse error, got %+v", err)
+	}
+}
+
 func Test_checkResponse_no_error(t *testing.T) {
 	setup()
 	defer teardown()

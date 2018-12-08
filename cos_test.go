@@ -9,8 +9,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"net/url"
 	"reflect"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 )
@@ -207,5 +210,80 @@ func Test_doAPI_copy_body(t *testing.T) {
 		t.Errorf(
 			"Expected body was copy and close, got %+v, %+v",
 			string(b), string(w.Bytes()))
+	}
+}
+
+func Test_Response_header_method(t *testing.T) {
+	setup()
+	defer teardown()
+	reqID := "NTk0NTRjZjZfNTViMjM1XzlkMV9hZTZh"
+	traceID := "OGVmYzZiMmQzYjA2OWNhODk0NTRkMTBiOWVmMDAxODc0OWRkZjk0ZDM1NmI1M2E2MTRlY2MzZDhmNmI5MWI1OTBjYzE2MjAxN2M1MzJiOTdkZjMxMDVlYTZjN2FiMmI0NTk3NWFiNjAyMzdlM2RlMmVmOGNiNWIxYjYwNDFhYmQ="
+	objType := "normal"
+	storageCls := "STANDARD"
+	versionID := "xxx-v1" // ?
+	encryption := "AES256"
+
+	mux.HandleFunc("/test_down", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(xCosRequestID, reqID)
+		w.Header().Set(xCosTraceID, traceID)
+		w.Header().Set(xCosObjectType, objType)
+		w.Header().Set(xCosStorageClass, storageCls)
+		w.Header().Set(xCosVersionID, versionID)
+		w.Header().Set(xCosServerSideEncryption, encryption)
+		w.Header().Add("x-cos-meta-1", "1")
+		w.Header().Add("x-cos-meta-1", "11")
+		w.Header().Add("x-cos-meta-2", "2")
+		w.Header().Add("x-cos-meta-2", "22")
+		w.Header().Add("x-cos-meta-3", "33")
+		fmt.Fprint(w, `test`)
+	})
+
+	w := bytes.NewBuffer([]byte{})
+	resp, err := client.send(context.TODO(), &sendOptions{
+		baseURL: client.BaseURL.ServiceURL,
+		uri:     "/test_down",
+		method:  "GET",
+		result:  w,
+	})
+
+	if err != nil {
+		t.Errorf("Expected error == nil, got %+v", err)
+	}
+	b, _ := ioutil.ReadAll(resp.Body)
+	if len(b) != 0 || string(w.Bytes()) != "test" {
+		t.Errorf(
+			"Expected body was copy and close, got %+v, %+v",
+			string(b), string(w.Bytes()))
+	}
+	h := resp.MetaHeaders()
+	keys := []string{}
+	for k := range h {
+		keys = append(keys, strings.ToLower(k))
+	}
+	sort.Strings(keys)
+	if resp.RequestID() != reqID ||
+		resp.TraceID() != traceID ||
+		resp.ObjectType() != objType ||
+		resp.StorageClass() != storageCls ||
+		resp.VersionID() != versionID ||
+		resp.ServerSideEncryption() != encryption ||
+		!reflect.DeepEqual(keys,
+			[]string{"x-cos-meta-1", "x-cos-meta-2", "x-cos-meta-3"}) {
+		t.Errorf("result of response header method is not expected")
+	}
+	v1 := h[textproto.CanonicalMIMEHeaderKey("x-cos-meta-1")]
+	sort.Strings(v1)
+	v2 := h[textproto.CanonicalMIMEHeaderKey("x-cos-meta-2")]
+	sort.Strings(v2)
+	v3 := h[textproto.CanonicalMIMEHeaderKey("x-cos-meta-3")]
+	sort.Strings(v3)
+	if !reflect.DeepEqual(v1,
+		[]string{"1", "11"}) ||
+		!reflect.DeepEqual(v2,
+			[]string{"2", "22"}) ||
+		!reflect.DeepEqual(v3,
+			[]string{"33"}) {
+		t.Errorf("result of response meta headers is not expected, %s, %s, %s",
+			v1, v2, v3)
 	}
 }

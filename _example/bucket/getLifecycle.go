@@ -35,6 +35,6 @@ func main() {
 		panic(err)
 	}
 	for _, r := range v.Rules {
-		fmt.Printf("%s, %s\n", r.Prefix, r.Status)
+		fmt.Printf("%s, %s\n", r.Filter.Prefix, r.Status)
 	}
 }
