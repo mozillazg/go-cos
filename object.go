@@ -412,7 +412,7 @@ type objectPresignedURLTestingOptions struct {
 //   * 下载文件：http.MethodGet
 //   * 上传文件: http.MethodPut
 //
-// 下载文件 时 opt 可以是 *ObjectGetOptions ，下载文件时 opt 可以是 *ObjectPutOptions
+// 下载文件 时 opt 可以是 *ObjectGetOptions ，上传文件时 opt 可以是 *ObjectPutOptions
 //
 // https://cloud.tencent.com/document/product/436/14116
 // https://cloud.tencent.com/document/product/436/14114

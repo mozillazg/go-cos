@@ -112,4 +112,5 @@ Object API:
     * [x] 通过预签名授权 URL 下载文件，示例：[object/getWithPresignedURL.go](./_example/object/getWithPresignedURL.go)
     * [x] 通过预签名授权 URL 上传文件，示例：[object/putWithPresignedURL.go](./_example/object/putWithPresignedURL.go)
 * [ ] 支持临时密钥
-* [ ] 支持 mock api 结果，方便用户对 cos 调用写单元测试
+* [ ] 支持使用除 net/http 以外的其他 HTTP Client，
+      方便使用第三方 http 包（比如 fasthttp）或单元测试时 mock 调用结果
