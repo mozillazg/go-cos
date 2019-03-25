@@ -14,6 +14,9 @@ type BucketGetLocationResult struct {
 	Location string `xml:",chardata"`
 }
 
+// MethodBucketGetLocation method name of Bucket.GetLocation
+const MethodBucketGetLocation MethodName = "Bucket.GetLocation"
+
 // GetLocation ...
 //
 // Get Bucket Location 接口用于获取 Bucket 所在的地域信息，该 GET 操作使用 location 参数返回 Bucket 所在的区域，
@@ -27,6 +30,9 @@ func (s *BucketService) GetLocation(ctx context.Context) (*BucketGetLocationResu
 		uri:     "/?location",
 		method:  http.MethodGet,
 		result:  &res,
+		caller: Caller{
+			Method: MethodBucketGetLocation,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err

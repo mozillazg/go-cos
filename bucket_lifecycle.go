@@ -77,6 +77,9 @@ type BucketGetLifecycleResult struct {
 	Rules   []BucketLifecycleRule `xml:"Rule,omitempty"`
 }
 
+// MethodBucketGetLifecycle method name of Bucket.GetLifecycle
+const MethodBucketGetLifecycle MethodName = "Bucket.GetLifecycle"
+
 // GetLifecycle ...
 //
 // Get Bucket Lifecycle 用来查询 Bucket 的生命周期配置。
@@ -89,6 +92,9 @@ func (s *BucketService) GetLifecycle(ctx context.Context) (*BucketGetLifecycleRe
 		uri:     "/?lifecycle",
 		method:  http.MethodGet,
 		result:  &res,
+		caller: Caller{
+			Method: MethodBucketGetLifecycle,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -99,6 +105,9 @@ type BucketPutLifecycleOptions struct {
 	XMLName xml.Name              `xml:"LifecycleConfiguration"`
 	Rules   []BucketLifecycleRule `xml:"Rule,omitempty"`
 }
+
+// MethodBucketPutLifecycle method name of Bucket.PutLifecycle
+const MethodBucketPutLifecycle MethodName = "Bucket.PutLifecycle"
 
 // PutLifecycle ...
 //
@@ -123,10 +132,16 @@ func (s *BucketService) PutLifecycle(ctx context.Context, opt *BucketPutLifecycl
 		uri:     "/?lifecycle",
 		method:  http.MethodPut,
 		body:    opt,
+		caller: Caller{
+			Method: MethodBucketPutLifecycle,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
+
+// MethodBucketDeleteLifecycle method name of Bucket.DeleteLifecycle
+const MethodBucketDeleteLifecycle MethodName = "Bucket.DeleteLifecycle"
 
 // DeleteLifecycle ...
 //
@@ -138,6 +153,9 @@ func (s *BucketService) DeleteLifecycle(ctx context.Context) (*Response, error) 
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     "/?lifecycle",
 		method:  http.MethodDelete,
+		caller: Caller{
+			Method: MethodBucketDeleteLifecycle,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

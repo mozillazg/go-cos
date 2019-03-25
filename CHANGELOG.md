@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.12.0]
+
+### 新增
+
+* 支持使用使用第三方 http client 包或单元测试时 mock 方法调用结果，示例：[object/mock.go](./_example/object/mock.go)
+  * 新增 `type Sender interface`
+  * 新增 `type ResponseParser interface`
+  * 新增 `type DefaultSender struct`
+  * 新增 `type DefaultResponseParser struct`
+
 
 ## [0.11.1] (2019-04-14)
 

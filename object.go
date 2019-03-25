@@ -45,6 +45,9 @@ type ObjectGetOptions struct {
 	PresignedURL *url.URL `header:"-" url:"-" xml:"-"`
 }
 
+// MethodObjectGet method name of Object.Get
+const MethodObjectGet MethodName = "Object.Get"
+
 // Get Object 请接口请求可以在 COS 的存储桶中将一个文件（对象）下载至本地。
 // 该操作需要请求者对目标对象具有读权限或目标对象对所有人都开放了读权限（公有读）。
 //
@@ -71,6 +74,9 @@ func (s *ObjectService) Get(ctx context.Context, name string, opt *ObjectGetOpti
 		optQuery:         opt,
 		optHeader:        opt,
 		disableCloseBody: true,
+		caller: Caller{
+			Method: MethodObjectGet,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -119,6 +125,9 @@ type ObjectPutOptions struct {
 	PresignedURL *url.URL `header:"-" url:"-" xml:"-"`
 }
 
+// MethodObjectPut method name of Object.Put
+const MethodObjectPut MethodName = "Object.Put"
+
 // Put Object请求可以将一个文件（Object）上传至指定Bucket。
 //
 // 版本
@@ -150,6 +159,9 @@ func (s *ObjectService) Put(ctx context.Context, name string, r io.Reader, opt *
 		method:    http.MethodPut,
 		body:      r,
 		optHeader: opt,
+		caller: Caller{
+			Method: MethodObjectPut,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -207,6 +219,9 @@ type ObjectCopyResult struct {
 	LastModified string `xml:"LastModified,omitempty"`
 }
 
+// MethodObjectCopy method name of Object.Copy
+const MethodObjectCopy MethodName = "Object.Copy"
+
 // Copy ...
 //
 // Put Object Copy 请求实现将一个文件从源路径复制到目标路径。建议文件大小 1M 到 5G，
@@ -240,10 +255,16 @@ func (s *ObjectService) Copy(ctx context.Context, name, sourceURL string, opt *O
 		body:      nil,
 		optHeader: opt,
 		result:    &res,
+		caller: Caller{
+			Method: MethodObjectCopy,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
+
+// MethodObjectDelete method name of Object.Delete
+const MethodObjectDelete MethodName = "Object.Delete"
 
 // Delete Object 接口请求可以在 COS 的 Bucket 中将一个文件（Object）删除。该操作需要请求者对 Bucket 有 WRITE 权限。
 //
@@ -258,6 +279,9 @@ func (s *ObjectService) Delete(ctx context.Context, name string) (*Response, err
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     "/" + encodeURIComponent(name),
 		method:  http.MethodDelete,
+		caller: Caller{
+			Method: MethodObjectDelete,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -268,6 +292,9 @@ type ObjectHeadOptions struct {
 	// 当 Object 在指定时间后被修改，则返回对应 Object 的 meta 信息，否则返回 304
 	IfModifiedSince string `url:"-" header:"If-Modified-Since,omitempty"`
 }
+
+// MethodObjectHead method name of Object.Head
+const MethodObjectHead MethodName = "Object.Head"
 
 // Head Object请求可以取回对应Object的元数据，Head的权限与Get的权限一致
 //
@@ -280,6 +307,9 @@ func (s *ObjectService) Head(ctx context.Context, name string, opt *ObjectHeadOp
 		uri:       "/" + encodeURIComponent(name),
 		method:    http.MethodHead,
 		optHeader: opt,
+		caller: Caller{
+			Method: MethodObjectHead,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -297,6 +327,9 @@ type ObjectOptionsOptions struct {
 	AccessControlRequestHeaders string `url:"-" header:"Access-Control-Request-Headers,omitempty"`
 }
 
+// MethodObjectOptions method name of Object.Options
+const MethodObjectOptions MethodName = "Object.Options"
+
 // Options Object 接口实现 Object 跨域访问配置的预请求。
 // 即在发送跨域请求之前会发送一个 OPTIONS 请求并带上特定的来源域，HTTP 方法和 Header 信息等给 COS，
 // 以决定是否可以发送真正的跨域请求。当 CORS 配置不存在时，请求返回 403 Forbidden。
@@ -309,10 +342,16 @@ func (s *ObjectService) Options(ctx context.Context, name string, opt *ObjectOpt
 		uri:       "/" + encodeURIComponent(name),
 		method:    http.MethodOptions,
 		optHeader: opt,
+		caller: Caller{
+			Method: MethodObjectOptions,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
+
+// MethodObjectAppend method name of Object.Append
+const MethodObjectAppend MethodName = "Object.Append"
 
 // Append ...
 //
@@ -338,6 +377,9 @@ func (s *ObjectService) Append(ctx context.Context, name string, position int, r
 		method:    http.MethodPost,
 		optHeader: opt,
 		body:      r,
+		caller: Caller{
+			Method: MethodObjectAppend,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -374,6 +416,9 @@ type ObjectDeleteMultiResult struct {
 	} `xml:"Error,omitempty"`
 }
 
+// MethodObjectDeleteMulti method name of Object.DeleteMulti
+const MethodObjectDeleteMulti MethodName = "Object.DeleteMulti"
+
 // DeleteMulti ...
 //
 // Delete Multiple Object请求实现批量删除文件，最大支持单次删除1000个文件。
@@ -397,6 +442,9 @@ func (s *ObjectService) DeleteMulti(ctx context.Context, opt *ObjectDeleteMultiO
 		method:  http.MethodPost,
 		body:    opt,
 		result:  &res,
+		caller: Caller{
+			Method: MethodObjectDeleteMulti,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
