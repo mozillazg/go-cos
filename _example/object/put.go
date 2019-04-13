@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"strings"
@@ -33,19 +34,33 @@ func main() {
 		panic(err)
 	}
 
-	name = "test/put_option.go"
+	// 测试上传以及特殊字符
+	name = "test/put_ + !'()* option.go"
+	contentDisposition := "attachment; filename=Hello - world!(+)'*.go"
 	f = strings.NewReader("test xxx")
 	opt := &cos.ObjectPutOptions{
 		ObjectPutHeaderOptions: &cos.ObjectPutHeaderOptions{
-			ContentType: "text/html",
+			ContentType:        "text/html",
+			ContentDisposition: contentDisposition,
 		},
 		ACLHeaderOptions: &cos.ACLHeaderOptions{
-			//XCosACL: "public-read",
+			// XCosACL: "public-read",
 			XCosACL: "private",
 		},
 	}
-	_, err = c.Object.Put(context.Background(), name, f, opt)
+	resp, err := c.Object.Put(context.Background(), name, f, opt)
 	if err != nil {
 		panic(err)
+	}
+	resp.Body.Close()
+
+	// 测试特殊字符
+	resp, err = c.Object.Get(context.Background(), name, nil)
+	if err != nil {
+		panic(err)
+	}
+	resp.Body.Close()
+	if resp.Header.Get("Content-Disposition") != contentDisposition {
+		panic(errors.New("wong Content-Disposition"))
 	}
 }

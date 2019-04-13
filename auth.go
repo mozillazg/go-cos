@@ -85,6 +85,8 @@ func (a *AuthTime) keyString() string {
 }
 
 // newAuthorization 通过一系列步骤生成最终需要的 Authorization 字符串
+//
+// https://cloud.tencent.com/document/product/436/7778
 func newAuthorization(auth Auth, req *http.Request, authTime AuthTime) string {
 	secretKey := auth.SecretKey
 	secretID := auth.SecretID
@@ -156,17 +158,59 @@ func genFormatString(method string, uri url.URL, formatParameters, formatHeaders
 	)
 }
 
+// https://github.com/tencentyun/cos-nodejs-sdk-v5/blob/a1dad3e9e3776cd24c97975f3aa47631e5001ff0/sdk/util.js#L11
+func camSafeURLEncode(s string) string {
+	s = encodeURIComponent(s)
+	s = strings.Replace(s, "!", "%21", -1)
+	s = strings.Replace(s, "'", "%27", -1)
+	s = strings.Replace(s, "(", "%28", -1)
+	s = strings.Replace(s, ")", "%29", -1)
+	s = strings.Replace(s, "*", "%2A", -1)
+	return s
+}
+
+type valuesForSign map[string][]string
+
+func (vs valuesForSign) Add(key, value string) {
+	key = strings.ToLower(key)
+	vs[key] = append(vs[key], value)
+}
+
+// https://cloud.tencent.com/document/product/436/7778
+// https://github.com/tencentyun/cos-nodejs-sdk-v5/blob/a1dad3e9e3776cd24c97975f3aa47631e5001ff0/sdk/util.js#L42-L69
+func (vs valuesForSign) Encode() string {
+	var keys []string
+	for k := range vs {
+		keys = append(keys, k)
+	}
+	// 字典序排序
+	sort.Strings(keys)
+
+	var pairs []string
+	for _, k := range keys {
+		items := vs[k]
+		sort.Strings(items)
+		for _, v := range items {
+			pairs = append(
+				pairs,
+				fmt.Sprintf("%s=%s", camSafeURLEncode(k), camSafeURLEncode(v)))
+		}
+	}
+	// <key1>=<value1>&<key2>=<value2>
+	return strings.Join(pairs, "&")
+}
+
 // genFormatParameters 生成 FormatParameters 和 SignedParameterList
 func genFormatParameters(parameters url.Values) (formatParameters string, signedParameterList []string) {
-	ps := url.Values{}
+	ps := valuesForSign{}
 	for key, values := range parameters {
+		key = strings.ToLower(key)
 		for _, value := range values {
-			key = strings.ToLower(key)
 			ps.Add(key, value)
 			signedParameterList = append(signedParameterList, key)
 		}
 	}
-	//formatParameters = strings.ToLower(ps.Encode())
+
 	formatParameters = ps.Encode()
 	sort.Strings(signedParameterList)
 	return
@@ -174,16 +218,17 @@ func genFormatParameters(parameters url.Values) (formatParameters string, signed
 
 // genFormatHeaders 生成 FormatHeaders 和 SignedHeaderList
 func genFormatHeaders(headers http.Header) (formatHeaders string, signedHeaderList []string) {
-	hs := url.Values{}
+	hs := valuesForSign{}
 	for key, values := range headers {
+		key = strings.ToLower(key)
 		for _, value := range values {
-			key = strings.ToLower(key)
 			if isSignHeader(key) {
 				hs.Add(key, value)
 				signedHeaderList = append(signedHeaderList, key)
 			}
 		}
 	}
+
 	formatHeaders = hs.Encode()
 	sort.Strings(signedHeaderList)
 	return
