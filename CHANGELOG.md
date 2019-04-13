@@ -5,7 +5,7 @@
 
 ### Bugfix
 
-* 修复当 headers 相关参数的值中包含空格时会出现服务端返回签名不匹配的问题。
+* 修复当 url 或 headers 相关参数的值中包含空格时会出现服务端返回签名不匹配的问题。(via [#13])
 
 
 ## [0.11.0] (2018-12-08)
@@ -155,3 +155,4 @@
 [7dcd701]: https://github.com/mozillazg/go-cos/commit/7dcd701975f483d57525b292ab31d0f9a6c8866c
 [#7]: https://github.com/mozillazg/go-cos/pull/7
 [@jojohappy]: https://github.com/jojohappy
+[#13]: https://github.com/mozillazg/go-cos/pull/13
