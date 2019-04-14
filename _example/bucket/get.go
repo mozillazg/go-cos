@@ -30,12 +30,21 @@ func main() {
 		Prefix:  "test",
 		MaxKeys: 3,
 	}
-	v, _, err := c.Bucket.Get(context.Background(), opt)
+	v, resp, err := c.Bucket.Get(context.Background(), opt)
 	if err != nil {
 		panic(err)
 	}
+	resp.Body.Close()
 
 	for _, c := range v.Contents {
 		fmt.Printf("%s, %d\n", c.Key, c.Size)
 	}
+
+	// 测试特殊字符
+	opt.Prefix = "test/put_ + !'()* option"
+	_, resp, err = c.Bucket.Get(context.Background(), opt)
+	if err != nil {
+		panic(err)
+	}
+	resp.Body.Close()
 }

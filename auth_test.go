@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -103,4 +105,210 @@ type testingTransport struct {
 func (t *testingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	t.called++
 	return http.DefaultTransport.RoundTrip(req)
+}
+
+func Test_camSafeURLEncode(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "no replace",
+			args: args{"1234 +abc0AB#@"},
+			want: "1234%20%2Babc0AB%23%40",
+		},
+		{
+			name: "replace",
+			args: args{"1234 +abc0AB#@,!'()*"},
+			want: "1234%20%2Babc0AB%23%40%2C%21%27%28%29%2A",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := camSafeURLEncode(tt.args.s); got != tt.want {
+				t.Errorf("camSafeURLEncode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_valuesForSign_Encode(t *testing.T) {
+	tests := []struct {
+		name string
+		vs   valuesForSign
+		want string
+	}{
+		{
+			name: "test escape",
+			vs: valuesForSign{
+				"test+233": {"value 666"},
+				"test+234": {"value 667"},
+			},
+			want: "test%2B233=value%20666&test%2B234=value%20667",
+		},
+		{
+			name: "test order",
+			vs: valuesForSign{
+				"test_233": {"value_666"},
+				"233":      {"value_2"},
+				"test_666": {"value_123"},
+			},
+			want: "233=value_2&test_233=value_666&test_666=value_123",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.vs.Encode(); got != tt.want {
+				t.Errorf("valuesForSign.Encode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_valuesForSign_Add(t *testing.T) {
+	type args struct {
+		key   string
+		value string
+	}
+	tests := []struct {
+		name string
+		vs   valuesForSign
+		args args
+		want valuesForSign
+	}{
+		{
+			name: "add new key",
+			vs:   valuesForSign{},
+			args: args{"test_key", "value_233"},
+			want: valuesForSign{"test_key": {"value_233"}},
+		},
+		{
+			name: "extend key",
+			vs:   valuesForSign{"test_key": {"value_233"}},
+			args: args{"test_key", "value_666"},
+			want: valuesForSign{"test_key": {"value_233", "value_666"}},
+		},
+		{
+			name: "key to lower(add)",
+			vs:   valuesForSign{},
+			args: args{"TEST_KEY", "value_233"},
+			want: valuesForSign{"test_key": {"value_233"}},
+		},
+		{
+			name: "key to lower(extend)",
+			vs:   valuesForSign{"test_key": {"value_233"}},
+			args: args{"TEST_KEY", "value_666"},
+			want: valuesForSign{"test_key": {"value_233", "value_666"}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.vs.Add(tt.args.key, tt.args.value)
+			if !reflect.DeepEqual(tt.vs, tt.want) {
+				t.Errorf("%v, want %v", tt.vs, tt.want)
+			}
+		})
+	}
+}
+
+func Test_genFormatParameters(t *testing.T) {
+	type args struct {
+		parameters url.Values
+	}
+	tests := []struct {
+		name                    string
+		args                    args
+		wantFormatParameters    string
+		wantSignedParameterList []string
+	}{
+		{
+			name: "test order",
+			args: args{url.Values{
+				"test_key_233": {"666"},
+				"233":          {"222"},
+				"test_key_2":   {"value"},
+			}},
+			wantFormatParameters:    "233=222&test_key_2=value&test_key_233=666",
+			wantSignedParameterList: []string{"233", "test_key_2", "test_key_233"},
+		},
+		{
+			name: "test escape",
+			args: args{url.Values{
+				"Test+key": {"666 value"},
+				"233 666":  {"22+2"},
+			}},
+			wantFormatParameters:    "233%20666=22%2B2&test%2Bkey=666%20value",
+			wantSignedParameterList: []string{"233 666", "test+key"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotFormatParameters, gotSignedParameterList := genFormatParameters(tt.args.parameters)
+			if gotFormatParameters != tt.wantFormatParameters {
+				t.Errorf("genFormatParameters() gotFormatParameters = %v, want %v", gotFormatParameters, tt.wantFormatParameters)
+			}
+			if !reflect.DeepEqual(gotSignedParameterList, tt.wantSignedParameterList) {
+				t.Errorf("genFormatParameters() gotSignedParameterList = %v, want %v", gotSignedParameterList, tt.wantSignedParameterList)
+			}
+		})
+	}
+}
+
+func Test_genFormatHeaders(t *testing.T) {
+	type args struct {
+		headers http.Header
+	}
+	tests := []struct {
+		name                 string
+		args                 args
+		wantFormatHeaders    string
+		wantSignedHeaderList []string
+	}{
+		{
+			name: "test order",
+			args: args{http.Header{
+				"host":           {"example.com"},
+				"content-length": {"22"},
+				"content-md5":    {"xxx222"},
+			}},
+			wantFormatHeaders:    "content-length=22&content-md5=xxx222&host=example.com",
+			wantSignedHeaderList: []string{"content-length", "content-md5", "host"},
+		},
+		{
+			name: "test escape",
+			args: args{http.Header{
+				"host":                {"example.com"},
+				"content-length":      {"22"},
+				"Content-Disposition": {"attachment; filename=hello - world!(+).go"},
+			}},
+			wantFormatHeaders:    "content-disposition=attachment%3B%20filename%3Dhello%20-%20world%21%28%2B%29.go&content-length=22&host=example.com",
+			wantSignedHeaderList: []string{"content-disposition", "content-length", "host"},
+		},
+		{
+			name: "test skip key",
+			args: args{http.Header{
+				"Host":           {"example.com"},
+				"content-length": {"22"},
+				"x-cos-xyz":      {"lala"},
+				"Content-Type":   {"text/html"},
+			}},
+			wantFormatHeaders:    "content-length=22&host=example.com&x-cos-xyz=lala",
+			wantSignedHeaderList: []string{"content-length", "host", "x-cos-xyz"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotFormatHeaders, gotSignedHeaderList := genFormatHeaders(tt.args.headers)
+			if gotFormatHeaders != tt.wantFormatHeaders {
+				t.Errorf("genFormatHeaders() gotFormatHeaders = %v, want %v", gotFormatHeaders, tt.wantFormatHeaders)
+			}
+			if !reflect.DeepEqual(gotSignedHeaderList, tt.wantSignedHeaderList) {
+				t.Errorf("genFormatHeaders() gotSignedHeaderList = %v, want %v", gotSignedHeaderList, tt.wantSignedHeaderList)
+			}
+		})
+	}
 }

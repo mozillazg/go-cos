@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [0.11.1] (2019-04-14)
+
+### Bugfix
+
+* 修复当 url 或 headers 相关参数的值中包含空格时会出现服务端返回签名不匹配的问题。(via [#13])
+
+
 ## [0.11.0] (2018-12-08)
 
 ### 不兼容旧版的变更
@@ -132,6 +139,7 @@
 * 完成大部分 Bucket API(还剩一个 Put Bucket Lifecycle)
 
 
+[0.11.1]: https://github.com/mozillazg/go-cos/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/mozillazg/go-cos/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/mozillazg/go-cos/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/mozillazg/go-cos/compare/v0.8.0...v0.9.0
@@ -147,3 +155,4 @@
 [7dcd701]: https://github.com/mozillazg/go-cos/commit/7dcd701975f483d57525b292ab31d0f9a6c8866c
 [#7]: https://github.com/mozillazg/go-cos/pull/7
 [@jojohappy]: https://github.com/jojohappy
+[#13]: https://github.com/mozillazg/go-cos/pull/13
