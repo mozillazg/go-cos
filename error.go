@@ -11,7 +11,8 @@ import (
 //
 // https://cloud.tencent.com/document/product/436/7730
 type ErrorResponse struct {
-	XMLName   xml.Name       `xml:"Error"`
+	XMLName xml.Name `xml:"Error"`
+	// TODO: use cos.Response instead
 	Response  *http.Response `xml:"-"`
 	Code      string
 	Message   string

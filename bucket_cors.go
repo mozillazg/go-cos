@@ -33,6 +33,9 @@ type BucketGetCORSResult struct {
 	Rules []BucketCORSRule `xml:"CORSRule,omitempty"`
 }
 
+// MethodBucketGetCORS method name of Bucket.GetCORS
+const MethodBucketGetCORS MethodName = "Bucket.GetCORS"
+
 // GetCORS ...
 //
 // Get Bucket CORS 接口实现 Bucket 持有者在 Bucket 上进行跨域资源共享的信息配置。
@@ -47,6 +50,9 @@ func (s *BucketService) GetCORS(ctx context.Context) (*BucketGetCORSResult, *Res
 		uri:     "/?cors",
 		method:  http.MethodGet,
 		result:  &res,
+		caller: Caller{
+			Method: MethodBucketGetCORS,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -61,6 +67,9 @@ type BucketPutCORSOptions struct {
 	Rules []BucketCORSRule `xml:"CORSRule,omitempty"`
 }
 
+// MethodBucketPutCORS method name of Bucket.PutCORS
+const MethodBucketPutCORS MethodName = "Bucket.PutCORS"
+
 // PutCORS ...
 //
 // Put Bucket CORS 接口用来请求设置 Bucket 的跨域资源共享权限，。
@@ -73,10 +82,16 @@ func (s *BucketService) PutCORS(ctx context.Context, opt *BucketPutCORSOptions) 
 		uri:     "/?cors",
 		method:  http.MethodPut,
 		body:    opt,
+		caller: Caller{
+			Method: MethodBucketPutCORS,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
+
+// MethodBucketDeleteCORS method name of Bucket.DeleteCORS
+const MethodBucketDeleteCORS MethodName = "Bucket.DeleteCORS"
 
 // DeleteCORS ...
 //
@@ -88,6 +103,9 @@ func (s *BucketService) DeleteCORS(ctx context.Context) (*Response, error) {
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     "/?cors",
 		method:  http.MethodDelete,
+		caller: Caller{
+			Method: MethodBucketDeleteCORS,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

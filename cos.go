@@ -86,16 +86,22 @@ func NewBucketURL(bucketName, appID, region string, secure bool) *url.URL {
 
 // A Client manages communication with the COS API.
 type Client struct {
-	client *http.Client
+	// Sender 用于实际发送 HTTP 请求
+	Sender Sender
+	// ResponseParser 用于解析响应
+	ResponseParser ResponseParser
 
 	UserAgent string
 	BaseURL   *BaseURL
 
 	common service
 
+	// Service 封装了 service 相关的 API
 	Service *ServiceService
-	Bucket  *BucketService
-	Object  *ObjectService
+	// Bucket 封装了 bucket 相关的 API
+	Bucket *BucketService
+	// Object 封装了 object 相关的 API
+	Object *ObjectService
 }
 
 type service struct {
@@ -103,6 +109,7 @@ type service struct {
 }
 
 // NewClient returns a new COS API client.
+// 使用 DefaultSender 作为 Sender，DefaultResponseParser 作为 ResponseParser
 func NewClient(uri *BaseURL, httpClient *http.Client) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
@@ -118,9 +125,10 @@ func NewClient(uri *BaseURL, httpClient *http.Client) *Client {
 	}
 
 	c := &Client{
-		client:    httpClient,
-		UserAgent: userAgent,
-		BaseURL:   baseURL,
+		Sender:         &DefaultSender{httpClient},
+		ResponseParser: &DefaultResponseParser{},
+		UserAgent:      userAgent,
+		BaseURL:        baseURL,
 	}
 	c.common.client = c
 	c.Service = (*ServiceService)(&c.common)
@@ -195,18 +203,10 @@ func (c *Client) newRequest(ctx context.Context, opt *sendOptions) (req *http.Re
 	return
 }
 
-func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{}, closeBody bool) (*Response, error) {
+func (c *Client) doAPI(ctx context.Context, caller Caller, req *http.Request, result interface{}, closeBody bool) (*Response, error) {
 	req = req.WithContext(ctx)
-
-	resp, err := c.client.Do(req)
+	resp, err := c.Sender.Send(ctx, caller, req)
 	if err != nil {
-		// If we got an error, and the context has been canceled,
-		// the context's error is probably more useful.
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
 		return nil, err
 	}
 
@@ -218,28 +218,7 @@ func (c *Client) doAPI(ctx context.Context, req *http.Request, result interface{
 		}
 	}()
 
-	response := newResponse(resp)
-
-	err = checkResponse(resp)
-	if err != nil {
-		// even though there was an error, we still return the response
-		// in case the caller wants to inspect it further
-		resp.Body.Close()
-		return response, err
-	}
-
-	if result != nil {
-		if w, ok := result.(io.Writer); ok {
-			io.Copy(w, resp.Body)
-		} else {
-			err = xml.NewDecoder(resp.Body).Decode(result)
-			if err == io.EOF {
-				err = nil // ignore EOF errors caused by empty response body
-			}
-		}
-	}
-
-	return response, err
+	return c.ResponseParser.ParseResponse(ctx, caller, resp, result)
 }
 
 type sendOptions struct {
@@ -260,6 +239,8 @@ type sendOptions struct {
 	// 是否禁用自动调用 resp.Body.Close()
 	// 自动调用 Close() 是为了能够重用连接
 	disableCloseBody bool
+
+	caller Caller
 }
 
 func (c *Client) send(ctx context.Context, opt *sendOptions) (resp *Response, err error) {
@@ -268,7 +249,7 @@ func (c *Client) send(ctx context.Context, opt *sendOptions) (resp *Response, er
 		return
 	}
 
-	resp, err = c.doAPI(ctx, req, opt.result, !opt.disableCloseBody)
+	resp, err = c.doAPI(ctx, opt.caller, req, opt.result, !opt.disableCloseBody)
 	if err != nil {
 		return
 	}

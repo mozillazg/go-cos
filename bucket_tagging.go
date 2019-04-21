@@ -18,6 +18,9 @@ type BucketGetTaggingResult struct {
 	TagSet  []BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
 }
 
+// MethodGetTagging method name of Bucket.GetTagging
+const MethodGetTagging MethodName = "Bucket.GetTagging"
+
 // GetTagging ...
 //
 // Get Bucket Tagging接口实现获取指定Bucket的标签。
@@ -30,6 +33,9 @@ func (s *BucketService) GetTagging(ctx context.Context) (*BucketGetTaggingResult
 		uri:     "/?tagging",
 		method:  http.MethodGet,
 		result:  &res,
+		caller: Caller{
+			Method: MethodGetTagging,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -40,6 +46,9 @@ type BucketPutTaggingOptions struct {
 	XMLName xml.Name           `xml:"Tagging"`
 	TagSet  []BucketTaggingTag `xml:"TagSet>Tag,omitempty"`
 }
+
+// MethodPutTagging method name of Bucket.PutTagging
+const MethodPutTagging MethodName = "Bucket.PutTagging"
 
 // PutTagging ...
 //
@@ -54,10 +63,16 @@ func (s *BucketService) PutTagging(ctx context.Context, opt *BucketPutTaggingOpt
 		uri:     "/?tagging",
 		method:  http.MethodPut,
 		body:    opt,
+		caller: Caller{
+			Method: MethodPutTagging,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
+
+// MethodDeleteTagging method name of Bucket.DeleteTagging
+const MethodDeleteTagging MethodName = "Bucket.DeleteTagging"
 
 // DeleteTagging ...
 //
@@ -69,6 +84,9 @@ func (s *BucketService) DeleteTagging(ctx context.Context) (*Response, error) {
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     "/?tagging",
 		method:  http.MethodDelete,
+		caller: Caller{
+			Method: MethodDeleteTagging,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

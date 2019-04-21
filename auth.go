@@ -272,6 +272,7 @@ type AuthorizationTransport struct {
 	// 签名多久过期，默认是 time.Hour
 	Expire time.Duration
 
+	// 实际发送 http 请求的 http.RoundTripper，默认使用 http.DefaultTransport
 	Transport http.RoundTripper
 }
 
