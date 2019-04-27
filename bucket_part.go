@@ -61,6 +61,9 @@ type ListMultipartUploadsOptions struct {
 	UploadIDMarker string `url:"upload-id-marker,omitempty"`
 }
 
+// MethodBucketListMultipartUploads method name of Bucket.ListMultipartUploads
+const MethodBucketListMultipartUploads MethodName = "Bucket.ListMultipartUploads"
+
 // ListMultipartUploads ...
 //
 // List Multipart Uploads 用来查询正在进行中的分块上传。单次请求操作最多列出 1000 个正在进行中的分块上传。
@@ -76,6 +79,9 @@ func (s *BucketService) ListMultipartUploads(ctx context.Context, opt *ListMulti
 		method:   http.MethodGet,
 		result:   &res,
 		optQuery: opt,
+		caller: Caller{
+			Method: MethodBucketListMultipartUploads,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err

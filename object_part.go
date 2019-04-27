@@ -25,6 +25,9 @@ type InitiateMultipartUploadResult struct {
 	UploadID string `xml:"UploadId"`
 }
 
+// MethodObjectInitiateMultipartUpload method name of Object.InitiateMultipartUpload
+const MethodObjectInitiateMultipartUpload MethodName = "Object.InitiateMultipartUpload"
+
 // InitiateMultipartUpload ...
 //
 // Initiate Multipart Upload请求实现初始化分片上传，成功执行此请求以后会返回Upload ID用于后续的Upload Part请求。
@@ -38,6 +41,9 @@ func (s *ObjectService) InitiateMultipartUpload(ctx context.Context, name string
 		method:    http.MethodPost,
 		optHeader: opt,
 		result:    &res,
+		caller: Caller{
+			Method: MethodObjectInitiateMultipartUpload,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -53,6 +59,9 @@ type ObjectUploadPartOptions struct {
 	// RFC 2616 中定义的 HTTP 请求内容长度（字节）
 	ContentLength int `header:"Content-Length,omitempty" url:"-"`
 }
+
+// MethodObjectUploadPart method name of Object.UploadPart
+const MethodObjectUploadPart MethodName = "Object.UploadPart"
 
 // UploadPart ...
 //
@@ -76,6 +85,9 @@ func (s *ObjectService) UploadPart(ctx context.Context, name, uploadID string, p
 		method:    http.MethodPut,
 		optHeader: opt,
 		body:      r,
+		caller: Caller{
+			Method: MethodObjectUploadPart,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
@@ -120,6 +132,9 @@ type ObjectListPartsResult struct {
 	Parts []Object `xml:"Part,omitempty"`
 }
 
+// MethodObjectListParts method name of Object.ListParts
+const MethodObjectListParts MethodName = "Object.ListParts"
+
 // ListParts ...
 //
 // List Parts 用来查询特定分块上传中的已上传的块，即罗列出指定 UploadId 所属的所有已上传成功的分块。
@@ -133,6 +148,9 @@ func (s *ObjectService) ListParts(ctx context.Context, name, uploadID string) (*
 		uri:     u,
 		method:  http.MethodGet,
 		result:  &res,
+		caller: Caller{
+			Method: MethodObjectListParts,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -162,6 +180,9 @@ type CompleteMultipartUploadResult struct {
 	ETag string
 }
 
+// MethodObjectCompleteMultipartUpload method name of Object.CompleteMultipartUpload
+const MethodObjectCompleteMultipartUpload MethodName = "Object.CompleteMultipartUpload"
+
 // CompleteMultipartUpload ...
 //
 // Complete Multipart Upload用来实现完成整个分块上传。当您已经使用Upload Parts上传所有块以后，你可以用该API完成上传。
@@ -187,10 +208,16 @@ func (s *ObjectService) CompleteMultipartUpload(ctx context.Context, name, uploa
 		method:  http.MethodPost,
 		body:    opt,
 		result:  &res,
+		caller: Caller{
+			Method: MethodObjectCompleteMultipartUpload,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
 }
+
+// MethodObjectAbortMultipartUpload method name of Object.AbortMultipartUpload
+const MethodObjectAbortMultipartUpload MethodName = "Object.AbortMultipartUpload"
 
 // AbortMultipartUpload ...
 //
@@ -206,6 +233,9 @@ func (s *ObjectService) AbortMultipartUpload(ctx context.Context, name, uploadID
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     u,
 		method:  http.MethodDelete,
+		caller: Caller{
+			Method: MethodObjectAbortMultipartUpload,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

@@ -55,6 +55,9 @@ type BucketGetOptions struct {
 	MaxKeys int `url:"max-keys,omitempty"`
 }
 
+// MethodBucketGet method name of Bucket.Get
+const MethodBucketGet MethodName = "Bucket.Get"
+
 // Get Bucket 请求等同于 List Object请求，可以列出该 Bucket 下的部分或者全部 Object。
 // 此 API 调用者需要对 Bucket 有 Read 权限。
 //
@@ -67,6 +70,9 @@ func (s *BucketService) Get(ctx context.Context, opt *BucketGetOptions) (*Bucket
 		method:   http.MethodGet,
 		optQuery: opt,
 		result:   &res,
+		caller: Caller{
+			Method: MethodBucketGet,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -74,6 +80,9 @@ func (s *BucketService) Get(ctx context.Context, opt *BucketGetOptions) (*Bucket
 
 // BucketPutOptions ...
 type BucketPutOptions ACLHeaderOptions
+
+// MethodBucketPut method name of Bucket.Put
+const MethodBucketPut MethodName = "Bucket.Put"
 
 // Put Bucket 接口请求可以在指定账号下创建一个 Bucket。该 API 接口不支持匿名请求，
 // 您需要使用帯 Authorization 签名认证的请求才能创建新的 Bucket 。
@@ -90,10 +99,16 @@ func (s *BucketService) Put(ctx context.Context, opt *BucketPutOptions) (*Respon
 		uri:       "/",
 		method:    http.MethodPut,
 		optHeader: opt,
+		caller: Caller{
+			Method: MethodBucketPut,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
+
+// MethodBucketDelete method name of Bucket.Delete
+const MethodBucketDelete MethodName = "Bucket.Delete"
 
 // Delete Bucket 请求可以确认该 Bucket 是否存在，是否有权限访问。HEAD 的权限与 Read 一致。
 // 当该 Bucket 存在时，返回 HTTP 状态码 200；当该 Bucket 无访问权限时，返回 HTTP 状态码 403；
@@ -107,10 +122,16 @@ func (s *BucketService) Delete(ctx context.Context) (*Response, error) {
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     "/",
 		method:  http.MethodDelete,
+		caller: Caller{
+			Method: MethodBucketDelete,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
 }
+
+// MethodBucketHead method name of Bucket.Head
+const MethodBucketHead MethodName = "Bucket.Head"
 
 // Head Bucket请求可以确认是否存在该Bucket，是否有权限访问，Head的权限与Read一致。
 //
@@ -124,6 +145,9 @@ func (s *BucketService) Head(ctx context.Context) (*Response, error) {
 		baseURL: s.client.BaseURL.BucketURL,
 		uri:     "/",
 		method:  http.MethodHead,
+		caller: Caller{
+			Method: MethodBucketHead,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err

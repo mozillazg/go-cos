@@ -44,16 +44,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 	bs, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	fmt.Printf("%s\n", string(bs))
 }
 ```
 
 备注：
 
-* SDK 不会自动设置超时时间，用户根据需要设置合适的超时时间（比如，设置 `http.Client` 的 `Timeout` 字段之类的）
-  或在需要时实现所需的超时机制（比如，通过 `context` 包实现）。
+* SDK 不会自动设置超时时间，用户根据需要设置合适的超时时间（比如，设置 `http.Client` 的 `Timeout` 字段或者
+  `Transport` 字段之类的）或在需要时实现所需的超时机制（比如，通过 `context` 包实现）。
 * 所有的 API 在 [_example](./_example/) 目录下都有对应的使用示例（示例程序中用到的 `debug` 包只是调试用的不是必需的依赖）。
 
 ## TODO
@@ -112,5 +112,4 @@ Object API:
     * [x] 通过预签名授权 URL 下载文件，示例：[object/getWithPresignedURL.go](./_example/object/getWithPresignedURL.go)
     * [x] 通过预签名授权 URL 上传文件，示例：[object/putWithPresignedURL.go](./_example/object/putWithPresignedURL.go)
 * [ ] 支持临时密钥
-* [ ] 支持使用除 net/http 以外的其他 HTTP Client，
-      方便使用第三方 http 包（比如 fasthttp）或单元测试时 mock 调用结果
+* [x] 支持使用使用第三方 http client 包或单元测试时 mock 方法调用结果，示例：[object/mock.go](./_example/object/mock.go)

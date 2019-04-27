@@ -10,6 +10,9 @@ import (
 // https://cloud.tencent.com/document/product/436/7733
 type BucketGetACLResult ACLXml
 
+// MethodBucketGetACL method name of Bucket.GetACL
+const MethodBucketGetACL MethodName = "Bucket.GetACL"
+
 // GetACL 接口用来获取存储桶的访问权限控制列表。
 //
 // https://cloud.tencent.com/document/product/436/7733
@@ -20,6 +23,9 @@ func (s *BucketService) GetACL(ctx context.Context) (*BucketGetACLResult, *Respo
 		uri:     "/?acl",
 		method:  http.MethodGet,
 		result:  &res,
+		caller: Caller{
+			Method: MethodBucketGetACL,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return &res, resp, err
@@ -31,6 +37,9 @@ type BucketPutACLOptions struct {
 	Header *ACLHeaderOptions `url:"-" xml:"-"`
 	Body   *ACLXml           `url:"-" header:"-"`
 }
+
+// MethodBucketPutACL method name of Bucket.PutACL
+const MethodBucketPutACL MethodName = "Bucket.PutACL"
 
 // PutACL 使用API写入Bucket的ACL表
 //
@@ -52,6 +61,9 @@ func (s *BucketService) PutACL(ctx context.Context, opt *BucketPutACLOptions) (*
 		method:    http.MethodPut,
 		body:      body,
 		optHeader: header,
+		caller: Caller{
+			Method: MethodBucketPutACL,
+		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
 	return resp, err
