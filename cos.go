@@ -21,7 +21,7 @@ import (
 
 const (
 	// Version ...
-	Version               = "0.11.1"
+	Version               = "0.12.0"
 	userAgent             = "go-cos/" + Version
 	contentTypeXML        = "application/xml"
 	defaultServiceBaseURL = "https://service.cos.myqcloud.com"
