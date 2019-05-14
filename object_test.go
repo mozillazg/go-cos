@@ -39,6 +39,7 @@ func TestObjectService_Get(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Object.Get returned error: %v", err)
 	}
+	defer resp.Body.Close()
 
 	b, _ := ioutil.ReadAll(resp.Body)
 	ref := string(b)
@@ -76,6 +77,7 @@ func TestObjectService_Get_with_PresignedURL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Object.Get returned error: %v", err)
 	}
+	defer resp.Body.Close()
 
 	b, _ := ioutil.ReadAll(resp.Body)
 	ref := string(b)
@@ -114,10 +116,11 @@ func TestObjectService_Put(t *testing.T) {
 	})
 
 	r := bytes.NewReader([]byte("hello"))
-	_, err := client.Object.Put(context.Background(), name, r, opt)
+	resp, err := client.Object.Put(context.Background(), name, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Put returned error: %v", err)
 	}
+	defer resp.Body.Close()
 
 }
 
@@ -153,10 +156,11 @@ func TestObjectService_Put_with_PresignedURL(t *testing.T) {
 	})
 
 	r := bytes.NewReader([]byte("hello"))
-	_, err := client.Object.Put(context.Background(), name, r, opt)
+	resp, err := client.Object.Put(context.Background(), name, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Put returned error: %v", err)
 	}
+	defer resp.Body.Close()
 
 }
 
@@ -192,10 +196,12 @@ func TestObjectService_Put_not_close(t *testing.T) {
 	})
 
 	r := newTraceCloser(bytes.NewReader([]byte("hello")))
-	_, err := client.Object.Put(context.Background(), name, r, opt)
+	resp, err := client.Object.Put(context.Background(), name, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Put returned error: %v", err)
 	}
+	defer resp.Body.Close()
+
 	if r.Called {
 		t.Fatal("Should not close input")
 	}
@@ -212,10 +218,11 @@ func TestObjectService_Delete(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	_, err := client.Object.Delete(context.Background(), name)
+	resp, err := client.Object.Delete(context.Background(), name)
 	if err != nil {
 		t.Fatalf("Object.Delete returned error: %v", err)
 	}
+	defer resp.Body.Close()
 }
 
 func TestObjectService_Head(t *testing.T) {
@@ -232,10 +239,11 @@ func TestObjectService_Head(t *testing.T) {
 		IfModifiedSince: "Mon, 12 Jun 2017 05:36:19 GMT",
 	}
 
-	_, err := client.Object.Head(context.Background(), name, opt)
+	resp, err := client.Object.Head(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.Head returned error: %v", err)
 	}
+	defer resp.Body.Close()
 
 }
 
@@ -251,14 +259,15 @@ func TestObjectService_Options(t *testing.T) {
 	})
 
 	opt := &ObjectOptionsOptions{
-		Origin: "www.qq.com",
+		Origin:                     "www.qq.com",
 		AccessControlRequestMethod: "PUT",
 	}
 
-	_, err := client.Object.Options(context.Background(), name, opt)
+	resp, err := client.Object.Options(context.Background(), name, opt)
 	if err != nil {
 		t.Fatalf("Object.Options returned error: %v", err)
 	}
+	defer resp.Body.Close()
 
 }
 
@@ -297,10 +306,11 @@ func TestObjectService_Append(t *testing.T) {
 	})
 
 	r := bytes.NewReader([]byte("hello"))
-	_, err := client.Object.Append(context.Background(), name, position, r, opt)
+	resp, err := client.Object.Append(context.Background(), name, position, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Append returned error: %v", err)
 	}
+	defer resp.Body.Close()
 }
 
 func TestObjectService_Append_not_close(t *testing.T) {
@@ -342,10 +352,12 @@ func TestObjectService_Append_not_close(t *testing.T) {
 	})
 
 	r := newTraceCloser(bytes.NewReader([]byte("hello")))
-	_, err := client.Object.Append(context.Background(), name, position, r, opt)
+	resp, err := client.Object.Append(context.Background(), name, position, r, opt)
 	if err != nil {
 		t.Fatalf("Object.Append returned error: %v", err)
 	}
+	defer resp.Body.Close()
+
 	if r.Called {
 		t.Fatal("Should not close input")
 	}

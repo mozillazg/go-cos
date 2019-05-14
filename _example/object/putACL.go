@@ -33,10 +33,11 @@ func main() {
 		},
 	}
 	name := "test/hello.txt"
-	_, err := c.Object.PutACL(context.Background(), name, opt)
+	resp, err := c.Object.PutACL(context.Background(), name, opt)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 
 	// with body
 	opt = &cos.ObjectPutACLOptions{
@@ -57,8 +58,9 @@ func main() {
 		},
 	}
 
-	_, err = c.Object.PutACL(context.Background(), name, opt)
+	resp, err = c.Object.PutACL(context.Background(), name, opt)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 }

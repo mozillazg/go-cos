@@ -29,11 +29,12 @@ func main() {
 
 	name := "test/hello.txt"
 	opt := &cos.ObjectOptionsOptions{
-		Origin: "http://www.qq.com",
+		Origin:                     "http://www.qq.com",
 		AccessControlRequestMethod: "PUT",
 	}
-	_, err := c.Object.Options(context.Background(), name, opt)
+	resp, err := c.Object.Options(context.Background(), name, opt)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 }

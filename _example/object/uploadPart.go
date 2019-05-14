@@ -44,10 +44,11 @@ func main() {
 	uploadID := up.UploadID
 
 	f := strings.NewReader("test heoo")
-	_, err := c.Object.UploadPart(
+	resp, err := c.Object.UploadPart(
 		context.Background(), name, uploadID, 1, f, nil,
 	)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 }

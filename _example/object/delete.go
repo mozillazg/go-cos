@@ -29,8 +29,9 @@ func main() {
 
 	name := "test/objectPut.go"
 
-	_, err := c.Object.Delete(context.Background(), name)
+	resp, err := c.Object.Delete(context.Background(), name)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 }

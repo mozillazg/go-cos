@@ -57,13 +57,16 @@ func main() {
 		panic(err)
 		return
 	}
+	defer resp.Body.Close()
 	fmt.Printf("%s\n", resp.Status)
 
 	// head
-	if _, err = c.Object.Head(ctx, name, nil); err != nil {
+	resp, err = c.Object.Head(ctx, name, nil)
+	if err != nil {
 		panic(err)
 		return
 	}
+	defer resp.Body.Close()
 
 	// 再次 append
 	data = genBigData(1024 * 1024 * 5)
@@ -72,5 +75,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 	fmt.Printf("%s\n", resp.Status)
 }
