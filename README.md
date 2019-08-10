@@ -111,5 +111,5 @@ Object API:
 * [x] **生成预签名授权 URL**
     * [x] 通过预签名授权 URL 下载文件，示例：[object/getWithPresignedURL.go](./_example/object/getWithPresignedURL.go)
     * [x] 通过预签名授权 URL 上传文件，示例：[object/putWithPresignedURL.go](./_example/object/putWithPresignedURL.go)
-* [ ] 支持临时密钥
+* [x] 支持临时密钥，示例: [object/sessionToken.go](./_example/object/sessionToken.go)
 * [x] 支持使用使用第三方 http client 包或单元测试时 mock 方法调用结果，示例：[object/mock.go](./_example/object/mock.go)

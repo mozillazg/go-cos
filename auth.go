@@ -45,6 +45,7 @@ var needSignHeaders = map[string]bool{
 	"access-control-request-method":  true,
 	"access-control-request-headers": true,
 	"x-cos-object-type":              true,
+	// "x-cos-security-token":           true,
 }
 
 // AuthTime 用于生成签名所需的 q-sign-time 和 q-key-time 相关参数
@@ -269,6 +270,8 @@ type Auth struct {
 type AuthorizationTransport struct {
 	SecretID  string
 	SecretKey string
+	// 临时密钥: https://cloud.tencent.com/document/product/436/14048
+	SessionToken string
 	// 签名多久过期，默认是 time.Hour
 	Expire time.Duration
 
@@ -285,6 +288,9 @@ func (t *AuthorizationTransport) RoundTrip(req *http.Request) (*http.Response, e
 		// 增加 Authorization header
 		authTime := NewAuthTime(t.Expire)
 		AddAuthorizationHeader(t.SecretID, t.SecretKey, req, authTime)
+		if t.SessionToken != "" {
+			req.Header.Set("x-cos-security-token", t.SessionToken)
+		}
 	}
 
 	resp, err := t.transport().RoundTrip(req)
