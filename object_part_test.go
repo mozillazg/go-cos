@@ -211,6 +211,105 @@ func TestObjectService_ListParts(t *testing.T) {
 	}
 }
 
+func TestObjectService_ListPartsWithOpt(t *testing.T) {
+	setup()
+	defer teardown()
+
+	name := "test/hello.txt"
+	uploadID := "149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387"
+
+	mux.HandleFunc("/test/hello.txt", func(w http.ResponseWriter, r *http.Request) {
+		v := new(BucketPutTaggingOptions)
+		xml.NewDecoder(r.Body).Decode(v)
+
+		testMethod(t, r, http.MethodGet)
+		vs := values{
+			"uploadId":  uploadID,
+			"max-parts": "2",
+		}
+		testFormValues(t, r, vs)
+
+		fmt.Fprint(w, `<ListPartsResult>
+	<Bucket>test-1253846586</Bucket>
+	<Encoding-type/>
+	<Key>test/hello.txt</Key>
+	<UploadId>149795194893578fd83aceef3a88f708f81f00e879fda5ea8a80bf15aba52746d42d512387</UploadId>
+	<Owner>
+		<ID>1253846586</ID>
+		<DisplayName>1253846586</DisplayName>
+	</Owner>
+	<PartNumberMarker>0</PartNumberMarker>
+	<Initiator>
+		<ID>qcs::cam::uin/100000760461:uin/100000760461</ID>
+		<DisplayName>100000760461</DisplayName>
+	</Initiator>
+	<Part>
+		<PartNumber>1</PartNumber>
+		<LastModified>2017-06-20T09:45:49.000Z</LastModified>
+		<ETag>&quot;fae3dba15f4d9b2d76cbaed5de3a08e3&quot;</ETag>
+		<Size>6291456</Size>
+	</Part>
+	<Part>
+		<PartNumber>2</PartNumber>
+		<LastModified>2017-06-20T09:45:50.000Z</LastModified>
+		<ETag>&quot;c81982550f2f965118d486176d9541d4&quot;</ETag>
+		<Size>6391456</Size>
+	</Part>
+	<StorageClass>Standard</StorageClass>
+	<MaxParts>2</MaxParts>
+	<NextPartNumberMarker>2</NextPartNumberMarker>
+	<IsTruncated>true</IsTruncated>
+</ListPartsResult>`)
+	})
+
+	opt := &ObjectListPartsOptions{
+		MaxParts: 2,
+	}
+	ref, _, err := client.Object.ListPartsWithOpt(context.Background(),
+		name, uploadID, opt)
+	if err != nil {
+		t.Fatalf("Object.ListParts returned error: %v", err)
+	}
+
+	want := &ObjectListPartsResult{
+		XMLName:  xml.Name{Local: "ListPartsResult"},
+		Bucket:   "test-1253846586",
+		UploadID: uploadID,
+		Key:      name,
+		Owner: &Owner{
+			ID:          "1253846586",
+			DisplayName: "1253846586",
+		},
+		NextPartNumberMarker: 2,
+		PartNumberMarker:     0,
+		Initiator: &Initiator{
+			ID:          "qcs::cam::uin/100000760461:uin/100000760461",
+			DisplayName: "100000760461",
+		},
+		Parts: []Object{
+			{
+				PartNumber:   1,
+				LastModified: "2017-06-20T09:45:49.000Z",
+				ETag:         "\"fae3dba15f4d9b2d76cbaed5de3a08e3\"",
+				Size:         6291456,
+			},
+			{
+				PartNumber:   2,
+				LastModified: "2017-06-20T09:45:50.000Z",
+				ETag:         "\"c81982550f2f965118d486176d9541d4\"",
+				Size:         6391456,
+			},
+		},
+		StorageClass: "Standard",
+		MaxParts:     2,
+		IsTruncated:  true,
+	}
+
+	if !reflect.DeepEqual(ref, want) {
+		t.Errorf("Object.ListParts returned \n%#v, want \n%#v", ref, want)
+	}
+}
+
 func TestObjectService_CompleteMultipartUpload(t *testing.T) {
 	setup()
 	defer teardown()

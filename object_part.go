@@ -95,9 +95,12 @@ func (s *ObjectService) UploadPart(ctx context.Context, name, uploadID string, p
 
 // ObjectListPartsOptions ...
 type ObjectListPartsOptions struct {
-	EncodingType     string `url:"Encoding-type,omitempty"`
-	MaxParts         int    `url:"max-parts,omitempty"`
-	PartNumberMarker int    `url:"part-number-marker,omitempty"`
+	// 规定返回值的编码方式
+	EncodingType string `url:"Encoding-type,omitempty"`
+	// 单次返回最大的条目数量，默认1000
+	MaxParts int `url:"max-parts,omitempty"`
+	// 默认以 UTF-8 二进制顺序列出条目，所有列出条目从 marker 开始
+	PartNumberMarker int `url:"part-number-marker,omitempty"`
 }
 
 // ObjectListPartsResult ...
@@ -150,6 +153,32 @@ func (s *ObjectService) ListParts(ctx context.Context, name, uploadID string) (*
 		result:  &res,
 		caller: Caller{
 			Method: MethodObjectListParts,
+		},
+	}
+	resp, err := s.client.send(ctx, &sendOpt)
+	return &res, resp, err
+}
+
+// MethodObjectListPartsWithOpt method name of Object.ListPartsWithOpt
+const MethodObjectListPartsWithOpt MethodName = "Object.ListPartsWithOpt"
+
+// ListPartsWithOpt ...
+//
+// ListParts 方法的补充，解决 ListParts 不支持指定参数的问题。
+// List Parts 用来查询特定分块上传中的已上传的块，即罗列出指定 UploadId 所属的所有已上传成功的分块。
+//
+// https://cloud.tencent.com/document/product/436/7747
+func (s *ObjectService) ListPartsWithOpt(ctx context.Context, name, uploadID string, opt *ObjectListPartsOptions) (*ObjectListPartsResult, *Response, error) {
+	u := fmt.Sprintf("/%s?uploadId=%s", encodeURIComponent(name), uploadID)
+	var res ObjectListPartsResult
+	sendOpt := sendOptions{
+		baseURL:  s.client.BaseURL.BucketURL,
+		uri:      u,
+		method:   http.MethodGet,
+		optQuery: opt,
+		result:   &res,
+		caller: Caller{
+			Method: MethodObjectListPartsWithOpt,
 		},
 	}
 	resp, err := s.client.send(ctx, &sendOpt)
