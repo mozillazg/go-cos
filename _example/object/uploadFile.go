@@ -30,6 +30,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer f.Close()
 	s, err := f.Stat()
 	if err != nil {
 		panic(err)
