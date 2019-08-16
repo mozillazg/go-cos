@@ -4,6 +4,7 @@
 
 ## 新增
 
+* `AuthorizationTransport` 增加 `SessionToken` 字段，支持通过临时密钥请求 api，示例: [object/sessionToken.go](./_example/object/sessionToken.go) 。
 * 新增 `c.Object.ListPartsWithOpt` 方法，解决 `c.Object.ListParts` 方法忘了支持参数的问题。
   * `ListPartsWithOpt(ctx context.Context, name, uploadID string, opt *ObjectListPartsOptions) (*ObjectListPartsResult, *Response, error)`
   * `ListParts(ctx context.Context, name, uploadID string) (*ObjectListPartsResult, *Response, error)`
