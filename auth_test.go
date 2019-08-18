@@ -57,6 +57,36 @@ func TestAuthorizationTransport(t *testing.T) {
 	client.doAPI(context.Background(), Caller{}, req, nil, true)
 }
 
+func TestAuthorizationTransportWithSessionToken(t *testing.T) {
+	setup()
+	defer teardown()
+
+	sessionToken := "CxQQbwSzzX5obZm23yEcyQtpROuDB0Q60d322a47737c8241991d12dc4b8387c7J6NL50eH1BYN6VnFYB_Ml6oPZzUxz5wxDGVvvgxZXr1m-4HvmkvmMH4YB02XdVPapKp7oGnrMous2jsSTALo4iU2fuRclbVw-czYwggSxuNxXAwmqcT1HpD3h3zc3e24sryIhJKqzSOczQZjtGrxSSQ4K23o9Mx8VHgrosliU0aIiI2KFhxJhij03SzDDOQcBAwpFZyM0NvpOdN6b14yJbrt9bAzYGNjX-PeU3MXfi0"
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		if auth == "" {
+			t.Error("AuthorizationTransport didn't add Authorization header")
+		}
+		token := r.Header.Get("x-cos-security-token")
+		if token == "" {
+			t.Error("AuthorizationTransport didn't add x-cos-security-token header")
+		}
+		if token != sessionToken {
+			t.Errorf("AuthorizationTransport didn't add expected x-cos-security-token header, expected: %s, got: %s", sessionToken, token)
+		}
+	})
+
+	(client.Sender).(*DefaultSender).Transport = &AuthorizationTransport{
+		SecretID:     "233",
+		SecretKey:    "666",
+		SessionToken: sessionToken,
+	}
+	req, _ := http.NewRequest("GET", client.BaseURL.BucketURL.String(), nil)
+	req.Header.Set("X-Testing", "0")
+	client.doAPI(context.Background(), Caller{}, req, nil, true)
+}
+
 func TestAuthorizationTransport_skip_PresignedURL(t *testing.T) {
 	setup()
 	defer teardown()

@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.13.0] (2019-08-18)
+
+## 新增
+
+* `AuthorizationTransport` 增加 `SessionToken` 字段，支持通过临时密钥请求 api，示例: [object/sessionToken.go](./_example/object/sessionToken.go) 。
+* 新增 `c.Object.ListPartsWithOpt` 方法，解决 `c.Object.ListParts` 方法忘了支持参数的问题。
+  * `ListPartsWithOpt(ctx context.Context, name, uploadID string, opt *ObjectListPartsOptions) (*ObjectListPartsResult, *Response, error)`
+  * `ListParts(ctx context.Context, name, uploadID string) (*ObjectListPartsResult, *Response, error)`
+
+
 ## [0.12.0] (2019-04-27)
 
 ### 新增
@@ -15,7 +25,7 @@
 
 ### Bugfix
 
-* 修复当 url 或 headers 相关参数的值中包含空格时会出现服务端返回签名不匹配的问题。(via [#13])
+* 修复当 url 或 headers 相关参数的值中包含空格或某几个特殊字符串时会出现服务端返回签名不匹配的问题。(via [#13])
 
 
 ## [0.11.0] (2018-12-08)
@@ -149,6 +159,7 @@
 * 完成大部分 Bucket API(还剩一个 Put Bucket Lifecycle)
 
 
+[0.13.0]: https://github.com/mozillazg/go-cos/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/mozillazg/go-cos/compare/v0.11.1...v0.12.0
 [0.11.1]: https://github.com/mozillazg/go-cos/compare/v0.11.0...v0.11.1
 [0.11.0]: https://github.com/mozillazg/go-cos/compare/v0.10.0...v0.11.0
