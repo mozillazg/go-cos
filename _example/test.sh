@@ -43,6 +43,7 @@ run ./object/uploadFile.go
 run ./object/putACL.go
 run ./object/append.go
 run ./object/get.go
+run ./object/sessionToken.go
 run ./object/head.go
 run ./object/getAnonymous.go
 run ./object/getACL.go
