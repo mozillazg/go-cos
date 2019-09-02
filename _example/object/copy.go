@@ -36,10 +36,11 @@ func main() {
 	expected := "test"
 	f := strings.NewReader(expected)
 
-	_, err := c.Object.Put(context.Background(), source, f, nil)
+	resp, err := c.Object.Put(context.Background(), source, f, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 
 	soruceURL := fmt.Sprintf("%s/%s", u.Host, source)
 	dest := fmt.Sprintf("test/objectMove_%d.go", time.Now().Nanosecond())
@@ -50,7 +51,7 @@ func main() {
 	}
 	fmt.Printf("%+v\n\n", res)
 
-	resp, err := c.Object.Get(context.Background(), dest, nil)
+	resp, err = c.Object.Get(context.Background(), dest, nil)
 	if err != nil {
 		panic(err)
 	}

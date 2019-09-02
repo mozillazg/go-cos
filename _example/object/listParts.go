@@ -38,6 +38,7 @@ func uploadPart(c *cos.Client, name string, uploadID string, blockSize, n int) s
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 	fmt.Printf("%s\n", resp.Status)
 	return resp.Header.Get("Etag")
 }

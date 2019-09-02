@@ -29,8 +29,9 @@ func main() {
 	})
 
 	name := "test/hello.txt"
-	_, err := c.Object.Head(context.Background(), name, nil)
+	resp, err := c.Object.Head(context.Background(), name, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 }

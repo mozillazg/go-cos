@@ -29,10 +29,11 @@ func main() {
 	name := "test/objectPut.go"
 	f := strings.NewReader("test")
 
-	_, err := c.Object.Put(context.Background(), name, f, nil)
+	resp, err := c.Object.Put(context.Background(), name, f, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 
 	// 测试上传以及特殊字符
 	name = "test/put_ + !'()* option.go"

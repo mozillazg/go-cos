@@ -35,6 +35,8 @@ func uploadPart(c *cos.Client, name string, uploadID string, blockSize, n int) s
 	resp, err := c.Object.UploadPart(
 		context.Background(), name, uploadID, n, f, nil,
 	)
+	defer resp.Body.Close()
+
 	if err != nil {
 		panic(err)
 	}

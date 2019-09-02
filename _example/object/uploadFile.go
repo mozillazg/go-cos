@@ -37,8 +37,9 @@ func main() {
 	}
 	fmt.Println(s.Size())
 
-	_, err = c.Object.Put(context.Background(), name, f, nil)
+	resp, err = c.Object.Put(context.Background(), name, f, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 }

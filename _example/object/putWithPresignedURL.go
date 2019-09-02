@@ -39,10 +39,11 @@ func main() {
 	f := strings.NewReader("test")
 
 	// 通过生成签名 header 上传文件
-	_, err := c.Object.Put(ctx, name, f, nil)
+	resp, err := c.Object.Put(ctx, name, f, nil)
 	if err != nil {
 		panic(err)
 	}
+	defer resp.Body.Close()
 
 	// 获取预签名授权 URL
 	opt := &cos.ObjectPutOptions{
